@@ -72,8 +72,10 @@ depuración inalámbrica. El móvil y el ordenador deben estar en la misma red.
 Errores frecuentes:
 
 - `INSTALL_FAILED_UPDATE_INCOMPATIBLE`: el APK está firmado con otra clave que el instalado (por
-  ejemplo, una compilación de depuración sobre una release). Hay que desinstalar primero con
+  ejemplo, releases firmadas con claves distintas). Hay que desinstalar primero con
   `adb uninstall com.cuarentaydos.foghike`, **lo que borra todas las rutas y mapas** del móvil.
+  Las compilaciones de depuración no chocan con la release: se instalan aparte, como
+  `com.cuarentaydos.foghike.debug` («Hike Explorer (debug)»), con sus propios datos.
 - `INSTALL_FAILED_VERSION_DOWNGRADE`: el APK es más antiguo que el instalado.
 - `no devices/emulators found` o `unauthorized`: revisa que el cable transmita datos y vuelve a
   aceptar el aviso de depuración en el móvil.
