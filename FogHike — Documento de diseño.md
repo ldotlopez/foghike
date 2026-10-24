@@ -252,7 +252,7 @@ Convenciones de desarrollo:
 - El servidor de tiles y la lectura de MBTiles son código de Android y no se comparten: en iOS el mapa se alimentaría de otra forma, por ejemplo con PMTiles.
 - No se crean el módulo `shared` ni interfaces de repositorio hasta que exista la versión iOS: los DAOs ya hacen de interfaz.
 
-**Distribución.** La app se reparte a los usuarios de prueba (menos de 100) como APK firmado, instalado a mano. Todas las versiones deben firmarse con la misma clave, guardada fuera del repositorio y con copia de seguridad: si se pierde, los probadores tendrán que desinstalar, y perderían sus datos. Cada tag que se sube a GitHub genera una release con el APK firmado, solo para ARM; la clave va en los secretos del repositorio. Los teléfonos necesitan Google Play Services, del que dependen la ubicación y Nearby Connections.
+**Distribución.** La app se reparte a los usuarios de prueba (menos de 100) como APK firmado, instalado a mano. Todas las versiones deben firmarse con la misma clave, guardada fuera del repositorio y con copia de seguridad: si se pierde, los probadores tendrán que desinstalar, y perderían sus datos. Cada tag que se sube a GitHub genera una release con el APK firmado, solo para ARM; también se puede lanzar a mano desde GitHub Actions indicando el tag, que se crea al publicar; la clave va en los secretos del repositorio. Los teléfonos necesitan Google Play Services, del que dependen la ubicación y Nearby Connections.
 
 ## Compatibilidad con Android 12
 
