@@ -45,12 +45,12 @@ None of this runs with the screen off or while the camera moves.
 | The cell table changes (new point, import) | Fog, forced | Every time Room reports a change in `revealed_cell`, while the main screen is visible |
 | Back to the main screen (`onResume`) with a changed list of downloaded areas | Whole map style: map layers, fog, trail and position; the camera frames the latest area | Only if the list changed (e.g. back from a download) |
 | First start of the screen | Same as above, centering the camera on the user | Always |
-| Time passes (trail) | Trail of the chosen duration and its fade | Every 10 s (30 s with slow phone or battery saver, `AppSettings.trailRefreshMs`) while the main screen is visible, and on style reload |
+| Time passes (trail) | Trail of the chosen duration and its fade | Every 10 s (30 s with Old device or Battery saver, `AppSettings.trailRefreshMs`) while the main screen is visible, and on style reload |
 | Back to the main screen (`onResume`) after changing the fog opacity in Settings | Nothing: only a layer property changes | Always (cheap) |
 | Back to the main screen (`onStart`) from Settings | Settings read again; fog forced (the cell count collector restarts, with the new cell size, mode, detail and piece limit); trail color, width and visibility set on the layer | Always (cheap; the cell rebuild already ran in Settings) |
 | My location button in Follow or Compass mode | The camera moves with every GPS fix; each camera idle runs the fog row above | Same condition as above: walking only recomputes when the view leaves the computed area |
 | Rotate the phone (compass) | Nothing in the app: MapLibre's location component draws it | — |
-| Too many fog rectangles (over `AppSettings.maxFogRects`: 5,000, or 1,500 with slow phone) | The computation is repeated at the next, coarser detail level | Inside the same computation |
+| Too many fog rectangles (over `AppSettings.maxFogRects`: 5,000, or 1,500 with Old device) | The computation is repeated at the next, coarser detail level | Inside the same computation |
 
 ## Download screen
 

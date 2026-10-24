@@ -104,8 +104,9 @@
     <string name="fog_mode">Niebla con el mapa alejado</string>
     <string name="fog_mode_density">Más fina cuanto más has explorado</string>
     <string name="fog_mode_any_cell">Despejada si hay algo explorado dentro</string>
-    <string name="slow_phone">Teléfono lento</string>
-    <string name="slow_phone_detail">Niebla más gruesa y sencilla y rastro redibujado cada 30 s</string>
+    <string name="slow_phone">Dispositivo antiguo</string>
+    <string name="slow_phone_detail">Detalle de niebla bajo, niebla más sencilla y rastro redibujado cada 30 s</string>
+    <string name="set_by_preset">Fijado por %1$s</string>
     <string name="fog_detail">Detalle de la niebla con el mapa alejado</string>
     <string name="detail_high">Alto</string>
     <string name="detail_medium">Medio</string>
