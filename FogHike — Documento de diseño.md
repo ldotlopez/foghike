@@ -67,7 +67,7 @@ La base de datos local guarda cuatro tablas implementadas; otra está diseñada 
 | --- | --- | --- | --- | --- |
 | `revealed_cell` | `cellId` (`tamaño:fila:columna`) | `cellSize`, `gridRow`, `gridCol`, `firstRevealedAt`, `source` (`live`, `gpx_import`, `gmaps_import`), `revealedCount`; índice por tamaño, fila y columna | Celdas reveladas, de la rejilla base y de los niveles de detalle, y su origen | Implementada |
 | `track_point` | `trackId` + `sequenceIndex` | `lat`, `lon`, `timestamp` (opcional), `accuracy` (metros, opcional), `source` | Puntos GPS crudos, necesarios para reprocesar (el origen permite procesar primero los propios). El `trackId` de un GPX es su huella de coordenadas | Implementada |
-| `downloaded_area` | `id` autogenerado | nombre, límites (lat/lon mínimas y máximas), zoom mínimo y máximo, nombre del fichero `.mbtiles`, fecha de descarga | Registro de las áreas de mapa descargadas | Implementada |
+| `downloaded_area` | `id` autogenerado | nombre (prefijo `area-` si se dibujó a mano, `cells-` si salió de celdas reveladas), límites (lat/lon mínimas y máximas), zoom mínimo y máximo, nombre del fichero `.mbtiles` (el almacén único), fecha de descarga | Registro de las descargas terminadas: recuadros en la pantalla de descarga y fuentes del mapa por zoom máximo | Implementada |
 | `AppSettings` | — | `revealRadiusMeters`, `cellSizeMeters`, `trailMinutes`, `userAlias` | Ajustes configurables por el usuario; el alias se envía con las rutas compartidas | Sustituida: los ajustes se guardan en `SharedPreferences` (decisión 0011); el alias, cuando llegue el intercambio |
 | `track` | `trackId` | `source`, `createdAt` (inicio de la grabación o momento de importar), `name` (opcional), `startedAt` (hora del primer punto, opcional). Con el intercambio: `fingerprint` y `senderAlias` (solo `nfc_import`) | Describir cada ruta para listarla y borrarla; con el intercambio, evitar importarla dos veces y saber de quién viene | Implementada (versión 3), sin las columnas del intercambio |
 
@@ -77,15 +77,26 @@ Con el intercambio por NFC, el campo `source` de `revealed_cell` admitirá un cu
 
 ## Mapas offline
 
-El usuario elige en un mapa general de España qué zonas quiere llevar sin conexión; cada zona se descarga como un fichero MBTiles independiente con la vista satélite del IGN.
+El usuario elige en un mapa general de España qué zonas quiere llevar sin conexión, o descarga directamente lo que tiene explorado (ver «Mapas de lo explorado»). Todos los tiles, con la vista satélite del IGN, van a un único fichero MBTiles compartido (decisión 0015).
 
 1. Desde la pantalla principal se abre la descarga de mapas, centrada en la posición del usuario a zoom 11 (o en España entera si no hay ubicación), sobre el mapa general incluido en la app.
 2. El usuario rodea con un dedo cada zona que quiere descargar, y cada trazo se cierra como un polígono. Se pueden dibujar varias. Con dos dedos se mueve y amplía el mapa: en cuanto se apoya el segundo dedo se descarta el trazo empezado y el gesto pasa al mapa. No hay botón para cambiar de modo; a cambio, un dedo no desplaza el mapa ni el doble toque lo amplía.
 3. El usuario fija el rango de zoom (13 a 16 por defecto) y pulsa el botón de descarga.
 4. Por cada polígono se calculan solo los tiles que lo tocan (esquina dentro, vértice dentro o borde que cruza), no todos los de su rectángulo envolvente, en el esquema Web Mercator estándar y se piden al servicio WMTS de ortofotos del IGN (capa `OI.OrthoimageCoverage`, matriz `GoogleMapsCompatible`, JPEG, hasta zoom 19).
-5. Los tiles se escriben en un `.mbtiles` conforme al estándar y se registra el área en la base de datos.
+5. Los tiles se escriben en el almacén único `tiles.mbtiles` (MBTiles estándar, cada tile una sola vez) y, al terminar, se registra la descarga en la base de datos.
 
-La descarga corre en WorkManager (el planificador de tareas de Android), no en la pantalla: sigue aunque el usuario salga, espera a tener conexión y se reinicia si Android mata el proceso. Las áreas se descargan de una en una, en orden, con una notificación de progreso que tiene un botón Cancelar (cancela también las que esperan detrás). El fichero se escribe como `.part` y solo se renombra y registra al terminar, así que una descarga cancelada o fallida no deja nada en disco. La pantalla de descarga muestra el progreso al volver a ella. Si el proceso muere a mitad, el área vuelve a empezar desde cero.
+La descarga corre en WorkManager (el planificador de tareas de Android), no en la pantalla: sigue aunque el usuario salga, espera a tener conexión y se reinicia si Android mata el proceso. Las descargas van de una en una, en orden, con una notificación de progreso que tiene un botón Cancelar (cancela también las que esperan detrás). Los tiles que ya están en el almacén se saltan, así que una descarga cortada continúa donde se quedó; el área solo aparece en el mapa cuando termina. La pantalla de descarga muestra el progreso al volver a ella.
+
+### Mapas de lo explorado
+
+Con niebla opaca, la imagen fuera de las celdas reveladas no se ve, así que basta con los tiles que tocan esas celdas. Además salen pocos: el corredor revelado mide unos 60 m de ancho, y a zoom alto el número de tiles crece con la longitud de la ruta, no con su superficie (unos 400 tiles para 15 km entre los zooms 13 y 17).
+
+- **Al importar rutas**, el aviso del resultado ofrece «Descargar mapa» para las rutas recién importadas.
+- **En Ajustes > Mapas sin conexión**, «Descargar mapas de lo explorado» baja los tiles de todas las celdas reveladas.
+- **En Ajustes > Mapas sin conexión**, «Borrar mapas fuera de lo explorado» borra los tiles que no tocan ninguna celda revelada. Por defecto conserva las áreas descargadas a mano (casilla «Conservar las áreas descargadas a mano»), muestra cuánto espacio libera y pide confirmación; no se puede deshacer. No se ejecuta mientras haya una descarga en curso.
+- Las descargas usan una hoja con el rango de zoom (13–17 la primera vez; cada tipo de descarga recuerda el suyo), los tiles nuevos frente al límite de 20.000 y el tamaño estimado.
+- Las descargas hechas desde celdas no se dibujan como recuadros en la pantalla de descarga.
+- Las áreas descargadas antes, cada una en su propio fichero, se fusionan en el almacén único al arrancar.
 
 Notas de diseño:
 
@@ -104,7 +115,7 @@ La pantalla principal muestra los mapas bajo una niebla que cubre toda la pantal
 | --- | --- | --- | --- |
 | 1 | Fondo | Color oscuro | Nulo |
 | 2 | Mapa general | MBTiles de España, zoom 5–9; por encima se amplía el zoom 9 | Tiles |
-| 3 | Áreas descargadas | Un MBTiles por área, zoom 13–16 por defecto | Tiles |
+| 3 | Áreas descargadas | Almacén único `tiles.mbtiles` (áreas dibujadas y mapas de lo explorado); una fuente por zoom máximo para que cada descarga se amplíe por encima de su último nivel | Tiles |
 | 4 | Niebla | Toda la ventana visible menos las celdas reveladas, con la opacidad del deslizador | Calculada solo para lo visible |
 | 5 | Resaltado | Filtro de color sobre las celdas importadas, activable | Igual que la niebla |
 | 6 | Rastro | Línea naranja por donde ha pasado el usuario en la última hora, que se difumina con la antigüedad | Unos cientos de segmentos; se redibuja cada 10 s con la pantalla encendida |
@@ -217,9 +228,9 @@ El PoC tiene cuatro pantallas propias y usa el selector de ficheros del sistema 
 | --- | --- | --- |
 | Principal | Mapas descargados bajo la niebla, etiqueta con celdas reveladas y mapas, posición y rastro | Iniciar o parar la exploración (se pliega la barra); abrir la descarga de mapas; abrir las rutas; centrar y seguir la posición, con brújula (mantener pulsado elige el modo); ayuda `(?)`. Detalle en `docs/ui/screens/main.md` |
 | Descarga de mapas | Mapa centrado en el usuario con las áreas ya descargadas, recuento de tiles frente al límite, progreso de la descarga y ayuda `(?)` (se abre sola la primera vez) | Dibujar áreas a mano alzada / mover el mapa; deshacer la última área o quitarlas todas; elegir el rango de zoom; recentrar; descargar. Detalle en `docs/ui/screens/download.md` |
-| Rutas | Grabaciones e importaciones, de la más reciente a la más antigua: nombre (las importadas con la fecha de la ruta) y, en letra menor, fecha de alta y origen | Importar GPX; borrar una (papelera o deslizar a la izquierda) o varias (selección múltiple), siempre tras confirmar. Detalle en `docs/ui/screens/tracks.md` |
+| Rutas | Grabaciones e importaciones, de la más reciente a la más antigua: nombre (las importadas con la fecha de la ruta) y, en letra menor, fecha de alta y origen | Importar GPX (el aviso ofrece descargar el mapa de las rutas importadas); borrar una (papelera o deslizar a la izquierda) o varias (selección múltiple), siempre tras confirmar. Detalle en `docs/ui/screens/tracks.md` |
 | Selector de ficheros | Selector del sistema | Elegir uno o varios GPX a importar |
-| Ajustes | Mapa: modo al abrir el mapa y «Ahorro de batería». Avanzado: opacidad de la niebla con vista previa, tamaño de celda, radio de revelado, modo de niebla, «Dispositivo antiguo», detalle de la niebla, intervalo del GPS, zoom al abrir el mapa y rastro (si se muestra; duración, color y grosor). Versión. Pendiente: alias | Los cambios se guardan al momento, salvo celda y radio, que se aplican al salir con un único reprocesamiento. Los dos preajustes («Ahorro de batería» y «Dispositivo antiguo») fijan varios valores; mientras están activos, esos ajustes se ven desactivados con el valor fijado y «Fijado por …» (decisión 0014). Detalle en `docs/ui/screens/settings.md` |
+| Ajustes | Mapa: modo al abrir el mapa y «Ahorro de batería». Avanzado: opacidad de la niebla con vista previa, tamaño de celda, radio de revelado, modo de niebla, «Dispositivo antiguo», detalle de la niebla, intervalo del GPS, zoom al abrir el mapa y rastro (si se muestra; duración, color y grosor). Mapas sin conexión: descargar los de lo explorado y borrar los demás, con el espacio ocupado. Versión. Pendiente: alias | Los cambios se guardan al momento, salvo celda y radio, que se aplican al salir con un único reprocesamiento. Los dos preajustes («Ahorro de batería» y «Dispositivo antiguo») fijan varios valores; mientras están activos, esos ajustes se ven desactivados con el valor fijado y «Fijado por …» (decisión 0014). Detalle en `docs/ui/screens/settings.md` |
 
 El intercambio por NFC añadiría una pantalla de contacto y confirmación (dirección, «Todas / Seleccionar» y alias propio) y un botón en la pantalla principal para resaltar las celdas importadas (ver «Intercambio de áreas por NFC»).
 
@@ -304,6 +315,7 @@ El siguiente paso lógico es generar el mapa general y probar la app en un dispo
 - Formato de Google Maps: el export de Cronología del móvil; Takeout antiguo no se soporta.
 - Mapa general de España: un MBTiles de zoom 5–9 incluido en el APK y servido por el servidor local.
 - Servidor local de tiles: se mantiene. MapLibre lee PMTiles locales desde la 11.7.0 ([documentación](https://maplibre.org/maplibre-native/android/examples/data/PMTiles/)), pero con menos de 100 usuarios la migración no compensa.
+- Almacén de mapas: un único `tiles.mbtiles` para todas las descargas, con cada tile una vez; descargas desde las celdas reveladas (al importar y desde Ajustes) y limpieza de lo no explorado, conservando por defecto las áreas dibujadas a mano (decisión 0015).
 - Intercambio: NFC para el contacto y Nearby Connections para los datos; selección «Todas / Seleccionar»; sin reenvío de rutas de terceros; se guarda el alias del emisor, que se pide en el primer envío; el receptor descarta duplicados por huella.
 - Vista: siempre todas las áreas, con un resaltado sutil y activable de las celdas importadas.
 - Ajustes: radio y celda de listas cerradas; reprocesamiento una sola vez al salir de Ajustes, con un aviso bajo cada valor cambiado (sustituye a «al guardar, tras confirmar»).

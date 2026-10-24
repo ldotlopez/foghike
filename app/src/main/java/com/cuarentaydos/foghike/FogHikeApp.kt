@@ -19,7 +19,10 @@ import com.cuarentaydos.foghike.core.rebuildCells
 import com.cuarentaydos.foghike.data.AppDatabase
 import com.cuarentaydos.foghike.data.MIGRATION_2_3
 import com.cuarentaydos.foghike.tiles.BASE_MAP_NAME
+import com.cuarentaydos.foghike.tiles.TILE_STORE_FILE
 import com.cuarentaydos.foghike.tiles.TileServer
+import com.cuarentaydos.foghike.tiles.mergeFrom
+import com.cuarentaydos.foghike.tiles.openTileStore
 import java.io.File
 import java.io.FileNotFoundException
 import kotlin.concurrent.thread
@@ -57,7 +60,25 @@ class FogHikeApp : Application() {
         mapsDir.mkdirs()
         tileServer = TileServer(mapsDir).also { it.start() }
         thread(name = "base-map-copy") { copyBaseMap() }
+        scope.launch { mergeLegacyMaps() }
         if (prefs.getBoolean(CELLS_STALE, false)) scope.launch { rebuildStaleCells() }
+    }
+
+    /**
+     * Before decision 0015 every area had its own .mbtiles file; their tiles move into the shared store
+     * once. Each file is deleted only after its tiles are in, so a merge cut short resumes next start.
+     */
+    private suspend fun mergeLegacyMaps() {
+        val legacy = db.areaDao().all().filter { it.fileName != TILE_STORE_FILE }
+        if (legacy.isEmpty()) return
+        openTileStore(mapsDir).use { store ->
+            for (area in legacy) {
+                val file = File(mapsDir, area.fileName)
+                if (file.exists()) store.mergeFrom(file)
+                db.areaDao().setFileName(area.id, TILE_STORE_FILE)
+                file.delete()
+            }
+        }
     }
 
     /**

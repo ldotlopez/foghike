@@ -24,7 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -38,14 +37,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cuarentaydos.foghike.R
-import com.cuarentaydos.foghike.tiles.IGN_MAX_ZOOM
-import com.cuarentaydos.foghike.tiles.MAX_TILES_PER_DOWNLOAD
-import kotlin.math.roundToInt
 
 /** Background download state: [percent] of the running area, or null while waiting for a connection. */
 data class DownloadProgress(val areasLeft: Int, val percent: Int?)
@@ -121,38 +115,11 @@ fun DownloadScreen(
     if (zoomSheetOpen) {
         ModalBottomSheet(onDismissRequest = { onZoomSheet(false) }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
             Column(Modifier.padding(horizontal = 24.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.zoom_range, zoom.first, zoom.last), style = MaterialTheme.typography.titleMedium)
-                val label = stringResource(R.string.action_zoom_range)
-                RangeSlider(
-                    value = zoom.first.toFloat()..zoom.last.toFloat(),
-                    onValueChange = { onZoom(it.start.roundToInt()..it.endInclusive.roundToInt()) },
-                    valueRange = 0f..IGN_MAX_ZOOM.toFloat(),
-                    steps = IGN_MAX_ZOOM - 1, // one stop per zoom level
-                    modifier = Modifier.clearAndSetSemantics { contentDescription = label },
-                )
+                ZoomRangeSlider(zoom, onZoom)
                 if (areaCount > 0) TilesChip(tiles)
             }
         }
     }
-}
-
-/** "4,210 / 20,000 tiles"; error colors over the limit, so the problem shows before tapping Download. */
-@Composable
-private fun TilesChip(tiles: Int?) {
-    val over = tiles != null && tiles > MAX_TILES_PER_DOWNLOAD
-    val colors = MaterialTheme.colorScheme
-    AssistChip(
-        onClick = {},
-        label = { Text(stringResource(R.string.chip_tiles, tiles?.let { "%,d".format(it) } ?: "…", "%,d".format(MAX_TILES_PER_DOWNLOAD))) },
-        leadingIcon = {
-            Icon(painterResource(if (over) R.drawable.ic_warning else R.drawable.ic_grid_view), null, Modifier.size(18.dp))
-        },
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = if (over) colors.errorContainer else colors.surfaceContainer,
-            labelColor = if (over) colors.onErrorContainer else colors.onSurface,
-            leadingIconContentColor = if (over) colors.onErrorContainer else colors.onSurfaceVariant,
-        ),
-    )
 }
 
 /** Areas left and the running area's percentage, or a waiting notice without a connection. */

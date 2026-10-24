@@ -73,7 +73,7 @@ private const val CLOSING = "closing" // property of the dashed segment from the
 
 /**
  * Map download screen: the user circles one or more areas with one finger (two fingers move and
- * zoom the map); each area is downloaded as one MBTiles file with only the tiles that touch it, by
+ * zoom the map); each area's tiles (only those that touch it) go into the shared tile store, by
  * [DownloadWorker] in the background, so leaving this screen doesn't stop it. Layout in
  * [DownloadScreen], spec in docs/ui/screens/download.md.
  */
@@ -237,9 +237,9 @@ class DownloadActivity : ComponentActivity() {
         else showMessage(getString(R.string.download_done), getString(R.string.action_view)) { finish() }
     }
 
-    /** Outlines the bounding box of every downloaded area. */
+    /** Outlines the bounding box of every area downloaded by hand (downloads from cells follow the explored map instead). */
     private suspend fun showDownloaded() {
-        val boxes = app.db.areaDao().all().map { a ->
+        val boxes = app.db.areaDao().all().filter { it.isManual }.map { a ->
             val ring = listOf(
                 Point.fromLngLat(a.minLon, a.minLat), Point.fromLngLat(a.maxLon, a.minLat),
                 Point.fromLngLat(a.maxLon, a.maxLat), Point.fromLngLat(a.minLon, a.maxLat),

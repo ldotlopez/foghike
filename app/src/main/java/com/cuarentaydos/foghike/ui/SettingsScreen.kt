@@ -30,6 +30,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -88,9 +90,14 @@ fun SettingsScreen(
     onSettings: (AppSettings) -> Unit,
     busy: Boolean,
     version: String,
+    mapsBytes: Long,
+    snackbar: SnackbarHostState,
+    onDownloadExplored: () -> Unit,
+    onCleanup: () -> Unit,
     onBack: () -> Unit,
 ) {
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.action_settings)) },
@@ -184,6 +191,19 @@ fun SettingsScreen(
                     onSettings(s.copy(trailWidth = it))
                 }
             }
+
+            // Downloads and clean-up from revealed cells (decision 0015); the sheet and dialog are the activity's.
+            SectionHeader(R.string.section_offline_maps)
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.download_explored)) },
+                supportingContent = { Text(stringResource(R.string.download_explored_detail)) },
+                modifier = Modifier.clickable(onClick = onDownloadExplored),
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.cleanup_maps)) },
+                supportingContent = { Text(stringResource(R.string.maps_storage, fileSize(mapsBytes))) },
+                modifier = Modifier.clickable(onClick = onCleanup),
+            )
 
             SectionHeader(R.string.section_about)
             ListItem(headlineContent = { Text(stringResource(R.string.version)) }, trailingContent = { Text(version) })
@@ -297,7 +317,7 @@ private fun FogPreview(opacity: Int) {
 internal fun SettingsPreview(opacity: Int = 70, initial: AppSettings = AppSettings(), busy: Boolean = false) = FogHikeTheme {
     var value by remember { mutableIntStateOf(opacity) }
     var settings by remember { mutableStateOf(initial) }
-    SettingsScreen(value, { value = it }, settings, AppSettings(), { settings = it }, busy, "0.1 (1)", {})
+    SettingsScreen(value, { value = it }, settings, AppSettings(), { settings = it }, busy, "0.1 (1)", 48_300_000L, remember { SnackbarHostState() }, {}, {}, {})
 }
 
 @Preview(showSystemUi = true) @Composable internal fun SettingsDefault() = SettingsPreview()

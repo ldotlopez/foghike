@@ -58,6 +58,13 @@ data class Track(
     val startedAt: Long? = null,
 )
 
+/**
+ * One finished map download: its bounding box and zoom range. All tiles live in one shared file
+ * ([fileName], the same for every download since decision 0015). [name] starts with [AREA_PREFIX]
+ * for areas drawn by hand and [CELLS_PREFIX] for downloads made from revealed cells (whole map or
+ * imported tracks).
+ * shortcut: the kind is a name prefix to avoid a schema change; make it a column with the next migration.
+ */
 @Entity(tableName = "downloaded_area")
 data class DownloadedArea(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -71,6 +78,12 @@ data class DownloadedArea(
     /** File name of the .mbtiles inside the maps directory. */
     val fileName: String,
     val downloadedAt: Long,
-)
+) {
+    /** Drawn by hand on the download screen (shown as a box there, kept on request when cleaning up). */
+    val isManual get() = !name.startsWith(CELLS_PREFIX)
+}
+
+const val AREA_PREFIX = "area-"
+const val CELLS_PREFIX = "cells-"
 
 data class GridPosition(val gridRow: Int, val gridCol: Int, val revealedCount: Int)

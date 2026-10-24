@@ -28,6 +28,22 @@ fun tilesFor(box: Box, minZoom: Int, maxZoom: Int): Sequence<Tile> = sequence {
     }
 }
 
+/**
+ * Tiles at zoom [z] that overlap any of [cells]: each cell's rectangle touches one tile, or up to
+ * 2×2 when it straddles a tile edge. Revealed corridors are narrow, so at high zooms this is far
+ * fewer tiles than the bounding box of the same cells.
+ */
+fun tilesCovering(cells: Iterable<Cell>, z: Int): Set<Tile> {
+    val tiles = HashSet<Tile>()
+    for (cell in cells) {
+        val b = cell.bounds()
+        for (x in tileX(b.west, z)..tileX(b.east, z)) {
+            for (y in tileY(b.north, z)..tileY(b.south, z)) tiles += Tile(z, x, y)
+        }
+    }
+    return tiles
+}
+
 fun tileCount(box: Box, minZoom: Int, maxZoom: Int): Long = (minZoom..maxZoom).sumOf { z ->
     (tileX(box.east, z) - tileX(box.west, z) + 1).toLong() * (tileY(box.south, z) - tileY(box.north, z) + 1)
 }

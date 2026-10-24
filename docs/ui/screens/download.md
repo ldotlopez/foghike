@@ -1,6 +1,6 @@
 # Download screen
 
-The user circles one or more areas on the map and downloads IGN imagery for them, at a chosen zoom range, to use offline. Each area becomes one MBTiles file, downloaded in the background by `DownloadWorker` (WorkManager), so leaving the screen doesn't stop it. Follows `docs/ui/guidelines.md` and shares components with `main.md`; exceptions are listed under "Exceptions".
+The user circles one or more areas on the map and downloads IGN imagery for them, at a chosen zoom range, to use offline. Each area's tiles go into the shared tile store (`maps/tiles.mbtiles`, decision 0015), downloaded in the background by `DownloadWorker` (WorkManager), so leaving the screen doesn't stop it. Follows `docs/ui/guidelines.md` and shares components with `main.md`; exceptions are listed under "Exceptions".
 
 Code: `ui/DownloadActivity.kt` (state, drawing gesture, validation, WorkManager) and `ui/DownloadScreen.kt` (stateless layout).
 
@@ -79,7 +79,7 @@ A `MapToolbar` (hand-made, decision 0007), like the main screen: the Download fl
 
 A `ModalBottomSheet` opened from `tune`, with one `RangeSlider` (steps of 1, from 0 to `IGN_MAX_ZOOM`) and the two values shown as "Zoom 13 – 16". It replaces the two number fields: a range slider can't hold an invalid value, so the "invalid zoom" error disappears and no keyboard opens over the map. The selection chip updates live while dragging.
 
-Default 13–16, kept while the screen is open (the app is portrait only), not stored across launches.
+Default 13–16; the last range used is remembered (`downloadMinZoom` / `downloadMaxZoom`). The title and slider are `ZoomRangeSlider` (`ui/OfflineMaps.kt`), shared with the offline map sheets of the tracks and settings screens (decision 0015).
 
 ### Drawing feedback
 
@@ -96,7 +96,7 @@ The first button of the toolbar pill (`my_location`), in the same place as the m
 
 ### Downloaded areas
 
-Areas already downloaded are drawn on the map so they aren't downloaded twice: the bounding box stored in `DownloadedArea` (min/max lat and lon), as a thin line with a very light fill, in a fixed brand color different from the drawn-area color. A bounding box covers more than the shape that was drawn; it marks "something is downloaded around here", not the exact edge. It uses a second GeoJSON source and two layers, with no database change.
+Areas already downloaded by hand are drawn on the map so they aren't downloaded twice (downloads made from revealed cells, decision 0015, are not: they follow the explored map, which the fog shows anyway): the bounding box stored in `DownloadedArea` (min/max lat and lon), as a thin line with a very light fill, in a fixed brand color different from the drawn-area color. A bounding box covers more than the shape that was drawn; it marks "something is downloaded around here", not the exact edge. It uses a second GeoJSON source and two layers, with no database change.
 
 ### Snackbar
 

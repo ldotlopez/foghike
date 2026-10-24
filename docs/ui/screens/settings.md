@@ -33,6 +33,9 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 │   Old device (switch) · Fog detail   │  fog detail disabled while Old device is on
 │   GPS interval · Zoom when opening   │  GPS interval disabled while Battery saver is on
 │   Recent trail (switch)              │  when on: duration, color (swatch), width
+│ Offline maps                         │  section header
+│   Download maps of explored areas    │  opens the download sheet
+│   Remove maps outside explored areas │  opens the clean-up dialog; shows the stored size
 │                                      │
 │ About                                │
 │   Version                    0.1 (1) │  ListItem: versionName (versionCode)
@@ -64,6 +67,8 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 | Advanced | Trail duration | Choice: 15 / 30 / 60 / 120 min | `trailMinutes` | 60 min |
 | Advanced | Trail color | Choice with color dots: orange, yellow, pink, cyan | `trailColor` | Orange |
 | Advanced | Trail width | Choice: 2 / 4 / 6 px | `trailWidth` | 4 px |
+| Offline maps | Download maps of explored areas | `ListItem`. Opens `TileOfferSheet` (`ui/OfflineMaps.kt`): zoom range (13–17 the first time, then the last used), tiles under revealed cells not stored yet against the 20,000 limit, estimated size, Download. Enqueues `DownloadWorker.enqueueExplored` | `exploredDownloadMinZoom` / `exploredDownloadMaxZoom` | 13–17 |
+| Offline maps | Remove maps outside explored areas | `ListItem` whose supporting text is the store's size ("Stored maps: 48 MB"). Opens `CleanupDialog`: explanation, "Keep areas downloaded by hand" checkbox (on), tiles deleted and space freed, Delete / Cancel; a progress bar while deleting, then a Snackbar "Freed 12 MB." While a download runs it only shows "Wait for the current download to finish." | — | — |
 | About | Version | Read-only `ListItem` with `versionName (versionCode)` from `packageManager.getPackageInfo` (`BuildConfig` is off in this project) | — | — |
 
 - All keys are in `SharedPreferences` `ui`; the values and their lists are `AppSettings` in `core/Settings.kt`.
@@ -95,7 +100,7 @@ Each state has a `@Preview` and a Roborazzi reference image.
 | 1 | Default | Opacity 70 % |
 | 2 | Opacity at limits | 0 % and 100 % (checks the trailing text width and the preview's two ends) |
 | 3 | Dark | State 1 in the dark scheme |
-| 4 | All rows | Defaults in a tall window: every row visible, trail sub-rows included |
+| 4 | All rows | Defaults in a tall window: every row visible, trail sub-rows and the Offline maps section included |
 | 5 | Pending and grouped | Cell size 50 m and radius 2× (two recalculation notes), Old device and Battery saver on (fog detail and GPS interval disabled, showing Low and 15 s with "Set by …"), trail off (its sub-rows hidden) |
 | 6 | Recalculating | Progress bar and message instead of the content |
 
@@ -112,6 +117,8 @@ New keys. `fog_opacity` is kept (now the setting's headline), and the title reus
 | `action_back` | Back | Atrás |
 
 Decision 0011 adds `section_map`, `start_mode`, `location_mode_*` (shared with the my location menu), `battery_saver(_detail)`, `recalculate_on_close`, `recalculating`, `cell_size`, `reveal_radius`, `radius_option`, `fog_mode(_density|_any_cell)`, `slow_phone(_detail)`, `fog_detail`, `detail_high|medium|low`, `gps_interval`, `user_zoom`, `show_trail(_detail)`, `trail_duration`, `trail_color`, `color_*`, `trail_width` and the unit formats `meters`, `seconds`, `minutes`, `pixels`; see `res/values*/strings.xml`.
+
+Decision 0015 adds `section_offline_maps`, `download_explored(_detail)`, `download_track_maps`, `action_download_maps`, `download`, `tiles_size`, `download_queued`, `cleanup_maps`, `maps_storage`, `cleanup_text`, `cleanup_keep_manual`, `cleanup_count`, `cleanup_done` and `cleanup_wait_download`; see `res/values*/strings.xml`.
 
 Decision 0014 renames the `slow_phone` text to "Old device" (key kept) and adds `set_by_preset` ("Set by %1$s" / "Fijado por %1$s"), the note on rows a preset sets.
 

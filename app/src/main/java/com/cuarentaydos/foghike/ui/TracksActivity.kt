@@ -8,17 +8,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import com.cuarentaydos.foghike.FogHikeApp
 import com.cuarentaydos.foghike.R
 import com.cuarentaydos.foghike.core.deleteTracks
 import com.cuarentaydos.foghike.core.importTrack
+import com.cuarentaydos.foghike.core.trackTiles
+import com.cuarentaydos.foghike.tiles.DownloadWorker
 import com.cuarentaydos.foghike.data.Source
 import com.cuarentaydos.foghike.gpx.MAX_GPX_NAME
 import com.cuarentaydos.foghike.gpx.parseGpx
@@ -36,6 +41,13 @@ class TracksActivity : ComponentActivity() {
     private val app get() = application as FogHikeApp
     private var busy by mutableStateOf(false)
     private val snackbar = SnackbarHostState()
+    private var offeredTracks = emptyList<String>()
+    private val trackMaps by lazy {
+        TileOfferState(app, lifecycleScope, app.prefs, "trackDownload", { trackTiles(app.db, app.settings.grid, offeredTracks, it) }) { zooms ->
+            DownloadWorker.enqueueTracks(this, offeredTracks, zooms)
+            showMessage(getString(R.string.download_queued))
+        }
+    }
 
     private val pickGpx = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isNotEmpty()) importGpx(uris)
@@ -56,6 +68,9 @@ class TracksActivity : ComponentActivity() {
                     onDelete = ::delete,
                     onBack = ::finish,
                 )
+                trackMaps.offer?.let {
+                    TileOfferSheet(stringResource(R.string.download_track_maps), it, trackMaps::setZoom, trackMaps::download, trackMaps::dismiss)
+                }
             }
         }
     }
@@ -78,6 +93,7 @@ class TracksActivity : ComponentActivity() {
         var points = 0
         var failed = 0
         var duplicates = 0
+        val importedIds = mutableListOf<String>()
         for (uri in uris) {
             try {
                 val gpx = withContext(Dispatchers.IO) { contentResolver.openInputStream(uri)?.use { parseGpx(it) } }
@@ -87,8 +103,11 @@ class TracksActivity : ComponentActivity() {
                     continue
                 }
                 val name = gpx.name ?: fileName(uri)
-                if (importTrack(app.db, app.settings.grid, "gpx-", gpx.points, Source.GPX_IMPORT, name)) points += gpx.points.size
-                else duplicates++
+                val trackId = importTrack(app.db, app.settings.grid, "gpx-", gpx.points, Source.GPX_IMPORT, name)
+                if (trackId != null) {
+                    points += gpx.points.size
+                    importedIds += trackId
+                } else duplicates++
             } catch (e: Exception) {
                 Log.w("TracksActivity", "GPX import failed: $uri", e)
                 failed++
@@ -100,7 +119,18 @@ class TracksActivity : ComponentActivity() {
             getString(R.string.gpx_duplicates, duplicates).takeIf { duplicates > 0 },
             getString(R.string.gpx_failed, failed).takeIf { failed > 0 },
         ).joinToString(" ")
-        showMessage(message)
+        if (importedIds.isEmpty()) {
+            showMessage(message)
+            return@whileBusy
+        }
+        // Imported routes are often where no map was downloaded yet: offer their tiles (decision 0015).
+        lifecycleScope.launch {
+            val result = snackbar.showSnackbar(message, getString(R.string.action_download_maps), duration = SnackbarDuration.Long)
+            if (result == SnackbarResult.ActionPerformed) {
+                offeredTracks = importedIds.toList()
+                trackMaps.open()
+            }
+        }
     }
 
     /** The picked file's name without ".gpx", as the provider reports it; null if it doesn't. */
