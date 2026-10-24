@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="start_exploring">Iniciar exploración</string>
+    <string name="stop_exploring">Parar exploración</string>
+    <string name="maps">Mapas</string>
+    <string name="import_gpx">Importar GPX</string>
+    <string name="fog_opacity">Opacidad de la niebla</string>
+    <string name="status">Celdas reveladas: %1$d · Mapas offline: %2$d</string>
+    <string name="no_maps">Aún no hay mapas offline: descarga uno desde Mapas.</string>
+    <string name="precise_location_required">Explorar necesita la ubicación precisa.</string>
+    <string name="gpx_imported">Importados %1$d puntos de %2$d ficheros.</string>
+    <string name="gpx_failed">%1$d ficheros no se pudieron leer.</string>
+
+    <string name="tracking_channel">Exploración</string>
+    <string name="tracking_notification">Explorando: registrando tu ruta</string>
+
+    <string name="download_help">Pulsa Dibujar y rodea con el dedo la zona a descargar. Puedes dibujar varias. Descargar necesita conexión.</string>
+    <string name="min_zoom">Zoom mín.</string>
+    <string name="max_zoom">Zoom máx.</string>
+    <string name="clear">Limpiar</string>
+    <string name="download">Descargar</string>
+    <string name="invalid_zoom">El zoom debe estar entre 0 y 19, y el mínimo no puede superar al máximo.</string>
+    <string name="no_areas">Dibuja antes al menos un área.</string>
+    <string name="too_many_tiles">Demasiados tiles (%1$d, máximo %2$d): usa áreas más pequeñas o menos niveles de zoom.</string>
+    <string name="download_progress">Área %1$d/%2$d: tile %3$d/%4$d</string>
+    <string name="download_done">Descarga terminada.</string>
+    <string name="location_required">Explorar necesita la ubicación activada.</string>
+    <string name="background_location_why">Para no perder puntos GPS si Android detiene la app mientras exploras, elige \"Permitir todo el tiempo\" en la siguiente pantalla.</string>
+    <string name="continue_button">Continuar</string>
+    <string name="not_now">Ahora no</string>
+    <string name="draw">Dibujar</string>
+    <string name="move_map">Mover mapa</string>
+</resources>

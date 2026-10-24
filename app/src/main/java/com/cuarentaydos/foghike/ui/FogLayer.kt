@@ -1,0 +1,90 @@
+package com.cuarentaydos.foghike.ui
+
+import com.cuarentaydos.foghike.data.CellDao
+import com.cuarentaydos.foghike.geo.Box
+import com.cuarentaydos.foghike.geo.CELL_SIZE_METERS
+import com.cuarentaydos.foghike.geo.Cell
+import com.cuarentaydos.foghike.geo.LOD_LEVELS
+import com.cuarentaydos.foghike.geo.colRange
+import com.cuarentaydos.foghike.geo.fogRects
+import com.cuarentaydos.foghike.geo.lodLevelFor
+import com.cuarentaydos.foghike.geo.lodSize
+import com.cuarentaydos.foghike.geo.rowRange
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.layers.FillLayer
+import org.maplibre.android.style.layers.PropertyFactory.fillAntialias
+import org.maplibre.android.style.layers.PropertyFactory.fillColor
+import org.maplibre.android.style.layers.PropertyFactory.fillOpacity
+import org.maplibre.android.style.sources.GeoJsonSource
+import org.maplibre.geojson.Feature
+import org.maplibre.geojson.FeatureCollection
+import org.maplibre.geojson.Point
+import org.maplibre.geojson.Polygon
+
+private const val FOG_COLOR = "#1b1f24"
+private const val MAX_FOG_RECTS = 5_000
+
+/**
+ * Fog over the whole map except revealed cells. It is computed only for the visible region plus one
+ * screen of margin on each side, at the LOD level that fits the zoom, and only when the camera stops
+ * outside the computed region or the cells change — never per frame.
+ */
+class FogLayer(style: Style, private val cells: CellDao, private val scope: CoroutineScope, opacity: Float) {
+    private val source = GeoJsonSource("fog")
+    private val layer = FillLayer("fog", "fog")
+        .withProperties(fillColor(FOG_COLOR), fillOpacity(opacity), fillAntialias(false))
+    private var computed: Box? = null
+    private var computedLevel = -1
+    private var job: Job? = null
+
+    init {
+        style.addSource(source)
+        style.addLayer(layer)
+    }
+
+    fun setOpacity(opacity: Float) = layer.setProperties(fillOpacity(opacity))
+
+    fun refresh(map: MapLibreMap, force: Boolean = false) {
+        val b = map.projection.visibleRegion.latLngBounds
+        val visible = Box(b.latitudeSouth, b.longitudeWest, b.latitudeNorth, b.longitudeEast)
+        val level = lodLevelFor(CELL_SIZE_METERS, map.cameraPosition.zoom, b.center.latitude)
+        if (!force && level == computedLevel && computed?.contains(visible) == true) return
+
+        val area = visible.expanded()
+        job?.cancel()
+        job = scope.launch {
+            var lvl = level
+            var rects: List<Box>
+            while (true) {
+                val size = lodSize(CELL_SIZE_METERS, lvl)
+                val rows = rowRange(area, size)
+                val cols = colRange(area, size)
+                val revealed = cells.inRange(size, rows.first, rows.last, cols.first, cols.last)
+                    .map { Cell(size, it.gridRow, it.gridCol) }
+                rects = withContext(Dispatchers.Default) { fogRects(area, size, revealed) }
+                // Too many rectangles: fall back to a coarser level instead of not drawing.
+                if (rects.size <= MAX_FOG_RECTS || lvl == LOD_LEVELS - 1) break
+                lvl++
+            }
+            source.setGeoJson(FeatureCollection.fromFeatures(rects.map { it.toFeature() }))
+            computed = area
+            computedLevel = level
+        }
+    }
+}
+
+private fun Box.toFeature(): Feature = Feature.fromGeometry(
+    Polygon.fromLngLats(listOf(listOf(
+        Point.fromLngLat(west, south),
+        Point.fromLngLat(east, south),
+        Point.fromLngLat(east, north),
+        Point.fromLngLat(west, north),
+        Point.fromLngLat(west, south),
+    )))
+)

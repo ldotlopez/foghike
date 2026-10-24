@@ -1,0 +1,189 @@
+package com.cuarentaydos.foghike.ui
+
+import android.annotation.SuppressLint
+import android.graphics.PointF
+import android.os.Bundle
+import android.view.MotionEvent
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
+import com.cuarentaydos.foghike.FogHikeApp
+import com.cuarentaydos.foghike.R
+import com.cuarentaydos.foghike.data.DownloadedArea
+import com.cuarentaydos.foghike.geo.LatLon
+import com.cuarentaydos.foghike.geo.boundsOf
+import com.cuarentaydos.foghike.geo.tilesFor
+import com.cuarentaydos.foghike.tiles.IGN_MAX_ZOOM
+import com.cuarentaydos.foghike.tiles.MAX_TILES_PER_DOWNLOAD
+import com.cuarentaydos.foghike.tiles.downloadArea
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.maplibre.android.MapLibre
+import org.maplibre.android.camera.CameraUpdateFactory
+import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.MapView
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.layers.FillLayer
+import org.maplibre.android.style.layers.LineLayer
+import org.maplibre.android.style.layers.PropertyFactory.fillColor
+import org.maplibre.android.style.layers.PropertyFactory.fillOpacity
+import org.maplibre.android.style.layers.PropertyFactory.lineColor
+import org.maplibre.android.style.layers.PropertyFactory.lineWidth
+import org.maplibre.android.style.sources.GeoJsonSource
+import org.maplibre.geojson.Feature
+import org.maplibre.geojson.FeatureCollection
+import org.maplibre.geojson.LineString
+import org.maplibre.geojson.Point
+import org.maplibre.geojson.Polygon
+import java.io.File
+import kotlin.math.hypot
+
+private const val MIN_STROKE_STEP_PX = 12f
+private const val AREA_PICK_ZOOM = 11.0 // a hiking area of a few km fills the screen
+
+/**
+ * Map download screen: in draw mode the user circles one or more areas with a finger; each area is
+ * downloaded as one MBTiles file with only the tiles that touch it. Needs a connection.
+ */
+class DownloadActivity : ComponentActivity() {
+    private val app get() = application as FogHikeApp
+    private lateinit var mapView: MapView
+    private lateinit var progress: TextView
+    private var map: MapLibreMap? = null
+    private val areas = mutableListOf<List<LatLon>>()
+    private var stroke: MutableList<LatLon>? = null
+    private var lastPoint: PointF? = null
+    private val areaSource by lazy { GeoJsonSource("areas") } // native object: only after MapLibre.getInstance
+
+    @SuppressLint("ClickableViewAccessibility") // drawing is a gesture, there is no click to perform
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        MapLibre.getInstance(this)
+        setContentView(R.layout.activity_download)
+        progress = findViewById(R.id.progress)
+        mapView = findViewById(R.id.map)
+        mapView.onCreate(savedInstanceState)
+        mapView.getMapAsync { m ->
+            map = m
+            m.setUpCommon()
+            m.setStyle(Style.Builder().fromJson(mapStyleJson(app.tileServer, emptyList(), onlineIgn = true))) { style ->
+                style.addSource(areaSource)
+                style.addLayer(FillLayer("areas-fill", "areas").withProperties(fillColor("#ffcc00"), fillOpacity(0.25f)))
+                style.addLayer(LineLayer("areas-line", "areas").withProperties(lineColor("#ffcc00"), lineWidth(3f)))
+                m.moveCamera(CameraUpdateFactory.newLatLngBounds(SPAIN_BOUNDS.toLatLngBounds(), 20))
+                m.centerOnUser(this, AREA_PICK_ZOOM)
+            }
+        }
+
+        // A transparent view over the map catches the finger while drawing; otherwise it is hidden
+        // and the map pans and zooms as usual.
+        val overlay = findViewById<View>(R.id.draw_overlay)
+        overlay.setOnTouchListener { _, e -> onDrawTouch(e); true }
+        val draw = findViewById<Button>(R.id.draw)
+        draw.setOnClickListener {
+            val drawing = overlay.visibility != View.VISIBLE
+            overlay.visibility = if (drawing) View.VISIBLE else View.GONE
+            draw.setText(if (drawing) R.string.move_map else R.string.draw)
+        }
+
+        val minZoom = findViewById<EditText>(R.id.min_zoom)
+        val maxZoom = findViewById<EditText>(R.id.max_zoom)
+        val download = findViewById<Button>(R.id.download)
+        findViewById<Button>(R.id.clear).setOnClickListener {
+            areas.clear()
+            stroke = null
+            drawAreas()
+        }
+        download.setOnClickListener {
+            val from = minZoom.text.toString().toIntOrNull()
+            val to = maxZoom.text.toString().toIntOrNull()
+            if (from == null || to == null || from < 0 || to > IGN_MAX_ZOOM || from > to) {
+                progress.setText(R.string.invalid_zoom)
+                return@setOnClickListener
+            }
+            if (areas.isEmpty()) {
+                progress.setText(R.string.no_areas)
+                return@setOnClickListener
+            }
+            val total = areas.sumOf { tilesFor(it, from, to).count() }
+            if (total > MAX_TILES_PER_DOWNLOAD) {
+                progress.text = getString(R.string.too_many_tiles, total, MAX_TILES_PER_DOWNLOAD)
+                return@setOnClickListener
+            }
+            download.isEnabled = false
+            downloadAll(from, to) { download.isEnabled = true }
+        }
+    }
+
+    private fun onDrawTouch(e: MotionEvent) {
+        val m = map ?: return
+        val screen = PointF(e.x, e.y)
+        val geo = m.projection.fromScreenLocation(screen).let { LatLon(it.latitude, it.longitude) }
+        when (e.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                stroke = mutableListOf(geo)
+                lastPoint = screen
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val last = lastPoint ?: return
+                if (hypot(screen.x - last.x, screen.y - last.y) < MIN_STROKE_STEP_PX) return
+                stroke?.add(geo)
+                lastPoint = screen
+            }
+            MotionEvent.ACTION_UP -> {
+                stroke?.takeIf { it.size >= 3 }?.let { areas += it }
+                stroke = null
+            }
+            else -> return
+        }
+        drawAreas()
+    }
+
+    private fun drawAreas() {
+        fun List<LatLon>.points() = this.map { Point.fromLngLat(it.lon, it.lat) }
+        val features = areas.map { Feature.fromGeometry(Polygon.fromLngLats(listOf(it.points() + it.points().first()))) } +
+            listOfNotNull(stroke?.takeIf { it.size >= 2 }?.let { Feature.fromGeometry(LineString.fromLngLats(it.points())) })
+        areaSource.setGeoJson(FeatureCollection.fromFeatures(features))
+    }
+
+    // shortcut: tied to this screen, leaving it cancels the download; move to a WorkManager job if that bothers users.
+    private fun downloadAll(minZoom: Int, maxZoom: Int, onDone: () -> Unit) = lifecycleScope.launch {
+        val toDownload = areas.toList()
+        for ((i, polygon) in toDownload.withIndex()) {
+            val now = System.currentTimeMillis()
+            val name = "area-$now"
+            val box = boundsOf(polygon)
+            withContext(Dispatchers.IO) {
+                val tiles = tilesFor(polygon, minZoom, maxZoom).toList()
+                downloadArea(File(app.mapsDir, "$name.mbtiles"), tiles, box, minZoom, maxZoom) { done, total ->
+                    runOnUiThread {
+                        progress.text = getString(R.string.download_progress, i + 1, toDownload.size, done, total)
+                    }
+                }
+            }
+            app.db.areaDao().insert(DownloadedArea(
+                name = name, minLat = box.south, minLon = box.west, maxLat = box.north, maxLon = box.east,
+                minZoom = minZoom, maxZoom = maxZoom, fileName = "$name.mbtiles", downloadedAt = now,
+            ))
+        }
+        progress.setText(R.string.download_done)
+        areas.clear()
+        drawAreas()
+        onDone()
+    }
+
+    override fun onStart() { super.onStart(); mapView.onStart() }
+    override fun onResume() { super.onResume(); mapView.onResume() }
+    override fun onPause() { mapView.onPause(); super.onPause() }
+    override fun onStop() { mapView.onStop(); super.onStop() }
+    override fun onLowMemory() { super.onLowMemory(); mapView.onLowMemory() }
+    override fun onDestroy() { mapView.onDestroy(); super.onDestroy() }
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        mapView.onSaveInstanceState(outState)
+    }
+}

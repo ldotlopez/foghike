@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FogHike</string>
+    <string name="ign_attribution" translatable="false">PNOA cedido por © Instituto Geográfico Nacional de España</string>
+
+    <string name="start_exploring">Start exploring</string>
+    <string name="stop_exploring">Stop exploring</string>
+    <string name="maps">Maps</string>
+    <string name="import_gpx">Import GPX</string>
+    <string name="fog_opacity">Fog opacity</string>
+    <string name="status">Revealed cells: %1$d · Offline maps: %2$d</string>
+    <string name="no_maps">No offline maps yet: download one from Maps.</string>
+    <string name="precise_location_required">Exploring needs precise location.</string>
+    <string name="gpx_imported">Imported %1$d points from %2$d files.</string>
+    <string name="gpx_failed">%1$d files could not be read.</string>
+
+    <string name="tracking_channel">Exploration</string>
+    <string name="tracking_notification">Exploring: recording your route</string>
+
+    <string name="download_help">Tap Draw and circle the area to download with your finger. You can draw several. Downloading needs a connection.</string>
+    <string name="min_zoom">Min zoom</string>
+    <string name="max_zoom">Max zoom</string>
+    <string name="clear">Clear</string>
+    <string name="download">Download</string>
+    <string name="invalid_zoom">Zoom must be between 0 and 19, min not above max.</string>
+    <string name="no_areas">Draw at least one area first.</string>
+    <string name="too_many_tiles">Too many tiles (%1$d, max %2$d): use smaller areas or fewer zoom levels.</string>
+    <string name="download_progress">Area %1$d/%2$d: tile %3$d/%4$d</string>
+    <string name="download_done">Download finished.</string>
+    <string name="location_required">Exploring needs location switched on.</string>
+    <string name="background_location_why">So no GPS points are lost if Android stops the app while you explore, choose \"Allow all the time\" on the next screen.</string>
+    <string name="continue_button">Continue</string>
+    <string name="not_now">Not now</string>
+    <string name="draw">Draw</string>
+    <string name="move_map">Move map</string>
+</resources>
