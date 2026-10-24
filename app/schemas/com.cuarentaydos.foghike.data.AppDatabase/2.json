@@ -1,0 +1,206 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "8f764a169b1d5265a0aa2800861c6b37",
+    "entities": [
+      {
+        "tableName": "revealed_cell",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cellId` TEXT NOT NULL, `cellSize` INTEGER NOT NULL, `gridRow` INTEGER NOT NULL, `gridCol` INTEGER NOT NULL, `firstRevealedAt` INTEGER NOT NULL, `source` TEXT NOT NULL, `revealedCount` INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(`cellId`))",
+        "fields": [
+          {
+            "fieldPath": "cellId",
+            "columnName": "cellId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cellSize",
+            "columnName": "cellSize",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gridRow",
+            "columnName": "gridRow",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gridCol",
+            "columnName": "gridCol",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firstRevealedAt",
+            "columnName": "firstRevealedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revealedCount",
+            "columnName": "revealedCount",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cellId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_revealed_cell_cellSize_gridRow_gridCol",
+            "unique": false,
+            "columnNames": [
+              "cellSize",
+              "gridRow",
+              "gridCol"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_revealed_cell_cellSize_gridRow_gridCol` ON `${TABLE_NAME}` (`cellSize`, `gridRow`, `gridCol`)"
+          }
+        ]
+      },
+      {
+        "tableName": "track_point",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`trackId` TEXT NOT NULL, `sequenceIndex` INTEGER NOT NULL, `lat` REAL NOT NULL, `lon` REAL NOT NULL, `timestamp` INTEGER, `accuracy` REAL, `source` TEXT NOT NULL, PRIMARY KEY(`trackId`, `sequenceIndex`))",
+        "fields": [
+          {
+            "fieldPath": "trackId",
+            "columnName": "trackId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sequenceIndex",
+            "columnName": "sequenceIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lat",
+            "columnName": "lat",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lon",
+            "columnName": "lon",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "accuracy",
+            "columnName": "accuracy",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "trackId",
+            "sequenceIndex"
+          ]
+        }
+      },
+      {
+        "tableName": "downloaded_area",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `minLat` REAL NOT NULL, `minLon` REAL NOT NULL, `maxLat` REAL NOT NULL, `maxLon` REAL NOT NULL, `minZoom` INTEGER NOT NULL, `maxZoom` INTEGER NOT NULL, `fileName` TEXT NOT NULL, `downloadedAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minLat",
+            "columnName": "minLat",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minLon",
+            "columnName": "minLon",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxLat",
+            "columnName": "maxLat",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxLon",
+            "columnName": "maxLon",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minZoom",
+            "columnName": "minZoom",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxZoom",
+            "columnName": "maxZoom",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "fileName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "downloadedAt",
+            "columnName": "downloadedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8f764a169b1d5265a0aa2800861c6b37')"
+    ]
+  }
+}

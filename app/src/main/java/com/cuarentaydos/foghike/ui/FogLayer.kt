@@ -6,6 +6,7 @@ import com.cuarentaydos.foghike.geo.CELL_SIZE_METERS
 import com.cuarentaydos.foghike.geo.Cell
 import com.cuarentaydos.foghike.geo.LOD_LEVELS
 import com.cuarentaydos.foghike.geo.colRange
+import com.cuarentaydos.foghike.geo.fogDensity
 import com.cuarentaydos.foghike.geo.fogRects
 import com.cuarentaydos.foghike.geo.lodLevelFor
 import com.cuarentaydos.foghike.geo.lodSize
@@ -17,6 +18,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.style.expressions.Expression.get
+import org.maplibre.android.style.expressions.Expression.literal
+import org.maplibre.android.style.expressions.Expression.product
+import org.maplibre.android.style.expressions.Expression.toNumber
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.layers.FillLayer
 import org.maplibre.android.style.layers.PropertyFactory.fillAntialias
@@ -31,6 +36,18 @@ import org.maplibre.geojson.Polygon
 private const val FOG_TEXTURE = "fog-texture"
 private const val FOG_TEXTURE_SIZE = 256
 private const val MAX_FOG_RECTS = 5_000
+private const val DENSITY = "density"
+
+/** How revealed coarse (LOD) cells are drawn. Alternatives: "Niebla a zoom bajo" in the design doc. */
+enum class FogMode {
+    /** Clear as soon as any revealed base cell lies inside: the trace looks wider when zooming out. */
+    ANY_CELL,
+    /** Partly fogged, thinner the more of the cell has been explored ([fogDensity]). */
+    DENSITY,
+}
+
+// shortcut: picked in code to compare modes on the device; move to Settings if more than one stays.
+val FOG_MODE = FogMode.DENSITY
 
 /**
  * Fog over the whole map except revealed cells. It is computed only for the visible region plus one
@@ -40,7 +57,7 @@ private const val MAX_FOG_RECTS = 5_000
 class FogLayer(style: Style, private val cells: CellDao, private val scope: CoroutineScope, opacity: Float) {
     private val source = GeoJsonSource("fog")
     private val layer = FillLayer("fog", "fog")
-        .withProperties(fillPattern(FOG_TEXTURE), fillOpacity(opacity), fillAntialias(false))
+        .withProperties(fillPattern(FOG_TEXTURE), fogOpacity(opacity), fillAntialias(false))
     private var computed: Box? = null
     private var computedLevel = -1
     private var job: Job? = null
@@ -52,7 +69,10 @@ class FogLayer(style: Style, private val cells: CellDao, private val scope: Coro
         style.addLayer(layer)
     }
 
-    fun setOpacity(opacity: Float) = layer.setProperties(fillOpacity(opacity))
+    fun setOpacity(opacity: Float) = layer.setProperties(fogOpacity(opacity))
+
+    // Every feature carries its own density, so the slider still scales the whole fog.
+    private fun fogOpacity(opacity: Float) = fillOpacity(product(literal(opacity), toNumber(get(DENSITY))))
 
     fun refresh(map: MapLibreMap, force: Boolean = false) {
         val b = map.projection.visibleRegion.latLngBounds
@@ -64,26 +84,33 @@ class FogLayer(style: Style, private val cells: CellDao, private val scope: Coro
         job?.cancel()
         job = scope.launch {
             var lvl = level
-            var rects: List<Box>
+            var features: List<Feature>
             while (true) {
                 val size = lodSize(CELL_SIZE_METERS, lvl)
                 val rows = rowRange(area, size)
                 val cols = colRange(area, size)
                 val revealed = cells.inRange(size, rows.first, rows.last, cols.first, cols.last)
-                    .map { Cell(size, it.gridRow, it.gridCol) }
-                rects = withContext(Dispatchers.Default) { fogRects(area, size, revealed) }
+                val fogLevel = lvl
+                features = withContext(Dispatchers.Default) {
+                    val rects = fogRects(area, size, revealed.map { Cell(size, it.gridRow, it.gridCol) })
+                    val partial = if (FOG_MODE != FogMode.DENSITY) emptyList() else revealed.mapNotNull {
+                        val density = fogDensity(it.revealedCount, fogLevel)
+                        if (density > 0f) Cell(size, it.gridRow, it.gridCol).bounds().toFeature(density) else null
+                    }
+                    rects.map { it.toFeature(1f) } + partial
+                }
                 // Too many rectangles: fall back to a coarser level instead of not drawing.
-                if (rects.size <= MAX_FOG_RECTS || lvl == LOD_LEVELS - 1) break
+                if (features.size <= MAX_FOG_RECTS || lvl == LOD_LEVELS - 1) break
                 lvl++
             }
-            source.setGeoJson(FeatureCollection.fromFeatures(rects.map { it.toFeature() }))
+            source.setGeoJson(FeatureCollection.fromFeatures(features))
             computed = area
             computedLevel = level
         }
     }
 }
 
-private fun Box.toFeature(): Feature = Feature.fromGeometry(
+private fun Box.toFeature(density: Float): Feature = Feature.fromGeometry(
     Polygon.fromLngLats(listOf(listOf(
         Point.fromLngLat(west, south),
         Point.fromLngLat(east, south),
@@ -91,7 +118,7 @@ private fun Box.toFeature(): Feature = Feature.fromGeometry(
         Point.fromLngLat(west, north),
         Point.fromLngLat(west, south),
     )))
-)
+).apply { addNumberProperty(DENSITY, density) }
 
 /**
  * Static fog texture: tileable fractal value noise shaded from blue-grey to white, as ARGB pixels.

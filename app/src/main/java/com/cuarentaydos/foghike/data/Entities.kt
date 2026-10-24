@@ -1,5 +1,6 @@
 package com.cuarentaydos.foghike.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -14,6 +15,7 @@ object Source {
 /**
  * A revealed grid cell. Coarse LOD cells live in the same table: their [cellSize] is a multiple of
  * the base size, and the id already encodes it, so no separate table is needed.
+ * [revealedCount] is 1 for base cells and, for coarse cells, how many revealed base cells lie inside.
  */
 @Entity(tableName = "revealed_cell", indices = [Index("cellSize", "gridRow", "gridCol")])
 data class RevealedCell(
@@ -23,6 +25,7 @@ data class RevealedCell(
     val gridCol: Int,
     val firstRevealedAt: Long,
     val source: String,
+    @ColumnInfo(defaultValue = "1") val revealedCount: Int = 1,
 )
 
 /**
@@ -55,4 +58,4 @@ data class DownloadedArea(
     val downloadedAt: Long,
 )
 
-data class GridPosition(val gridRow: Int, val gridCol: Int)
+data class GridPosition(val gridRow: Int, val gridCol: Int, val revealedCount: Int)
