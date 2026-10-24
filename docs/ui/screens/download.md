@@ -47,8 +47,8 @@ An `AssistChip` under the selection chip, shown while `DownloadWorker` has unfin
 
 | Worker state | Content |
 | --- | --- |
-| Running | `download` + "2 areas left · 37 %" and a `LinearProgressIndicator` along the chip's bottom edge |
-| Waiting for a connection | `cloud_off` + "2 areas left · waiting for a connection" |
+| Running | `download` + "2 areas left · 37 %" and a `LinearProgressIndicator` just under the chip, as wide as the chip |
+| Waiting for a connection | `cloud_off` + "2 areas left · no connection" |
 
 When all work finishes, the chip goes away and a Snackbar reports the result (see Snackbar).
 
@@ -78,7 +78,7 @@ A `MapToolbar` (hand-made, decision 0007), like the main screen, with Download a
 
 A `ModalBottomSheet` opened from `tune`, with one `RangeSlider` (steps of 1, from 0 to `IGN_MAX_ZOOM`) and the two values shown as "Zoom 13 – 16". It replaces the two number fields: a range slider can't hold an invalid value, so the "invalid zoom" error disappears and no keyboard opens over the map. The selection chip updates live while dragging.
 
-Default 13–16, kept when the phone rotates (`rememberSaveable`), not stored across launches.
+Default 13–16, kept while the screen is open (the app is portrait only), not stored across launches.
 
 ### Drawing feedback
 
@@ -91,7 +91,7 @@ Both are extra features in the existing `areas` GeoJSON source, drawn with the a
 
 ### Recenter button
 
-A `SmallFloatingActionButton` with `my_location` (56 dp touch target) at the bottom right, above the toolbar, in the same place as on the main screen. One tap centers the map on the user at `AREA_PICK_ZOOM`. It has no follow or compass modes: following would move the map under a stroke being drawn. Without location permission or a fix, the same behavior as on the main screen (permission request, "Waiting for your location…" Snackbar).
+A 56 dp `FloatingActionButton` with `my_location` at the bottom right, above the toolbar, in the same place as on the main screen. One tap centers the map on the user at `AREA_PICK_ZOOM`. It has no follow or compass modes: following would move the map under a stroke being drawn. Without location permission or a fix, the same behavior as on the main screen (permission request, "Waiting for your location…" Snackbar).
 
 ### Downloaded areas
 
@@ -104,13 +104,13 @@ One `SnackbarHost` above the toolbar. Replaces the message text.
 | Message | Action |
 | --- | --- |
 | "Draw at least one area first." (Download tapped with no areas) | — |
-| "Too many tiles (25,310, max 20,000): use smaller areas or fewer zoom levels." | "Zoom" (opens the sheet) |
+| "Too many tiles (25,310, max 20,000): use smaller areas or fewer zoom levels." | "Zoom levels" (opens the sheet) |
 | "Download finished." | "View" (back to the main screen, which frames the new area) |
 | "Download cancelled or failed." | — (retries are roadmap step 7) |
 
 ## States
 
-Each state has a `@Preview` and a Roborazzi reference image; the map slot is a plain colored box with the areas drawn as placeholders.
+Each state has a `@Preview` in `DownloadScreen.kt` and a Roborazzi reference image (`ui/DownloadScreenScreenshotTest.kt`), except state 2: the stroke, its start dot and the downloaded areas are MapLibre layers, checked on a device (`docs/HUMAN_TEST.md`). The map slot is a plain colored box.
 
 | # | State | Differences |
 | --- | --- | --- |
@@ -167,18 +167,19 @@ New or changed keys. Removed: `download_help` (moves into the help dialog as `he
 | `action_clear_areas` | Remove all areas | Quitar todas las áreas |
 | `action_zoom_range` | Zoom levels | Niveles de zoom |
 | `action_recenter` | Center on my location | Centrar en mi ubicación |
-| `chip_tiles` | %1$s / %2$s tiles | %1$s / %2$s teselas |
-| `chip_progress` | %1$d areas left · %2$d %% | Quedan %1$d áreas · %2$d %% |
-| `chip_waiting` | %1$d areas left · waiting for a connection | Quedan %1$d áreas · esperando conexión |
+| `chip_tiles` | %1$s / %2$s tiles | %1$s / %2$s tiles |
+| `chip_progress` (plurals) | %1$d areas left · %2$d %% | Quedan %1$d áreas · %2$d %% |
+| `chip_waiting` (plurals) | %1$d areas left · no connection | Quedan %1$d áreas · sin conexión |
 | `zoom_range` | Zoom %1$d – %2$d | Zoom %1$d – %2$d |
 | `action_view` | View | Ver |
 | `help_download_title` | Download maps | Descargar mapas |
-| `help_download` | (text to write with the implementation, from today's `download_help`) | |
+| `help_download` | Gesture, undo and clear, tile chip and limit, zoom levels, downloaded areas in blue, background download | (same in Spanish) |
 
-Kept: `no_areas`, `too_many_tiles`, `download_done`, `download_stopped`, `download_channel`, `download_notification`, `cancel`. Area counts use plurals (`<plurals>`) when implemented.
+Kept: `no_areas`, `too_many_tiles`, `download_done`, `download_stopped`, `download_channel`, `download_notification`, `cancel`. Also removed: `download` (replaced by `action_download`).
 
 ## Exceptions
 
+- **Hand-made toolbar** (`MapToolbar`, decision 0007), as on the main screen.
 - **Toolbar doesn't collapse.** Nobody explores from this screen, and the toolbar holds the controls needed while drawing. Collapsing would only hide them.
 
 ## Open questions

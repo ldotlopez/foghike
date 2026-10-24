@@ -7,8 +7,7 @@ Inventory of the values and behaviors the user can already change, or that depen
 | Value | Where | Default | Persisted | Notes |
 | --- | --- | --- | --- | --- |
 | Fog opacity | Settings → Debug slider (0–100 %, steps of 5); `SharedPreferences` `ui` → `fogOpacity` | 70 % | Yes, across sessions | Scales all fog, including `DENSITY`'s partial fog. Recalculates nothing |
-| Download min zoom | Field on the download screen (`ui/DownloadScreen.kt`) | 13 | No, per download | Validated between 0 and `IGN_MAX_ZOOM` |
-| Download max zoom | Field on the download screen | 16 | No, per download | Must be ≥ min zoom |
+| Download zoom range | Range slider in the download screen's zoom sheet (`ui/DownloadScreen.kt`) | 13–16 | No, per download | Between 0 and `IGN_MAX_ZOOM`; the slider can't hold an invalid range |
 | Areas to download | Drawn freehand | — | In `downloaded_area` | — |
 
 `ui` also stores `askedStartup` and `askedBackground`: internal flags so permission requests aren't repeated. Not preferences.
@@ -74,7 +73,7 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 | Constant | File | Value | Effect | Setting? |
 | --- | --- | --- | --- | --- |
-| Default zooms | `ui/DownloadScreen.kt` (`rememberSaveable` initial values) | 13–16 | Initial field values | Maybe (remember the last ones used) |
+| Default zooms | `ui/DownloadActivity.kt` (`zoom` initial value) | 13–16 | Initial range of the zoom slider | Maybe (remember the last ones used) |
 | `IGN_MAX_ZOOM` | `tiles/TileDownloader.kt` | 19 | Highest zoom IGN serves | No |
 | `MAX_TILES_PER_DOWNLOAD` | `tiles/TileDownloader.kt` | 20,000 | Tile limit per download | Maybe (advanced; protects storage and the IGN server) |
 | `AREA_PICK_ZOOM` | `ui/DownloadActivity.kt` | 11 | Zoom when opening the download screen | No |

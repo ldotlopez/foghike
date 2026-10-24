@@ -214,7 +214,7 @@ El PoC tiene dos pantallas propias y usa el selector de ficheros del sistema par
 | Pantalla | Qué muestra | Acciones |
 | --- | --- | --- |
 | Principal | Mapas descargados bajo la niebla, etiqueta con celdas reveladas y mapas, posición y rastro | Iniciar o parar la exploración (se pliega la barra); abrir la descarga de mapas; importar GPX; centrar y seguir la posición, con brújula; ayuda `(?)`. Detalle en `docs/ui/screens/main.md` |
-| Descarga de mapas | Mapa centrado en el usuario, texto de ayuda, campos de zoom mínimo y máximo y progreso de la descarga | Dibujar áreas a mano alzada / mover el mapa; limpiar áreas; descargar |
+| Descarga de mapas | Mapa centrado en el usuario con las áreas ya descargadas, recuento de tiles frente al límite, progreso de la descarga y ayuda `(?)` (se abre sola la primera vez) | Dibujar áreas a mano alzada / mover el mapa; deshacer la última área o quitarlas todas; elegir el rango de zoom; recentrar; descargar. Detalle en `docs/ui/screens/download.md` |
 | Selector de ficheros | Selector del sistema | Elegir uno o varios GPX a importar |
 | Ajustes | Hoy: sección Depuración (opacidad de la niebla con vista previa) y versión. Pendiente: radio de revelado y tamaño de celda (listas cerradas) y alias | Ajustar la opacidad (se guarda al momento). Pendiente: cambiar radio, celda y alias y guardar, lo que lanza el reprocesamiento tras confirmar. Detalle en `docs/ui/screens/settings.md` |
 

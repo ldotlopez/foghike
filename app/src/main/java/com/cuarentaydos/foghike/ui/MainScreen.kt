@@ -99,10 +99,7 @@ fun MainScreen(
                 MapIconButton(R.drawable.ic_upload_file, stringResource(R.string.action_import_gpx), onImportGpx)
                 MapIconButton(R.drawable.ic_settings, stringResource(R.string.action_settings), onSettings)
             }
-            // A tight translucent background keeps the attribution readable over bright imagery.
-            Surface(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f), shape = MaterialTheme.shapes.extraSmall) {
-                Box(Modifier.padding(horizontal = 4.dp)) { IgnAttribution() }
-            }
+            MapAttribution()
         }
     }
 }

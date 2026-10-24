@@ -7,31 +7,19 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
@@ -49,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cuarentaydos.foghike.R
@@ -152,34 +139,12 @@ private fun ToolbarPill(content: @Composable RowScope.() -> Unit) {
     }
 }
 
-/**
- * Translucent panel over the map. The app draws behind the system bars (edge to edge), so the panel
- * pads itself away from them on [sides]: top for the status bar, bottom for navigation and keyboard.
- */
+/** [IgnAttribution] over the map, on a tight translucent background that keeps it readable over bright imagery. */
 @Composable
-fun MapPanel(sides: WindowInsetsSides, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Surface(modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)) {
-        Column(
-            Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(sides + WindowInsetsSides.Horizontal)).padding(8.dp),
-            content = content,
-        )
+fun MapAttribution() {
+    Surface(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f), shape = MaterialTheme.shapes.extraSmall) {
+        Box(Modifier.padding(horizontal = 4.dp)) { IgnAttribution() }
     }
-}
-
-/** Fixed-height button whose text shrinks instead of being cut, for long translations. */
-@Composable
-fun ActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, filled: Boolean = false) {
-    val padding = PaddingValues(horizontal = 8.dp)
-    val label: @Composable () -> Unit = {
-        BasicText(
-            text,
-            maxLines = 2,
-            autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 15.sp),
-            style = MaterialTheme.typography.labelLarge.copy(color = LocalContentColor.current, textAlign = TextAlign.Center),
-        )
-    }
-    if (filled) Button(onClick, modifier.height(64.dp), contentPadding = padding) { label() }
-    else FilledTonalButton(onClick, modifier.height(64.dp), contentPadding = padding) { label() }
 }
 
 /** Required wherever IGN imagery is shown. One line: the text shrinks on narrow phones instead of wrapping. */

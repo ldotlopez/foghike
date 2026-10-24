@@ -91,6 +91,7 @@ val DarkColors = darkColorScheme(
 const val BACKGROUND_COLOR = "#101418" // also behind the map view while the style loads
 const val TRAIL_COLOR = "#ff7a1a"
 const val AREA_COLOR = "#ffcc00" // areas being drawn on the download screen
+const val DOWNLOADED_AREA_COLOR = "#4fc3f7" // bounding boxes of areas already downloaded
 
 /** Behind the map view while the style loads, instead of a white flash. */
 val MAP_BACKGROUND_COLOR = Color(BACKGROUND_COLOR.toColorInt())

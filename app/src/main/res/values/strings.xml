@@ -13,16 +13,8 @@
     <string name="tracking_notification">Exploring: recording your route</string>
     <string name="tracking_location_off">Location is off: turn it on to keep exploring</string>
 
-    <string name="download_help">Circle the area to download with one finger; use two fingers to move and zoom the map. You can draw several. Downloading needs a connection.</string>
-    <string name="min_zoom">Min zoom</string>
-    <string name="max_zoom">Max zoom</string>
-    <string name="clear">Clear</string>
-    <string name="download">Download</string>
-    <string name="invalid_zoom">Zoom must be between 0 and 19, min not above max.</string>
     <string name="no_areas">Draw at least one area first.</string>
     <string name="too_many_tiles">Too many tiles (%1$d, max %2$d): use smaller areas or fewer zoom levels.</string>
-    <string name="download_progress">Areas left: %1$d · tile %2$d/%3$d</string>
-    <string name="download_waiting">Areas left: %1$d · waiting for a connection</string>
     <string name="download_done">Download finished.</string>
     <string name="download_stopped">Download cancelled or failed.</string>
     <string name="download_channel">Map download</string>
@@ -54,4 +46,22 @@
     <string name="version">Version</string>
     <string name="percent">%1$d %%</string>
     <string name="action_back">Back</string>
+    <string name="action_download">Download drawn areas</string>
+    <string name="action_undo_area">Remove last area</string>
+    <string name="action_clear_areas">Remove all areas</string>
+    <string name="action_zoom_range">Zoom levels</string>
+    <string name="action_recenter">Center on my location</string>
+    <string name="action_view">View</string>
+    <string name="chip_tiles">%1$s / %2$s tiles</string>
+    <string name="zoom_range">Zoom %1$d – %2$d</string>
+    <string name="help_download_title">Download maps</string>
+    <string name="help_download">Circle the area to download with one finger; use two fingers to move and zoom the map. You can draw several areas: undo removes the last one and the bin removes them all.\n\nThe chip at the top counts the tiles to download; it turns red above the limit. The zoom button sets how much detail to download: each extra level multiplies the tiles by about four.\n\nAreas you already downloaded are outlined in blue. Downloading needs a connection and goes on in the background if you leave this screen.</string>
+    <plurals name="chip_progress">
+        <item quantity="one">%1$d area left · %2$d %%</item>
+        <item quantity="other">%1$d areas left · %2$d %%</item>
+    </plurals>
+    <plurals name="chip_waiting">
+        <item quantity="one">%1$d area left · no connection</item>
+        <item quantity="other">%1$d areas left · no connection</item>
+    </plurals>
 </resources>

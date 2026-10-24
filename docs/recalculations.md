@@ -55,6 +55,8 @@ None of this runs with the screen off or while the camera moves.
 
 | Interaction | What is recalculated |
 | --- | --- |
-| Draw or clear a freehand area | The lines drawn on the map |
-| Press "Download" | Tile list for the polygons between min and max zoom; above `MAX_TILES_PER_DOWNLOAD` nothing is downloaded |
+| Draw, undo or clear a freehand area | The lines drawn on the map (while drawing also the start dot and the dashed closing segment) and the tile count of all drawn areas, off the main thread; a newer request cancels the older one |
+| Move the zoom range slider | The tile count, as above |
+| Press "Download" | Nothing new: it uses the last tile count (counts again only if one is still running); above `MAX_TILES_PER_DOWNLOAD` nothing is downloaded |
+| Open the screen, or a download finishes with the screen open | The outlines of the downloaded areas (bounding boxes from the database) |
 | A download finishes | Nothing on the main screen until the user returns to it (see `onResume` above) |
