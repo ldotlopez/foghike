@@ -27,6 +27,10 @@ interface TrackPointDao {
     @Insert
     suspend fun insert(points: List<TrackPoint>)
 
+    // shortcut: full table scan (no timestamp index); add one with the first real migration if it gets slow.
+    @Query("SELECT * FROM track_point WHERE timestamp >= :since ORDER BY trackId, sequenceIndex")
+    suspend fun since(since: Long): List<TrackPoint>
+
     @Query("SELECT EXISTS(SELECT 1 FROM track_point WHERE trackId = :trackId)")
     suspend fun exists(trackId: String): Boolean
 }

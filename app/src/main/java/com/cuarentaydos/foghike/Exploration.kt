@@ -11,6 +11,9 @@ import com.cuarentaydos.foghike.geo.REVEAL_RADIUS_METERS
 import com.cuarentaydos.foghike.geo.cellsInRadius
 import com.cuarentaydos.foghike.geo.coarseCells
 
+/** Inaccurate points are kept but ignored by everything the user sees. */
+fun isAccurate(accuracy: Float?) = accuracy == null || accuracy <= REVEAL_RADIUS_METERS
+
 /** [accuracy] is the GPS error radius in meters; null when unknown (e.g. GPX files). */
 data class GpsPoint(val lat: Double, val lon: Double, val time: Long?, val accuracy: Float? = null)
 
@@ -21,7 +24,7 @@ data class GpsPoint(val lat: Double, val lon: Double, val time: Long?, val accur
  */
 suspend fun recordPoints(db: AppDatabase, trackId: String, firstIndex: Int, points: List<GpsPoint>, source: String) {
     val cells = linkedSetOf<Cell>()
-    for (p in points.filter { it.accuracy == null || it.accuracy <= REVEAL_RADIUS_METERS }) {
+    for (p in points.filter { isAccurate(it.accuracy) }) {
         for (cell in cellsInRadius(LatLon(p.lat, p.lon), CELL_SIZE_METERS, REVEAL_RADIUS_METERS)) {
             cells += cell
             cells += coarseCells(cell)

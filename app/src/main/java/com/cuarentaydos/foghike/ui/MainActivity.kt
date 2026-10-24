@@ -37,18 +37,25 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLngBounds
+import org.maplibre.android.location.LocationComponentActivationOptions
+import org.maplibre.android.location.modes.CameraMode
+import org.maplibre.android.location.modes.RenderMode
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 
 private const val USER_ZOOM = 14.0
 
-/** Main screen: offline maps under the fog, opacity slider, cell counter and the three actions. */
+/**
+ * Main screen: offline maps under the fog, the recent trail and the user's position arrow, opacity
+ * slider, cell counter and the three actions.
+ */
 class MainActivity : ComponentActivity() {
     private val app get() = application as FogHikeApp
     private val prefs by lazy { getSharedPreferences("ui", MODE_PRIVATE) }
@@ -57,6 +64,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var status: TextView
     private var map: MapLibreMap? = null
     private var fog: FogLayer? = null
+    private var trail: TrailLayer? = null
     private var areas: List<DownloadedArea>? = null
     private var cellCount = 0
 
@@ -67,7 +75,10 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { granted ->
         // Since Android 12 the user may grant only approximate location, useless with 25 m cells.
-        if (granted[Manifest.permission.ACCESS_FINE_LOCATION] == true) askBackgroundLocation()
+        if (granted[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+            showUserLocation()
+            askBackgroundLocation()
+        }
         else toast(R.string.precise_location_required)
     }
 
@@ -88,7 +99,10 @@ class MainActivity : ComponentActivity() {
     // Asked once at first launch, only to open the map where the user is.
     private val startupPermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { map?.let { centerOnUser(it) } }
+    ) {
+        map?.let { centerOnUser(it) }
+        showUserLocation()
+    }
 
     private val pickGpx = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isNotEmpty()) importGpx(uris)
@@ -145,6 +159,15 @@ class MainActivity : ComponentActivity() {
                     cellCount = count
                     updateStatus()
                     map?.let { fog?.refresh(it, force = true) }
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    refreshTrail()
+                    delay(TRAIL_REFRESH_MS)
                 }
             }
         }
@@ -260,14 +283,42 @@ class MainActivity : ComponentActivity() {
         updateStatus()
         val opacity = prefs.getInt("fogOpacity", 70) / 100f
         fog = null // its source dies with the old style
+        trail = null
         m.setStyle(Style.Builder().fromJson(mapStyleJson(app.tileServer, list, onlineIgn = false))) { style ->
             fog = FogLayer(style, app.db.cellDao(), lifecycleScope, opacity)
+            trail = TrailLayer(style)
+            lifecycleScope.launch { refreshTrail() }
+            showUserLocation()
             val latest = list.lastOrNull()
             if (latest != null) frameArea(m, latest)
             else m.moveCamera(CameraUpdateFactory.newLatLngBounds(SPAIN_BOUNDS.toLatLngBounds(), 40))
             // On launch the user's position wins; after a download, the new area does.
             if (firstLoad) centerOnUser(m)
             fog?.refresh(m, force = true)
+        }
+    }
+
+    private suspend fun refreshTrail() {
+        val layer = trail ?: return
+        val now = System.currentTimeMillis()
+        layer.show(app.db.trackPointDao().since(now - TRAIL_DURATION_MS), now)
+    }
+
+    /**
+     * MapLibre's location component: a dot with an arrow pointing where the phone faces (compass).
+     * It follows the activity lifecycle, so GPS and compass stop with the screen off. Needs the
+     * current style, so it is turned on again after every style reload.
+     */
+    @SuppressLint("MissingPermission") // checked just below
+    private fun showUserLocation() {
+        val m = map ?: return
+        val style = m.style?.takeIf { it.isFullyLoaded } ?: return
+        if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) return
+        m.locationComponent.apply {
+            activateLocationComponent(LocationComponentActivationOptions.builder(this@MainActivity, style).build())
+            isLocationComponentEnabled = true
+            cameraMode = CameraMode.NONE
+            renderMode = RenderMode.COMPASS
         }
     }
 
