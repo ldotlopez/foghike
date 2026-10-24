@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ shows a system splash screen: the launcher icon on this background. -->
+    <style name="Theme.FogHike" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <!-- Same green as the launcher icon background (drawable/ic_launcher_background.xml). -->
+        <item name="android:windowSplashScreenBackground">#3DDC84</item>
+    </style>
+</resources>
