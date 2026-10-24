@@ -1,4 +1,6 @@
-# FogHike
+# FogHike (brand: Hike Explorer)
+
+Users see the app as **Hike Explorer** (`app_name`). FogHike stays the internal name: package, application id, class names, file names, the design document and `docs/`. Don't rename those; new user-visible text says Hike Explorer.
 
 Android hiking app: the map starts covered by fog that clears around places the user has walked (strategy-game style). Fog is revealed from live GPS or imported routes (GPX; later the Google Maps Timeline on-device export). Base maps are IGN (Spain) satellite imagery stored offline as MBTiles.
 
