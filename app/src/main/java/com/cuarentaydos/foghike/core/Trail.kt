@@ -6,10 +6,11 @@ data class TrailSegment(val fromLat: Double, val fromLon: Double, val toLat: Dou
 
 /**
  * Segments between consecutive accurate points of the same track (points sorted by track and
- * sequence), with opacity 1 for now fading to 0 at [duration] ago. Points without time are skipped.
+ * sequence), with opacity 1 for now fading to 0 at [duration] ago. Points without time, or less
+ * accurate than the reveal [radius], are skipped.
  */
-fun trailSegments(points: List<TrackPoint>, now: Long, duration: Long): List<TrailSegment> =
-    points.filter { it.timestamp != null && isAccurate(it.accuracy) }
+fun trailSegments(points: List<TrackPoint>, now: Long, duration: Long, radius: Double): List<TrailSegment> =
+    points.filter { it.timestamp != null && isAccurate(it.accuracy, radius) }
         .zipWithNext()
         .filter { (a, b) -> a.trackId == b.trackId && a.timestamp!! >= now - duration }
         .map { (a, b) ->

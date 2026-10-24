@@ -70,7 +70,7 @@ class TracksActivity : ComponentActivity() {
 
     private fun delete(trackIds: List<String>) = whileBusy {
         // Finishes even if the user leaves the screen; it is one transaction either way.
-        withContext(NonCancellable) { deleteTracks(app.db, trackIds) }
+        withContext(NonCancellable) { deleteTracks(app.db, app.settings.grid, trackIds) }
         showMessage(resources.getQuantityString(R.plurals.tracks_deleted, trackIds.size, trackIds.size))
     }
 
@@ -87,7 +87,7 @@ class TracksActivity : ComponentActivity() {
                     continue
                 }
                 val name = gpx.name ?: fileName(uri)
-                if (importTrack(app.db, "gpx-", gpx.points, Source.GPX_IMPORT, name)) points += gpx.points.size
+                if (importTrack(app.db, app.settings.grid, "gpx-", gpx.points, Source.GPX_IMPORT, name)) points += gpx.points.size
                 else duplicates++
             } catch (e: Exception) {
                 Log.w("TracksActivity", "GPX import failed: $uri", e)

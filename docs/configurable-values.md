@@ -4,22 +4,30 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 ## Already configurable by the user
 
-| Value | Where | Default | Persisted | Notes |
-| --- | --- | --- | --- | --- |
-| Fog opacity | Settings → Advanced slider (0–100 %, steps of 5); `SharedPreferences` `ui` → `fogOpacity` | 70 % | Yes, across sessions | Scales all fog, including `DENSITY`'s partial fog. Recalculates nothing |
-| Download zoom range | Range slider in the download screen's zoom sheet (`ui/DownloadScreen.kt`) | 13–16 | No, per download | Between 0 and `IGN_MAX_ZOOM`; the slider can't hold an invalid range |
-| Areas to download | Drawn freehand | — | In `downloaded_area` | — |
+Settings values live in `AppSettings` (`core/Settings.kt`: defaults, closed option lists and the overrides of the two grouping switches) and are stored in `SharedPreferences` `ui` by `FogHikeApp` (decision 0011). Stored values outside the lists fall back to the default. Placement agreed with the author on 2026-10-24.
 
-`ui` also stores `askedStartup` and `askedBackground`: internal flags so permission requests aren't repeated. Not preferences.
+| Value | Where | Options | Default | Reprocess | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Open the map in | Settings → Map; `startMode` | Free, Follow, Compass | Free | No | Applied after the first style load if location is available. The my location button still cycles; a long press picks a mode |
+| Battery saver | Settings → Map; `batterySaver` | On/off | Off | No | GPS every 15 s and trail refresh 30 s. While on, the GPS interval row is hidden |
+| Fog opacity | Settings → Advanced slider (0–100 %, steps of 5); `fogOpacity` | — | 70 % | No | Scales all fog, including `DENSITY`'s partial fog |
+| Cell size | Settings → Advanced; `cellSize` | 10, 25, 50, 100 m | 25 m | Yes, when leaving Settings | Part of `RevealGrid` (`geo/Grid.kt`) |
+| Reveal radius | Settings → Advanced; `radiusFactor` | 1.2×, 2×, 3× the cell | 1.2× (30 m) | Yes, when leaving Settings | Also the GPS accuracy threshold of `isAccurate` |
+| Fog mode | Settings → Advanced; `fogMode` | `DENSITY` (thinner the more explored), `ANY_CELL` | `DENSITY` | No | See [0001](decisions/0001-low-zoom-fog-density.md) |
+| Slow phone | Settings → Advanced; `slowPhone` | On/off | Off | No | Fog detail 8 px, at most 1,500 fog pieces, trail refresh 30 s. While on, the fog detail row is hidden |
+| Fog detail | Settings → Advanced; `fogDetail` | High 2 px, Medium 4 px, Low 8 px | 4 px | No | `minPixels` of `lodLevelFor`: minimum on-screen cell size before a coarser level |
+| GPS interval | Settings → Advanced; `gpsInterval` | 2, 5, 10, 30 s | 5 s | No | Read when exploring starts |
+| Zoom when centering on you | Settings → Advanced; `userZoom` | 12–17 | 14 | No | At startup and when the my location button starts following from Free |
+| Recent trail | Settings → Advanced; `showTrail` | On/off | On | No | When on, shows the three rows below |
+| Trail duration | Settings → Advanced; `trailMinutes` | 15, 30, 60, 120 min | 60 min | No | The design doc's `trailMinutes` |
+| Trail color | Settings → Advanced; `trailColor` | Orange `#ff7a1a`, yellow `#ffd400`, pink `#ff40c0`, cyan `#00e5ff` | Orange | No | No red: that is the record button |
+| Trail width | Settings → Advanced; `trailWidth` | 2, 4, 6 px | 4 px | No | — |
+| Download zoom range | Range slider in the download screen's zoom sheet; remembered in `downloadMinZoom` / `downloadMaxZoom` | Between 0 and `IGN_MAX_ZOOM` | Last used (13–16 the first time) | No | — |
+| Areas to download | Drawn freehand | — | — | — | In `downloaded_area` |
 
-## Designed for Settings (`AppSettings` table, not implemented)
+`ui` also stores `askedStartup`, `askedBackground`, `helpSeenDownload` and `cellsStale` (cells not yet rebuilt for the saved cell size and radius): internal flags, not preferences.
 
-| Value | Planned options | Default | Reprocess | Current constant |
-| --- | --- | --- | --- | --- |
-| Cell size | 10, 25, 50 or 100 m | 25 m | Yes | `CELL_SIZE_METERS` (`geo/Grid.kt`) |
-| Reveal radius | 1.2×, 2× or 3× the cell | 1.2× (30 m) | Yes | `REVEAL_RADIUS_METERS` (`geo/Grid.kt`); also the GPS accuracy threshold of `isAccurate` |
-| Trail duration | Minutes (list to be defined) | 60 min | No | `TRAIL_DURATION_MS` (`ui/TrailLayer.kt`); the design doc calls it `trailMinutes` |
-| User alias | Text | — | No | Asked on the first NFC send |
+Not exposed, decided on 2026-10-24: the tile limit per download (`MAX_TILES_PER_DOWNLOAD`, below), because it protects the phone's storage and the IGN server. Still to come: the user alias, asked on the first NFC send.
 
 ## Code constants
 
@@ -27,12 +35,9 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 | Constant | File | Value | Effect | Reprocess | Setting? |
 | --- | --- | --- | --- | --- | --- |
-| `FOG_MODE` | `core/FogCells.kt` | `DENSITY` | How coarse cells are drawn: `ANY_CELL` (clear if anything inside is revealed) or `DENSITY` (partial fog by explored share). See [0001](decisions/0001-low-zoom-fog-density.md) | No | Maybe: only if more than one mode survives testing |
 | `fogDensity` (formula) | `geo/Fog.kt` | Logarithmic | Fog left on a coarse cell given `revealedCount` | No | No (maybe a "contrast" knob) |
-| `minPixels` of `lodLevelFor` | `geo/Grid.kt` (parameter default) | 4 px | Minimum on-screen cell size before switching to a coarser level. Fewer pixels = more faithful trace when zoomed out, more rectangles | No | Maybe ("fog detail") |
 | `LOD_FACTOR` | `geo/Grid.kt` | 8 | Each detail level is 8× the previous one | Yes (coarse cells) | No |
 | `LOD_LEVELS` | `geo/Grid.kt` | 4 | Levels: 25 m, 200 m, 1.6 km, 12.8 km | Yes (coarse cells) | No |
-| `MAX_FOG_RECTS` | `core/FogCells.kt` | 5,000 | Above it, a coarser level is used. Protects old phones | No | Maybe ("slow phone" mode) |
 | `FOG_TEXTURE_SIZE` | `ui/FogLayer.kt` | 256 px | Noise texture size; repetition shows at low zoom (`PLAN.md`) | No | No |
 | Texture colors and alpha | `fogTexture` in `ui/FogLayer.kt` (inline numbers) | Blue-grey to white, opaque (the fog opacity setting does the thinning) | Fog look | No | Maybe (fog theme, with the animated fog in `PLAN.md`) |
 | Computation margin | `Box.expanded()` in `geo/Grid.kt` | One screen per side (3×3) | How far the map can move without recomputing fog | No | No |
@@ -41,27 +46,21 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 | Constant | File | Value | Effect | Setting? |
 | --- | --- | --- | --- | --- |
-| `TRAIL_DURATION_MS` | `ui/TrailLayer.kt` | 1 h | How long the trail stays before fully fading | Yes (already planned) |
-| `TRAIL_REFRESH_MS` | `ui/TrailLayer.kt` | 10 s | How often the trail is redrawn with the screen on | No |
-| `TRAIL_COLOR` | `ui/TrailLayer.kt` | `#ff7a1a` (orange) | Trail color | Maybe |
-| Trail width | `ui/TrailLayer.kt` (`lineWidth(4f)`) | 4 px | — | Maybe, with the color |
-| Show trail | — (always on) | Yes | — | Maybe (on/off) |
-| Position mode | `showUserLocation` in `ui/MainActivity.kt` (`RenderMode.COMPASS`, `CameraMode.NONE`) | Compass, camera doesn't follow | Arrow towards where the phone points | Maybe (follow user / rotate map) |
+| `trailRefreshMs` | `core/Settings.kt` | 10 s, 30 s with slow phone or battery saver | How often the trail is redrawn with the screen on | Only through the two switches |
+| Position marker | `showUserLocation` in `ui/MainActivity.kt` (`RenderMode.COMPASS`) | Dot with an arrow towards where the phone points | — | No (a red arrow is planned in `PLAN.md`) |
 
 ### GPS tracking
 
 | Constant | File | Value | Effect | Setting? |
 | --- | --- | --- | --- | --- |
-| `INTERVAL_MS` | `tracking/TrackingService.kt` | 5 s | How often the service requests a location. Shorter = finer trail, more battery | Maybe ("battery saver") |
 | GPS priority | `TrackingService.kt` (`PRIORITY_HIGH_ACCURACY`) | High accuracy | Without it points exceed the accuracy radius and reveal nothing | No |
-| Interval when checking location settings | `ensureLocationOn` in `ui/MainActivity.kt` (inline `5_000`) | 5 s | Only used to ask the system to turn location on; should reuse `INTERVAL_MS` | No |
+| Interval when checking location settings | `ensureLocationOn` in `ui/MainActivity.kt` (inline `5_000`) | 5 s | Only used to ask the system to turn location on; could reuse the GPS interval setting | No |
 | Accuracy threshold | `isAccurate` in `core/Exploration.kt` | = reveal radius | Less accurate points are stored but reveal nothing | Not on its own (follows the radius) |
 
 ### Map and camera
 
 | Constant | File | Value | Effect | Setting? |
 | --- | --- | --- | --- | --- |
-| `USER_ZOOM` | `ui/MainActivity.kt` | 14 | Zoom when centering on the user at startup and when the my location button starts following | Maybe |
 | `CAMERA_TRANSITION_MS` | `ui/MainActivity.kt` | 750 ms | Camera animation when the my location button changes mode | No |
 | `BASE_MAP_MIN_ZOOM` | `ui/MapStyle.kt` | 5 | Minimum zoom; there is no base map below | No |
 | `BASE_MAP_MAX_ZOOM` | `ui/MapStyle.kt` | 9 | Highest zoom of the bundled base map; overzoomed above. Must match `tools/build_spain_mbtiles.py` | No |
@@ -73,9 +72,8 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 | Constant | File | Value | Effect | Setting? |
 | --- | --- | --- | --- | --- |
-| Default zooms | `ui/DownloadActivity.kt` (`zoom` initial value) | 13–16 | Initial range of the zoom slider | Maybe (remember the last ones used) |
 | `IGN_MAX_ZOOM` | `tiles/TileDownloader.kt` | 19 | Highest zoom IGN serves | No |
-| `MAX_TILES_PER_DOWNLOAD` | `tiles/TileDownloader.kt` | 20,000 | Tile limit per download | Maybe (advanced; protects storage and the IGN server) |
+| `MAX_TILES_PER_DOWNLOAD` | `tiles/TileDownloader.kt` | 20,000 | Tile limit per download | No (decided 2026-10-24: protects storage and the IGN server) |
 | `AREA_PICK_ZOOM` | `ui/DownloadActivity.kt` | 11 | Zoom when opening the download screen | No |
 | `MIN_STROKE_STEP_PX` | `ui/DownloadActivity.kt` | 12 px | Minimum distance between points when drawing an area | No |
 | Drawing colors | `ui/DownloadActivity.kt` | Yellow `#ffcc00`, 3 px | Look of drawn areas | No |

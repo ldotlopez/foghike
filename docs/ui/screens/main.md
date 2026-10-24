@@ -63,7 +63,7 @@ A Material 3 `AssistChip` at the top left, below the status bar.
 
 - Spacing is tight (4 dp between FAB and pill, 8 dp screen margin) so the FAB, the handle and four 56 dp icons fit a 360 dp wide phone.
 - Every icon button is at least 56 dp. The default Material 3 icon buttons are 48 dp, so they get an explicit size.
-- Each one has a `contentDescription` and a tooltip on long press (`TooltipBox` + `PlainTooltip`).
+- Each one has a `contentDescription` and a tooltip on long press (`TooltipBox` + `PlainTooltip`), except my location, whose long press opens its mode menu.
 - The record/stop pair (● / ■) reads as "recording your route". Not exploring: `fiber_manual_record` tinted with the error color (red) on the regular FAB container, so it can't be mistaken for the blue, containerless user-position dot. Exploring: `stop` on the error container color, so the state can be seen at a glance.
 - **Collapsing.** The toolbar collapses by itself when exploring starts: only the Explore FAB (now Stop), the handle and the my location button stay visible, so the map is as free as possible while walking. My location stays because re-centering is what a walker needs after dragging the map.
   - The handle is the pill's first button, next to the FAB: `more_horiz` when collapsed (expands), `close` when expanded (collapses again). Same tooltip rules as the other buttons.
@@ -80,11 +80,12 @@ The last button of the toolbar pill (a `MapIconButton`, pinned: visible also whe
 | Follow (north up) | `my_location` | `TRACKING` | Compass |
 | Compass (map rotates with the phone) | `explore` | `TRACKING_COMPASS` | Follow |
 
-- **Follow** centers the map on the user at `USER_ZOOM` and keeps it centered as they move.
+- **Follow** centers the map on the user at the "Zoom when centering on you" setting (14 by default) and keeps it centered as they move.
 - Dragging the map leaves follow mode. MapLibre does this by itself (`OnCameraTrackingChangedListener.onCameraTrackingDismissed`), and the button goes back to Free.
 - Leaving Compass resets the bearing to north.
 - The screen opens in Free mode, centered on the user once, as today. The mode is not stored.
 - Without location permission, a tap starts the same permission request as the first launch. With no fix yet, a Snackbar says "Waiting for your location…".
+- **Long press** opens a `DropdownMenu` to pick any of the three modes directly (icon, name, radio button on the current one); the same permission and fix checks apply to Follow and Compass. Because the long press is taken, this button has no tooltip: the menu names the modes. Screen readers get the long-press action as "Choose location mode". The mode the map opens in is a setting (`docs/ui/screens/settings.md`).
 - Following moves the camera on every GPS fix, and each camera idle refreshes the fog for the viewport. That is allowed (viewport only, off the main thread), but it is a new recalculation trigger: add it to `docs/recalculations.md` when implementing it.
 
 ### Snackbar

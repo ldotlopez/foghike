@@ -30,6 +30,7 @@ import com.cuarentaydos.foghike.R
 import com.cuarentaydos.foghike.geo.LatLon
 import com.cuarentaydos.foghike.geo.tilesFor
 import com.cuarentaydos.foghike.tiles.DownloadWorker
+import com.cuarentaydos.foghike.tiles.IGN_MAX_ZOOM
 import com.cuarentaydos.foghike.tiles.MAX_TILES_PER_DOWNLOAD
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
@@ -88,7 +89,7 @@ class DownloadActivity : ComponentActivity() {
 
     // Compose state: changing these redraws the parts of the screen that show them.
     private val areas = mutableStateListOf<List<LatLon>>()
-    private var zoom by mutableStateOf(13..16)
+    private var zoom by mutableStateOf(13..16) // the last range used, read in onCreate
     private var tiles by mutableStateOf<Int?>(null)
     private var zoomSheetOpen by mutableStateOf(false)
     private var progress by mutableStateOf<DownloadProgress?>(null)
@@ -104,6 +105,8 @@ class DownloadActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val minZoom = prefs.getInt("downloadMinZoom", 13).coerceIn(0, IGN_MAX_ZOOM)
+        zoom = minZoom..prefs.getInt("downloadMaxZoom", 16).coerceIn(minZoom, IGN_MAX_ZOOM)
         MapLibre.getInstance(this)
         mapView = MapView(this) // driven by the activity lifecycle, placed on screen by Compose
         mapView.onCreate(savedInstanceState)
@@ -142,7 +145,11 @@ class DownloadActivity : ComponentActivity() {
                     snackbar = snackbar,
                     helpFirst = helpFirst,
                     onHelpClosed = { prefs.edit().putBoolean("helpSeenDownload", true).apply() },
-                    onZoom = { zoom = it; countTiles() },
+                    onZoom = {
+                        zoom = it
+                        prefs.edit().putInt("downloadMinZoom", it.first).putInt("downloadMaxZoom", it.last).apply()
+                        countTiles()
+                    },
                     onZoomSheet = { zoomSheetOpen = it },
                     onUndo = { areas.removeLastOrNull(); areasChanged() },
                     onClear = { areas.clear(); stroke = null; areasChanged() },

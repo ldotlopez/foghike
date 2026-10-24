@@ -6,6 +6,7 @@ import com.cuarentaydos.foghike.data.AppDatabase
 import com.cuarentaydos.foghike.data.MIGRATION_2_3
 import com.cuarentaydos.foghike.data.Source
 import com.cuarentaydos.foghike.data.Track
+import com.cuarentaydos.foghike.geo.RevealGrid
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -35,21 +36,34 @@ class DeleteTracksTest {
     @Test
     fun deletingATrackLeavesTheCellsOfTheOthersOnly() = runBlocking {
         val expected = memoryDb()
-        recordPoints(expected, "live-1", 0, walk, Source.LIVE)
+        recordPoints(expected, RevealGrid(), "live-1", 0, walk, Source.LIVE)
 
         val db = memoryDb()
-        importTrack(db, "gpx-", sharedWalk, Source.GPX_IMPORT, "Castellón")
-        recordPoints(db, "live-1", 0, walk, Source.LIVE)
+        importTrack(db, RevealGrid(), "gpx-", sharedWalk, Source.GPX_IMPORT, "Castellón")
+        recordPoints(db, RevealGrid(), "live-1", 0, walk, Source.LIVE)
         val imported = db.trackDao().all().first().single { it.source == Source.GPX_IMPORT }
         assertEquals("Castellón", imported.name)
 
-        deleteTracks(db, listOf(imported.trackId))
+        deleteTracks(db, RevealGrid(), listOf(imported.trackId))
 
         // Same fine and coarse cells, counts and sources as if the import never happened; the shared
         // stretch now belongs to the own recording.
         assertEquals(cells(expected), cells(db))
         assertEquals(listOf("live-1"), db.trackDao().all().first().map { it.trackId })
         assertEquals(false, db.trackPointDao().exists(imported.trackId))
+    }
+
+    @Test
+    fun rebuildingWithAnotherGridMatchesRecordingWithIt() = runBlocking {
+        val coarse = RevealGrid(50, 100.0)
+        val expected = memoryDb()
+        recordPoints(expected, coarse, "live-1", 0, walk, Source.LIVE)
+
+        val db = memoryDb()
+        recordPoints(db, RevealGrid(), "live-1", 0, walk, Source.LIVE)
+        rebuildCells(db, coarse)
+
+        assertEquals(cells(expected), cells(db))
     }
 
     @Test
