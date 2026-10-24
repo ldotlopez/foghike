@@ -112,7 +112,7 @@
     <string name="detail_low">Bajo</string>
     <string name="gps_interval">Intervalo del GPS</string>
     <string name="seconds">%1$d s</string>
-    <string name="user_zoom">Zoom al centrarte en ti</string>
+    <string name="user_zoom">Zoom al abrir el mapa</string>
     <string name="show_trail">Rastro reciente</string>
     <string name="show_trail_detail">Línea sobre el mapa por donde has pasado hace poco</string>
     <string name="trail_duration">Duración del rastro</string>

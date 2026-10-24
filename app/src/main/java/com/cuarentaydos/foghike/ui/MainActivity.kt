@@ -221,20 +221,19 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Puts the camera in [mode]; [cameraTracking] then updates [locationMode]. Coming from Free also
-     * zooms to walking level; leaving Compass turns north up.
+     * Puts the camera in [mode] at the current zoom; [cameraTracking] then updates [locationMode].
+     * Leaving Compass turns north up.
      */
     private fun setLocationMode(m: MapLibreMap, mode: LocationMode) {
         val location = m.locationComponent
         if (!location.isLocationComponentActivated) return
-        val zoom = if (locationMode == LocationMode.FREE) settings.userZoom.toDouble() else null
         when (mode) {
             LocationMode.FREE -> {
                 location.cameraMode = CameraMode.NONE
                 m.animateCamera(CameraUpdateFactory.bearingTo(0.0), CAMERA_TRANSITION_MS.toInt())
             }
-            LocationMode.FOLLOW -> location.setCameraMode(CameraMode.TRACKING, CAMERA_TRANSITION_MS, zoom, 0.0, null, null)
-            LocationMode.COMPASS -> location.setCameraMode(CameraMode.TRACKING_COMPASS, CAMERA_TRANSITION_MS, zoom, null, null, null)
+            LocationMode.FOLLOW -> location.setCameraMode(CameraMode.TRACKING, CAMERA_TRANSITION_MS, null, 0.0, null, null)
+            LocationMode.COMPASS -> location.setCameraMode(CameraMode.TRACKING_COMPASS, CAMERA_TRANSITION_MS, null, null, null, null)
         }
     }
 

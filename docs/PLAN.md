@@ -13,8 +13,6 @@
 
 ## UI
 
-- **Centering on the user must not change the zoom.** Today switching the location mode from Free to Follow/Compass (the my location button) also zooms to `userZoom` (`setLocationMode`, `ui/MainActivity.kt`). Changing the tracking mode should keep the current zoom: pass `null` as the zoom. `userZoom` (Settings → Advanced) is also used at startup (`centerOnUser`), so it stays unless that use goes too; if it ends up unused, remove it from `core/Settings.kt`, the Settings screen, strings and `docs/configurable-values.md`.
-
 - **Reorder the map toolbar: location button first, handle last.** Inside the toolbar container (`MapToolbar`, `ui/Theme.kt`) the order is today: handle (… / ✕), Maps, Tracks, Settings, location mode button (`pinned`). Move the location mode button to the first position and the handle to the last, so the … button (collapsed) and the ✕ button (expanded, returns to collapsed) both sit on the right, in the same place. Check the expand/shrink animation direction still looks right, update `docs/ui/screens/main.md` (and `download.md` if it uses the same toolbar) and re-record the Roborazzi references.
 
 - **Material 3 floating toolbar (when material3 1.5 is stable).** The map toolbars are hand-made (`MapToolbar` in `ui/Theme.kt`, decision 0007) because `HorizontalFloatingToolbar` only exists from material3 1.5, which is still beta (1.5.0-beta02 in Oct 2026). Material3 1.5 requires `compileSdk 37`, AGP ≥ 9.1, and a Compose BOM of 2026.08 or later (2026.08+ already needs `compileSdk 37`, decision 0005).

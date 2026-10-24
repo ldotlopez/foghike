@@ -84,7 +84,7 @@ The last button of the toolbar pill (a `MapIconButton`, pinned: visible also whe
 | Follow (north up) | `my_location` | `TRACKING` | Compass |
 | Compass (map rotates with the phone) | `explore` | `TRACKING_COMPASS` | Follow |
 
-- **Follow** centers the map on the user at the "Zoom when centering on you" setting (14 by default) and keeps it centered as they move.
+- **Follow** centers the map on the user, keeping the current zoom, and keeps it centered as they move. Changing mode never zooms; only opening the map uses the "Zoom when opening the map" setting.
 - Dragging the map leaves follow mode. MapLibre does this by itself (`OnCameraTrackingChangedListener.onCameraTrackingDismissed`), and the button goes back to Free.
 - Leaving Compass resets the bearing to north.
 - The screen opens in Free mode, centered on the user once, as today. The mode is not stored.
