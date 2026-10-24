@@ -19,7 +19,7 @@ Code: `ui/MainActivity.kt` (state, permissions, file picker, map) and `ui/MainSc
 │                               ╭──╮   │
 │                               │◎ │   │  my location (follow mode)
 │      ╭───────────────────╮ ╭──╰──╯   │
-│      │  🗺    ⇪    ⚙     │ │ 🥾 │    │  floating toolbar + Explore FAB
+│      │  🗺    ⇪    ⚙     │ │ ●  │    │  floating toolbar + Explore FAB
 │      ╰───────────────────╯ ╰────╯    │
 │ PNOA cedido por © IGN de España      │  IGN attribution (bottom left, one line)
 │ (navigation bar)                     │
@@ -54,14 +54,14 @@ A Material 3 `HorizontalFloatingToolbar` (Expressive, `@OptIn(ExperimentalMateri
 
 | Slot | Icon | Action | Opens |
 | --- | --- | --- | --- |
-| FAB | `hiking` / `stop` | Start / stop exploring | Permission flow on first start (unchanged) |
+| FAB | `fiber_manual_record` / `stop` | Start / stop exploring | Permission flow on first start (unchanged) |
 | 1 | `map` | Offline maps | Download screen |
 | 2 | `upload_file` | Import GPX | System file picker (multiple files) |
 | 3 | `settings` | Settings | Settings screen (Debug section only for now) |
 
 - Every icon button is at least 56 dp. The default Material 3 icon buttons are 48 dp, so they get an explicit size.
 - Each one has a `contentDescription` and a tooltip on long press (`TooltipBox` + `PlainTooltip`).
-- While exploring, the FAB uses the `stop` icon and the error container color so the state can be seen at a glance.
+- The record/stop pair (● / ■) reads as "recording your route". Not exploring: `fiber_manual_record` tinted with the error color (red) on the regular FAB container, so it can't be mistaken for the blue, containerless user-position dot. Exploring: `stop` on the error container color, so the state can be seen at a glance.
 - **Collapsing.** The toolbar collapses by itself when exploring starts: only the Explore FAB (now Stop) and a handle stay visible, so the map is as free as possible while walking.
   - The handle is a 56 dp icon button next to the FAB: `more_horiz` when collapsed (expands), `close` when expanded (collapses again). Same tooltip rules as the other buttons.
   - The handle exists only while exploring. When exploring stops, the toolbar expands and the handle goes away.
@@ -147,7 +147,7 @@ Each state has a `@Preview` and a Roborazzi reference image. The map slot is a p
 │ │ Imported 3 412 points, 2 files.  │ │
 │ └──────────────────────────────────┘ │
 │      ╭───────────────────╮ ╭────╮    │
-│      │  🗺    ⇪    ⚙     │ │ 🥾 │    │
+│      │  🗺    ⇪    ⚙     │ │ ●  │    │
 ```
 
 ## Strings
@@ -194,4 +194,4 @@ With all of them the toolbar holds four icons plus the FAB: maps, tracks, exchan
 
 ## Open questions
 
-1. **FAB icon.** `hiking` for start reads as "the hiking app" more than "start". The alternative is `play_arrow` / `stop`, clearer as an action but generic.
+None.
