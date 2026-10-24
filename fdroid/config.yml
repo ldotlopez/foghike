@@ -1,0 +1,13 @@
+# fdroidserver config for the Hike Explorer F-Droid repo on GitHub Pages, built by .github/workflows/release.yml.
+# No secrets here: the workflow decodes the keystore and passes its password in FDROID_KEYSTORE_PASS.
+repo_url: https://ldotlopez.github.io/foghike/repo
+repo_name: Hike Explorer
+repo_description: >-
+  Signed release builds of Hike Explorer, the hiking app whose map starts covered by fog that clears
+  where you have walked. Same APKs as https://github.com/ldotlopez/foghike/releases
+
+repo_keyalias: repokey
+keystore: fdroid-repo.jks
+keystorepass: {env: FDROID_KEYSTORE_PASS}
+keypass: {env: FDROID_KEYSTORE_PASS}
+keydname: CN=Hike Explorer F-Droid repo

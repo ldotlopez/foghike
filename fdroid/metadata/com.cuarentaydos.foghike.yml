@@ -1,0 +1,11 @@
+Categories:
+  - Navigation
+  - Sports & Health
+AuthorName: Luis López
+SourceCode: https://github.com/ldotlopez/foghike
+IssueTracker: https://github.com/ldotlopez/foghike/issues
+Changelog: https://github.com/ldotlopez/foghike/releases
+# Location comes from Google Play Services (fused location provider).
+AntiFeatures:
+  - NonFreeDep
+AutoName: Hike Explorer
