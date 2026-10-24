@@ -99,9 +99,10 @@ fun HelpButton(title: String, text: String, modifier: Modifier = Modifier, openF
 }
 
 /**
- * Floating toolbar over the map: [fab] on the left, then a pill of icon buttons. When [expanded] is
- * false, [content] folds away and only the handle and [pinned] stay in the pill. With
- * [onExpandedChange], a handle button opens (`more_horiz`) and closes (`close`) it.
+ * Floating toolbar over the map: [fab] on the left, then a pill of icon buttons: [pinned] first,
+ * then [content]. When [expanded] is false, [content] folds away and only [pinned] and the handle
+ * stay in the pill. With [onExpandedChange], a handle button at the right end opens (`more_horiz`)
+ * and closes (`close`) it.
  * shortcut: hand-made because Material's HorizontalFloatingToolbar needs material3 1.5 (not stable yet);
  * swap it in when it is (docs/PLAN.md).
  */
@@ -119,18 +120,19 @@ fun MapToolbar(
         fab()
         Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainer, shadowElevation = 3.dp) {
             Row {
+                pinned()
+                // Unfolds out of the handle, which stays at the right end in both states.
+                AnimatedVisibility(
+                    expanded,
+                    enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
+                    exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut(),
+                ) {
+                    Row(content = content)
+                }
                 if (onExpandedChange != null) {
                     if (expanded) MapIconButton(R.drawable.ic_close, stringResource(R.string.action_hide_toolbar), { onExpandedChange(false) })
                     else MapIconButton(R.drawable.ic_more_horiz, stringResource(R.string.action_show_toolbar), { onExpandedChange(true) })
                 }
-                AnimatedVisibility(
-                    expanded,
-                    enter = expandHorizontally(expandFrom = Alignment.Start) + fadeIn(),
-                    exit = shrinkHorizontally(shrinkTowards = Alignment.Start) + fadeOut(),
-                ) {
-                    Row(content = content)
-                }
-                pinned()
             }
         }
     }
