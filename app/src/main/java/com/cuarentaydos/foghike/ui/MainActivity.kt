@@ -167,6 +167,7 @@ class MainActivity : ComponentActivity() {
                     onImportGpx = {
                         pickGpx.launch(arrayOf("application/gpx+xml", "application/xml", "text/xml", "application/octet-stream"))
                     },
+                    onSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
                     onLocation = ::nextLocationMode,
                 )
             }
@@ -195,6 +196,8 @@ class MainActivity : ComponentActivity() {
             startupPermissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
         }
     }
+
+    private fun fogOpacity() = prefs.getInt("fogOpacity", 70) / 100f
 
     private fun hasPermission(permission: String) = checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
@@ -314,7 +317,7 @@ class MainActivity : ComponentActivity() {
         if (list == areas) return
         val firstLoad = areas == null
         areas = list
-        val opacity = prefs.getInt("fogOpacity", 70) / 100f
+        val opacity = fogOpacity()
         fog = null // its source dies with the old style
         trail = null
         m.setStyle(Style.Builder().fromJson(mapStyleJson(app.tileServer, list, onlineIgn = false))) { style ->
@@ -361,6 +364,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         mapView.onResume()
+        fog?.setOpacity(fogOpacity()) // may have changed in Settings
         lifecycleScope.launch { reloadMaps() }
     }
     override fun onPause() { mapView.onPause(); super.onPause() }

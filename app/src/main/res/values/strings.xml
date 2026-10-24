@@ -49,4 +49,9 @@
     <string name="chip_cells">%1$s revealed cells</string>
     <string name="chip_no_maps">No offline maps</string>
     <string name="help_main">The map starts covered by fog. Tap the red record button to start exploring: the fog clears around the places you walk, also with the screen off. Tap stop when you finish.\n\nThe map icon downloads satellite maps to use without a connection, and the file icon imports routes you already walked (GPX files).\n\nThe chip at the top shows the squares you have revealed and the offline maps you have.\n\nThe button above the toolbar centers the map on you and follows you; tap it again to turn the map with the compass.</string>
+    <string name="section_debug">Debug</string>
+    <string name="section_about">About</string>
+    <string name="version">Version</string>
+    <string name="percent">%1$d %%</string>
+    <string name="action_back">Back</string>
 </resources>

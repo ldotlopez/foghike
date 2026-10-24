@@ -6,7 +6,7 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 | Value | Where | Default | Persisted | Notes |
 | --- | --- | --- | --- | --- |
-| Fog opacity | Settings → Debug (screen pending: until then the stored value is used); `SharedPreferences` `ui` → `fogOpacity` | 70 % | Yes, across sessions | Scales all fog, including `DENSITY`'s partial fog. Recalculates nothing |
+| Fog opacity | Settings → Debug slider (0–100 %, steps of 5); `SharedPreferences` `ui` → `fogOpacity` | 70 % | Yes, across sessions | Scales all fog, including `DENSITY`'s partial fog. Recalculates nothing |
 | Download min zoom | Field on the download screen (`ui/DownloadScreen.kt`) | 13 | No, per download | Validated between 0 and `IGN_MAX_ZOOM` |
 | Download max zoom | Field on the download screen | 16 | No, per download | Must be ≥ min zoom |
 | Areas to download | Drawn freehand | — | In `downloaded_area` | — |

@@ -13,7 +13,7 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 │                                      │
 │ Debug                                │  section header (primary color, labelLarge)
 │ ┌──────────────────────────────────┐ │
-│ │ Fog opacity                 70 % │ │  ListItem: headline + trailing value
+│ │ Fog opacity                 70 % │ │  ListItem: headline row with the value at the end
 │ │ ●━━━━━━━━━━━━━━━━━━━━━○───────── │ │  Slider 0–100, step 5
 │ │ ┌──────────────────────────────┐ │ │
 │ │ │ ░░▒▒ IGN sample + fog ▒▒░░   │ │ │  fog preview card, updates live
@@ -36,7 +36,7 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 
 | Section | Setting | Control | Storage | Default |
 | --- | --- | --- | --- | --- |
-| Debug | Fog opacity | `Slider` 0–100 %, steps of 5, value shown as trailing text | `SharedPreferences` `ui` → `fogOpacity` (unchanged) | 70 % |
+| Debug | Fog opacity | `Slider` 0–100 %, steps of 5, value at the end of the headline row (a trailing slot would center it on the whole item, preview included) | `SharedPreferences` `ui` → `fogOpacity` (unchanged) | 70 % |
 | About | Version | Read-only `ListItem` with `versionName (versionCode)` from `packageManager.getPackageInfo` (`BuildConfig` is off in this project) | — | — |
 
 - Changes are saved as the slider moves, with no "Save" button. Android settings screens apply changes immediately.
@@ -48,7 +48,7 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 
 Settings covers the map, so a small card under the opacity slider shows the effect while moving it.
 
-- **Background:** one IGN orthophoto tile (256 × 256, zoom 15–16, a hiking area with paths and trees), bundled as `res/drawable-nodpi/fog_preview_sample.jpg` (a few tens of KB). It is fetched once from `IGN_TILE_URL` when implementing this, and committed.
+- **Background:** one IGN orthophoto tile, bundled as `res/drawable-nodpi/fog_preview_sample.jpg` (19 KB): zoom 16, column 32029, row 24621, pine wood with clearings near Cercedilla (Sierra de Guadarrama), chosen for its contrast. Fetched once from `IGN_TILE_URL`.
 - **Fog:** the same texture the map uses, `fogTexture(FOG_TEXTURE_SIZE)` from `FogLayer.kt`, turned into an `ImageBitmap` once and drawn over the background with alpha = opacity. It reuses the code, so the preview matches the map.
 - Shown at full density (as unexplored fog), not the partial density of low zoom levels.
 - The IGN attribution goes under the card (`IgnAttribution()`), as on every screen that shows IGN imagery.
@@ -78,11 +78,10 @@ Each state has a `@Preview` and a Roborazzi reference image.
 
 ## Strings
 
-New keys. `fog_opacity` is kept (now the setting's headline).
+New keys. `fog_opacity` is kept (now the setting's headline), and the title reuses `action_settings`.
 
 | Key | English | Spanish |
 | --- | --- | --- |
-| `settings_title` | Settings | Ajustes |
 | `section_debug` | Debug | Depuración |
 | `section_about` | About | Acerca de |
 | `version` | Version | Versión |

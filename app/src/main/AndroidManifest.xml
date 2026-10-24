@@ -38,6 +38,11 @@
             android:screenOrientation="portrait"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+
         <service
             android:name=".tracking.TrackingService"
             android:exported="false"

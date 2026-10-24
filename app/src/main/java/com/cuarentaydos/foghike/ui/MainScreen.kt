@@ -63,6 +63,7 @@ fun MainScreen(
     onTrack: () -> Unit,
     onMaps: () -> Unit,
     onImportGpx: () -> Unit,
+    onSettings: () -> Unit,
     onLocation: () -> Unit,
 ) {
     // Collapsed while exploring, so the map is as free as possible; reset whenever exploring starts or stops.
@@ -96,6 +97,7 @@ fun MainScreen(
             ) {
                 MapIconButton(R.drawable.ic_map, stringResource(R.string.action_maps), onMaps)
                 MapIconButton(R.drawable.ic_upload_file, stringResource(R.string.action_import_gpx), onImportGpx)
+                MapIconButton(R.drawable.ic_settings, stringResource(R.string.action_settings), onSettings)
             }
             // A tight translucent background keeps the attribution readable over bright imagery.
             Surface(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f), shape = MaterialTheme.shapes.extraSmall) {
@@ -190,7 +192,7 @@ internal fun MainPreview(
 ) = FogHikeTheme {
     val snackbar = remember { SnackbarHostState() }
     if (snackbarText != null) LaunchedEffect(Unit) { snackbar.showSnackbar(snackbarText) }
-    MainScreen({ MapPlaceholder() }, 1234, mapCount, tracking, locationMode, snackbar, {}, {}, {}, {})
+    MainScreen({ MapPlaceholder() }, 1234, mapCount, tracking, locationMode, snackbar, {}, {}, {}, {}, {})
 }
 
 @Preview(showSystemUi = true) @Composable internal fun MainDefault() = MainPreview()

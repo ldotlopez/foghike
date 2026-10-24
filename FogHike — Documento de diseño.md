@@ -216,7 +216,7 @@ El PoC tiene dos pantallas propias y usa el selector de ficheros del sistema par
 | Principal | Mapas descargados bajo la niebla, etiqueta con celdas reveladas y mapas, posición y rastro | Iniciar o parar la exploración (se pliega la barra); abrir la descarga de mapas; importar GPX; centrar y seguir la posición, con brújula; ayuda `(?)`. Detalle en `docs/ui/screens/main.md` |
 | Descarga de mapas | Mapa centrado en el usuario, texto de ayuda, campos de zoom mínimo y máximo y progreso de la descarga | Dibujar áreas a mano alzada / mover el mapa; limpiar áreas; descargar |
 | Selector de ficheros | Selector del sistema | Elegir uno o varios GPX a importar |
-| Ajustes | Radio de revelado y tamaño de celda (listas cerradas) y alias | Pendiente: cambiarlos y guardar, lo que lanza el reprocesamiento tras confirmar |
+| Ajustes | Hoy: sección Depuración (opacidad de la niebla con vista previa) y versión. Pendiente: radio de revelado y tamaño de celda (listas cerradas) y alias | Ajustar la opacidad (se guarda al momento). Pendiente: cambiar radio, celda y alias y guardar, lo que lanza el reprocesamiento tras confirmar. Detalle en `docs/ui/screens/settings.md` |
 
 El intercambio por NFC añadiría una pantalla de contacto y confirmación (dirección, «Todas / Seleccionar» y alias propio) y un botón en la pantalla principal para resaltar las celdas importadas (ver «Intercambio de áreas por NFC»).
 
