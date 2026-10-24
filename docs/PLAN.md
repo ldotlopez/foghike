@@ -22,9 +22,3 @@
 
 - **Export / import data and settings (idea).** Let the user save the database (tracks, points, revealed cells) and the settings to a file and restore them, e.g. to move to another phone or keep a backup. An imported file is untrusted: limit its size and validate it as for exchange files.
 - **Cycling profile (idea).** A set of settings tuned for riding a bike (e.g. GPS interval, reveal radius, trail), chosen when starting a track (walking or cycling).
-
-## Release
-
-- **Signed release builds in GitHub Actions (idea).** Store the signing keystore and its passwords as GitHub secrets and build the signed release APK in the workflow that runs when a tag is pushed; the workflow must be able to run on its own (also manually) without local files. That APK is the release version, not debug.
-  - Debug builds on the test phone: Android never installs an unsigned APK, but debug builds don't need the release key — Gradle signs them with the local debug keystore (`~/.android/debug.keystore`), so `./gradlew installDebug` keeps working.
-  - Done: debug builds use `applicationIdSuffix = ".debug"` and the name "Hike Explorer (debug)", so release and debug install side by side.

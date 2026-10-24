@@ -14,8 +14,9 @@ android {
         applicationId = "com.cuarentaydos.foghike"
         minSdk = 31 // Android 12: old phones are used as hiking GPS units
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1"
+        // The release workflow sets both (run number, tag without "v"); local builds keep these defaults.
+        versionCode = System.getenv("VERSION_CODE")?.toInt() ?: 1
+        versionName = System.getenv("VERSION_NAME") ?: "0.1"
     }
 
     buildFeatures {

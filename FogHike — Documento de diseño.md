@@ -263,7 +263,7 @@ Convenciones de desarrollo:
 - El servidor de tiles y la lectura de MBTiles son código de Android y no se comparten: en iOS el mapa se alimentaría de otra forma, por ejemplo con PMTiles.
 - No se crean el módulo `shared` ni interfaces de repositorio hasta que exista la versión iOS: los DAOs ya hacen de interfaz.
 
-**Distribución.** La app se reparte a los usuarios de prueba (menos de 100) como APK firmado, instalado a mano. Todas las versiones deben firmarse con la misma clave, guardada fuera del repositorio y con copia de seguridad: si se pierde, los probadores tendrán que desinstalar, y perderían sus datos. Cada tag que se sube a GitHub genera una release con el APK firmado, solo para ARM; la clave va en los secretos del repositorio. Los teléfonos necesitan Google Play Services, del que dependen la ubicación y Nearby Connections.
+**Distribución.** La app se reparte a los usuarios de prueba (menos de 100) como APK firmado, instalado a mano. Todas las versiones deben firmarse con la misma clave, guardada fuera del repositorio y con copia de seguridad: si se pierde, los probadores tendrán que desinstalar, y perderían sus datos. Cada tag que se sube a GitHub genera una release con el APK firmado, solo para ARM; también se puede lanzar a mano desde GitHub Actions indicando el tag, que se crea al publicar; la clave va en los secretos del repositorio. Las mismas APK se publican en un repositorio F-Droid propio en GitHub Pages (`https://ldotlopez.github.io/foghike/repo`), con las tres últimas versiones, para instalar y actualizar desde la app F-Droid; el catálogo oficial de F-Droid queda fuera porque rechaza Google Play Services. Los teléfonos necesitan Google Play Services, del que dependen la ubicación y Nearby Connections.
 
 ## Compatibilidad con Android 12
 
@@ -322,7 +322,7 @@ El siguiente paso lógico es generar el mapa general y probar la app en un dispo
 - Interfaz en inglés con traducción al castellano (`values-es`).
 - Seguimiento con servicio en primer plano dentro del PoC.
 - Migración destructiva solo hasta repartir la primera versión; después, migraciones reales.
-- Distribución: APK firmado directo, siempre con la misma clave.
+- Distribución: APK firmado directo, siempre con la misma clave, desde GitHub Releases y un repositorio F-Droid propio.
 - Niebla por capas: cubre toda la pantalla; se calcula solo para la ventana visible con margen y con el nivel de detalle que corresponde al zoom.
 - Persistencia: Room KMP (≥ 2.7) en lugar de migrar a SQLDelight; `data/` se escribe compatible desde hoy.
 - Interfaz: Jetpack Compose con Material 3 y paleta fija de marca (no color dinámico); el mapa sigue como vista nativa dentro de `AndroidView`. Solo vertical. Barras flotantes con iconos en las pantallas de mapa, ayuda en un `(?)` y capturas de referencia con Roborazzi. Compose Multiplatform o SwiftUI se decide al portar a iOS.

@@ -1,0 +1,61 @@
+# Rebuilds the F-Droid repo (fdroid/) from the last 3 GitHub releases and deploys it to GitHub Pages,
+# after every successful Release run or by hand (Actions tab) to republish.
+# workflow_run always runs from main, the only ref the github-pages environment deploys from.
+name: F-Droid repo
+
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  fdroid:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}repo/
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install fdroidserver
+        run: pip install fdroidserver==2.4.5
+
+      # The repo is rebuilt from the releases every time, so nothing is kept between runs.
+      - name: Download the last 3 release APKs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p fdroid/repo
+          for tag in $(gh release list --limit 3 --json tagName --jq '.[].tagName'); do
+            gh release download "$tag" --pattern '*.apk' --dir fdroid/repo
+          done
+
+      - name: Build F-Droid repo
+        working-directory: fdroid
+        env:
+          FDROID_KEYSTORE_BASE64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
+          FDROID_KEYSTORE_PASS: ${{ secrets.FDROID_KEYSTORE_PASS }}
+        run: |
+          test -n "$FDROID_KEYSTORE_BASE64" || { echo "Missing secret FDROID_KEYSTORE_BASE64"; exit 1; }
+          echo "$FDROID_KEYSTORE_BASE64" | base64 -d > fdroid-repo.jks
+          chmod 600 config.yml # fdroid refuses a config others can read
+          fdroid update
+          mkdir -p ../site && mv repo ../site/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

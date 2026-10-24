@@ -1,0 +1,5 @@
+The map starts covered by fog that clears around the places you have walked, like in a strategy game. Fog is revealed from live GPS while you explore, or by importing GPX routes you walked in the past.
+
+Base maps are IGN (Spain) satellite imagery, downloaded for offline use. PNOA cedido por © Instituto Geográfico Nacional de España.
+
+Requires Google Play Services for location.

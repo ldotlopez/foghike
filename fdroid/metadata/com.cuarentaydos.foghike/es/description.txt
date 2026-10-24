@@ -1,0 +1,5 @@
+El mapa empieza cubierto de niebla, que se despeja alrededor de los lugares por los que has caminado, como en un juego de estrategia. La niebla se revela con el GPS en directo mientras exploras, o importando rutas GPX que recorriste en el pasado.
+
+Los mapas base son ortofotos del IGN (España), descargadas para usarlas sin conexión. PNOA cedido por © Instituto Geográfico Nacional de España.
+
+Necesita Google Play Services para la ubicación.
