@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "a5101a20633d56d7d6b42d2c786d9785",
+    "identityHash": "1397a8d46e842dd4704f366e1d891f05",
     "entities": [
       {
         "tableName": "revealed_cell",
@@ -67,7 +67,7 @@
       },
       {
         "tableName": "track_point",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`trackId` TEXT NOT NULL, `sequenceIndex` INTEGER NOT NULL, `lat` REAL NOT NULL, `lon` REAL NOT NULL, `timestamp` INTEGER, `source` TEXT NOT NULL, PRIMARY KEY(`trackId`, `sequenceIndex`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`trackId` TEXT NOT NULL, `sequenceIndex` INTEGER NOT NULL, `lat` REAL NOT NULL, `lon` REAL NOT NULL, `timestamp` INTEGER, `accuracy` REAL, `source` TEXT NOT NULL, PRIMARY KEY(`trackId`, `sequenceIndex`))",
         "fields": [
           {
             "fieldPath": "trackId",
@@ -97,6 +97,11 @@
             "fieldPath": "timestamp",
             "columnName": "timestamp",
             "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "accuracy",
+            "columnName": "accuracy",
+            "affinity": "REAL"
           },
           {
             "fieldPath": "source",
@@ -188,7 +193,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a5101a20633d56d7d6b42d2c786d9785')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1397a8d46e842dd4704f366e1d891f05')"
     ]
   }
 }

@@ -26,6 +26,8 @@ import com.cuarentaydos.foghike.data.DownloadedArea
 import com.cuarentaydos.foghike.data.Source
 import com.cuarentaydos.foghike.geo.Box
 import com.cuarentaydos.foghike.geo.CELL_SIZE_METERS
+import com.cuarentaydos.foghike.geo.LatLon
+import com.cuarentaydos.foghike.geo.trackFingerprint
 import com.cuarentaydos.foghike.gpx.parseGpx
 import com.cuarentaydos.foghike.recordPoints
 import com.cuarentaydos.foghike.tracking.TrackingService
@@ -43,7 +45,6 @@ import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
-import java.util.UUID
 
 private const val USER_ZOOM = 14.0
 
@@ -221,20 +222,31 @@ class MainActivity : ComponentActivity() {
     private fun importGpx(uris: List<Uri>) = lifecycleScope.launch {
         var points = 0
         var failed = 0
+        var duplicates = 0
         for (uri in uris) {
             try {
                 val parsed = withContext(Dispatchers.IO) {
                     contentResolver.openInputStream(uri)?.use { parseGpx(it) }.orEmpty()
                 }
-                recordPoints(app.db, "gpx-${UUID.randomUUID()}", 0, parsed, Source.GPX_IMPORT)
+                // Same coordinates, same id: a route already imported is skipped instead of duplicated.
+                val trackId = "gpx-" + trackFingerprint(parsed.map { LatLon(it.lat, it.lon) })
+                if (app.db.trackPointDao().exists(trackId)) {
+                    duplicates++
+                    continue
+                }
+                recordPoints(app.db, trackId, 0, parsed, Source.GPX_IMPORT)
                 points += parsed.size
             } catch (e: Exception) {
                 Log.w("MainActivity", "GPX import failed: $uri", e)
                 failed++
             }
         }
-        val message = getString(R.string.gpx_imported, points, uris.size - failed) +
-            if (failed > 0) " " + getString(R.string.gpx_failed, failed) else ""
+        val imported = uris.size - failed - duplicates
+        val message = listOfNotNull(
+            getString(R.string.gpx_imported, points, imported).takeIf { imported > 0 },
+            getString(R.string.gpx_duplicates, duplicates).takeIf { duplicates > 0 },
+            getString(R.string.gpx_failed, failed).takeIf { failed > 0 },
+        ).joinToString(" ")
         Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
     }
 

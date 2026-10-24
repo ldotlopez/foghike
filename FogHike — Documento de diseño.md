@@ -65,7 +65,7 @@ La base de datos local guarda tres tablas implementadas; otras dos están diseñ
 | Tabla | Clave | Campos | Para qué sirve | Estado |
 | --- | --- | --- | --- | --- |
 | `revealed_cell` | `cellId` (`tamaño:fila:columna`) | `cellSize`, `gridRow`, `gridCol`, `firstRevealedAt`, `source` (`live`, `gpx_import`, `gmaps_import`); índice por tamaño, fila y columna | Celdas reveladas, de la rejilla base y de los niveles de detalle, y su origen | Implementada |
-| `track_point` | `trackId` + `sequenceIndex` | `lat`, `lon`, `timestamp` (opcional), `source` | Puntos GPS crudos, necesarios para reprocesar (el origen permite procesar primero los propios) | Implementada |
+| `track_point` | `trackId` + `sequenceIndex` | `lat`, `lon`, `timestamp` (opcional), `accuracy` (metros, opcional), `source` | Puntos GPS crudos, necesarios para reprocesar (el origen permite procesar primero los propios). El `trackId` de un GPX es su huella de coordenadas | Implementada |
 | `downloaded_area` | `id` autogenerado | nombre, límites (lat/lon mínimas y máximas), zoom mínimo y máximo, nombre del fichero `.mbtiles`, fecha de descarga | Registro de las áreas de mapa descargadas | Implementada |
 | `AppSettings` | — | `revealRadiusMeters`, `cellSizeMeters`, `userAlias` | Ajustes configurables por el usuario; el alias se envía con las rutas compartidas | Solo diseñada |
 | `Track` | `trackId` | `source`, `createdAt`, `fingerprint`, `senderAlias` (solo `nfc_import`) | Describir cada ruta, evitar importarla dos veces y saber de quién viene | Solo diseñada |
@@ -83,6 +83,8 @@ El usuario elige en un mapa general de España qué zonas quiere llevar sin cone
 3. El usuario fija el rango de zoom (13 a 16 por defecto) y pulsa el botón de descarga.
 4. Por cada polígono se calculan solo los tiles que lo tocan (esquina dentro, vértice dentro o borde que cruza), no todos los de su rectángulo envolvente, en el esquema Web Mercator estándar y se piden al servicio WMTS de ortofotos del IGN (capa `OI.OrthoimageCoverage`, matriz `GoogleMapsCompatible`, JPEG, hasta zoom 19).
 5. Los tiles se escriben en un `.mbtiles` conforme al estándar y se registra el área en la base de datos.
+
+La descarga corre en WorkManager (el planificador de tareas de Android), no en la pantalla: sigue aunque el usuario salga, espera a tener conexión y se reinicia si Android mata el proceso. Las áreas se descargan de una en una, en orden, con una notificación de progreso que tiene un botón Cancelar (cancela también las que esperan detrás). El fichero se escribe como `.part` y solo se renombra y registra al terminar, así que una descarga cancelada o fallida no deja nada en disco. La pantalla de descarga muestra el progreso al volver a ella. Si el proceso muere a mitad, el área vuelve a empezar desde cero.
 
 Notas de diseño:
 
@@ -109,6 +111,7 @@ La pantalla principal muestra los mapas bajo una niebla que cubre toda la pantal
 - **Niebla.** Se calcula solo para la ventana visible más un margen de una pantalla por cada lado, nunca para España entera, así que su coste depende del tamaño de la pantalla y no de cuánto se haya explorado. Las celdas sin revelar de cada fila se agrupan en tramos, y las filas consecutivas sin nada revelado se funden en un solo rectángulo; cada fila cuesta unos pocos rectángulos y no un polígono por celda.
 - **Nivel de detalle según el zoom.** Se usa el nivel más fino cuyas celdas miden al menos 4 px en pantalla; con la celda de 25 m a latitudes de España sale la fina a zoom 15 o más, la de ×8 entre 12 y 14, la de ×64 entre 9 y 11 y la de ×512 a 8 o menos (ver «Niveles de detalle» en «Mecánica de revelado»). Con celdas de entre 4 y 30 px y 3×3 pantallas salen a lo sumo unas 1.800 filas, y como las rutas son estrechas, unos pocos miles de rectángulos como máximo (límite: 5.000). Si aun así se supera el límite de rectángulos, se pasa al nivel más grueso siguiente en vez de no dibujar.
 - **Cuándo se recalcula.** Al pararse la cámara (`onCameraIdle`) si ha salido del margen calculado o ha cambiado de nivel de detalle, y cuando cambian las celdas. Mientras el usuario arrastra no se calcula nada: MapLibre ya tiene los rectángulos en la GPU. El cálculo va fuera del hilo principal. Con la pantalla apagada no se calcula la niebla; el servicio de seguimiento solo guarda puntos y celdas.
+- **Aspecto.** La niebla es estática para no gastar batería: una textura de ruido fractal (256 px, de gris azulado a blanco, con zonas algo más finas) generada una sola vez al cargar el estilo y repetida por MapLibre como patrón de relleno (`fill-pattern`), así que dibujarla no cuesta más que un color plano. La niebla animada queda en `PLAN.md`.
 - **Opacidad ajustable.** Un deslizador de 0 % a 100 % (70 % por defecto) controla la niebla: con 0 % se ven los mapas completos y con 100 % quedan tapados. El valor se recuerda entre sesiones.
 - **Actualización.** La niebla se recalcula al registrar un punto GPS, al importar rutas (GPX, Google Maps o intercambio) y al reprocesar. Los mapas se recargan al volver de la pantalla de descarga y la cámara se encuadra en el área más reciente, nunca por debajo de su zoom mínimo para que se vea.
 - **Posición inicial.** Al abrir la app el mapa se centra en el usuario a zoom 14: primero en la última posición conocida, que es instantánea, y luego en una nueva. El permiso de ubicación se pide una vez en el primer arranque; sin él, el mapa se encuadra en el área más reciente o en España.
@@ -119,7 +122,7 @@ La pantalla principal muestra los mapas bajo una niebla que cubre toda la pantal
 
 Importar una ruta consiste en pasar sus puntos por el mismo cálculo de revelado que usa el seguimiento en vivo, de modo que las caminatas pasadas despejan el mapa igual que las nuevas.
 
-**GPX (implementado).** El usuario elige uno o varios ficheros desde el selector del sistema. De él se leen los puntos de la pista (latitud, longitud y hora) y se ignora todo lo demás: rutas, waypoints y extensiones. Los puntos se guardan como puntos crudos para poder reprocesarlos, y las celdas reveladas quedan marcadas con el origen `gpx_import`.
+**GPX (implementado).** El usuario elige uno o varios ficheros desde el selector del sistema. De él se leen los puntos de la pista (latitud, longitud y hora) y se ignora todo lo demás: rutas, waypoints y extensiones. Los puntos se guardan como puntos crudos para poder reprocesarlos, y las celdas reveladas quedan marcadas con el origen `gpx_import`. El identificador de la ruta es `gpx-` más una huella de su secuencia de coordenadas (sin horas, redondeadas a 1e-6°, la misma idea que el intercambio): si ya existe, el fichero se omite y el aviso lo cuenta como ya importado.
 
 **JSON de Google Maps (pendiente).** El formato de referencia es el que exporta el móvil (Ajustes > Ubicación > Cronología > Exportar), porque la Cronología ya se guarda en el dispositivo y Takeout no la incluye para la mayoría de usuarios. El formato antiguo de Takeout (`Records.json`, Semantic Location History) no se soporta. Antes de escribir el parser hay que conseguir una muestra real para fijar los campos: lo esperable es leer los puntos de `timelinePath` dentro de `semanticSegments`. El parser alimentará el mismo cálculo de revelado y marcará sus celdas con el origen `gmaps_import`.
 
@@ -132,7 +135,8 @@ El seguimiento solo se activa cuando el usuario lo pide: un único botón inicia
 - El registro corre en un servicio en primer plano de tipo ubicación, con una notificación persistente mientras dura la exploración, así que sigue registrando con la pantalla apagada o la app en segundo plano.
 - **No perder datos.** Cada lote de posiciones se guarda en la base de datos en cuanto llega. Si Android mata el servicio, lo reinicia solo (`START_STICKY`) y la exploración continúa en una sesión nueva; probado en el S10e con un fallo forzado: reinicio en 1 s y un hueco de un punto. Para que ese reinicio desde segundo plano esté permitido y tenga GPS hacen falta la exención de batería y «Permitir todo el tiempo»; sin ellas el servicio se detiene limpiamente en vez de fallar. Parar desde el botón es definitivo.
 - Se exige ubicación precisa: desde Android 12 el usuario puede conceder solo la aproximada, que con celdas de 25 m no sirve. Si la concede, la app lo explica y no inicia la exploración.
-- Cada posición recibida se guarda como punto crudo de la sesión y revela las celdas de su radio con el origen `live`.
+- Cada posición recibida se guarda como punto crudo de la sesión, con su precisión, y revela las celdas de su radio con el origen `live`. Una posición cuya precisión es peor que el radio de revelado se guarda (existe y puede servir más adelante), pero se ignora para todo lo que ve el usuario: no revela celdas, ni ahora ni al reprocesar.
+- **Ubicación desactivada a mitad de exploración.** El servicio sigue activo y la notificación pasa a «Ubicación desactivada: actívala para seguir explorando»; al volver a activarla sigue registrando en la misma sesión.
 - La pantalla principal muestra un contador de celdas reveladas que se actualiza con cada punto.
 - Al parar se detienen las actualizaciones de ubicación y se cierra la sesión.
 
@@ -245,8 +249,6 @@ El código del PoC se reescribió desde cero el 24 oct 2026 siguiendo este docum
 
 **Limitaciones conocidas**
 
-- La descarga va ligada a su pantalla: si el usuario sale, se cancela. Un área a medio descargar deja su fichero, pero no se registra.
-- No se filtran posiciones GPS poco precisas: un punto con mucho error revela celdas por donde no se ha pasado.
 - Los mapas solo se ven entre el zoom mínimo y el máximo descargados: por debajo el área aparece vacía (se ve el mapa general) y por encima se amplía el último nivel.
 - La configuración de la rejilla (25 m de celda, 30 m de radio) está fijada en el código.
 - La descarga de tiles es secuencial y sin reintentos.

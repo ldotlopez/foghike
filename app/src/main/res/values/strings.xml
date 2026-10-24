@@ -13,9 +13,11 @@
     <string name="precise_location_required">Exploring needs precise location.</string>
     <string name="gpx_imported">Imported %1$d points from %2$d files.</string>
     <string name="gpx_failed">%1$d files could not be read.</string>
+    <string name="gpx_duplicates">%1$d files were already imported.</string>
 
     <string name="tracking_channel">Exploration</string>
     <string name="tracking_notification">Exploring: recording your route</string>
+    <string name="tracking_location_off">Location is off: turn it on to keep exploring</string>
 
     <string name="download_help">Tap Draw and circle the area to download with your finger. You can draw several. Downloading needs a connection.</string>
     <string name="min_zoom">Min zoom</string>
@@ -25,8 +27,13 @@
     <string name="invalid_zoom">Zoom must be between 0 and 19, min not above max.</string>
     <string name="no_areas">Draw at least one area first.</string>
     <string name="too_many_tiles">Too many tiles (%1$d, max %2$d): use smaller areas or fewer zoom levels.</string>
-    <string name="download_progress">Area %1$d/%2$d: tile %3$d/%4$d</string>
+    <string name="download_progress">Areas left: %1$d · tile %2$d/%3$d</string>
+    <string name="download_waiting">Areas left: %1$d · waiting for a connection</string>
     <string name="download_done">Download finished.</string>
+    <string name="download_stopped">Download cancelled or failed.</string>
+    <string name="download_channel">Map download</string>
+    <string name="download_notification">Downloading maps</string>
+    <string name="cancel">Cancel</string>
     <string name="location_required">Exploring needs location switched on.</string>
     <string name="background_location_why">So no GPS points are lost if Android stops the app while you explore, choose \"Allow all the time\" on the next screen.</string>
     <string name="continue_button">Continue</string>

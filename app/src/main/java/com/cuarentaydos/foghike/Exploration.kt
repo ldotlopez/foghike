@@ -11,15 +11,17 @@ import com.cuarentaydos.foghike.geo.REVEAL_RADIUS_METERS
 import com.cuarentaydos.foghike.geo.cellsInRadius
 import com.cuarentaydos.foghike.geo.coarseCells
 
-data class GpsPoint(val lat: Double, val lon: Double, val time: Long?)
+/** [accuracy] is the GPS error radius in meters; null when unknown (e.g. GPX files). */
+data class GpsPoint(val lat: Double, val lon: Double, val time: Long?, val accuracy: Float? = null)
 
 /**
  * Stores raw points and reveals the cells around them, plus their coarse LOD cells.
  * Shared by live tracking and every importer, so old hikes clear the map like new ones.
+ * Inaccurate points are stored but never reveal anything: they would clear fog where the user wasn't.
  */
 suspend fun recordPoints(db: AppDatabase, trackId: String, firstIndex: Int, points: List<GpsPoint>, source: String) {
     val cells = linkedSetOf<Cell>()
-    for (p in points) {
+    for (p in points.filter { it.accuracy == null || it.accuracy <= REVEAL_RADIUS_METERS }) {
         for (cell in cellsInRadius(LatLon(p.lat, p.lon), CELL_SIZE_METERS, REVEAL_RADIUS_METERS)) {
             cells += cell
             cells += coarseCells(cell)
@@ -28,7 +30,7 @@ suspend fun recordPoints(db: AppDatabase, trackId: String, firstIndex: Int, poin
     val now = System.currentTimeMillis()
     db.withTransaction {
         db.trackPointDao().insert(
-            points.mapIndexed { i, p -> TrackPoint(trackId, firstIndex + i, p.lat, p.lon, p.time, source) }
+            points.mapIndexed { i, p -> TrackPoint(trackId, firstIndex + i, p.lat, p.lon, p.time, p.accuracy, source) }
         )
         db.cellDao().insertIgnoringExisting(
             cells.map { RevealedCell(it.id, it.size, it.row, it.col, now, source) }

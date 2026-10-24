@@ -25,7 +25,10 @@ data class RevealedCell(
     val source: String,
 )
 
-/** Raw GPS point, kept so cells can be recomputed when the grid settings change. */
+/**
+ * Raw GPS point, kept so cells can be recomputed when the grid settings change. Points with an
+ * [accuracy] above the reveal radius are kept but must be ignored by anything the user sees.
+ */
 @Entity(tableName = "track_point", primaryKeys = ["trackId", "sequenceIndex"])
 data class TrackPoint(
     val trackId: String,
@@ -33,6 +36,7 @@ data class TrackPoint(
     val lat: Double,
     val lon: Double,
     val timestamp: Long?,
+    val accuracy: Float?,
     val source: String,
 )
 

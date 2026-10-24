@@ -27,7 +27,7 @@ const val MAX_TILES_PER_DOWNLOAD = 20_000
  * Sequential and without retries: a failed tile is skipped and logged.
  */
 suspend fun downloadArea(
-    file: File, tiles: List<Tile>, box: Box, minZoom: Int, maxZoom: Int, onProgress: (done: Int, total: Int) -> Unit,
+    file: File, tiles: List<Tile>, box: Box, minZoom: Int, maxZoom: Int, onProgress: suspend (done: Int, total: Int) -> Unit,
 ) {
     SQLiteDatabase.openOrCreateDatabase(file, null).use { db ->
         db.execSQL("CREATE TABLE IF NOT EXISTS metadata (name TEXT, value TEXT)")

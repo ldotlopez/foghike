@@ -9,19 +9,19 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.cuarentaydos.foghike.FogHikeApp
 import com.cuarentaydos.foghike.R
-import com.cuarentaydos.foghike.data.DownloadedArea
 import com.cuarentaydos.foghike.geo.LatLon
-import com.cuarentaydos.foghike.geo.boundsOf
 import com.cuarentaydos.foghike.geo.tilesFor
 import com.cuarentaydos.foghike.tiles.IGN_MAX_ZOOM
 import com.cuarentaydos.foghike.tiles.MAX_TILES_PER_DOWNLOAD
-import com.cuarentaydos.foghike.tiles.downloadArea
-import kotlinx.coroutines.Dispatchers
+import com.cuarentaydos.foghike.tiles.DownloadWorker
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.maps.MapLibreMap
@@ -39,7 +39,6 @@ import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.LineString
 import org.maplibre.geojson.Point
 import org.maplibre.geojson.Polygon
-import java.io.File
 import kotlin.math.hypot
 
 private const val MIN_STROKE_STEP_PX = 12f
@@ -47,7 +46,8 @@ private const val AREA_PICK_ZOOM = 11.0 // a hiking area of a few km fills the s
 
 /**
  * Map download screen: in draw mode the user circles one or more areas with a finger; each area is
- * downloaded as one MBTiles file with only the tiles that touch it. Needs a connection.
+ * downloaded as one MBTiles file with only the tiles that touch it, by [DownloadWorker] in the
+ * background, so leaving this screen doesn't stop it.
  */
 class DownloadActivity : ComponentActivity() {
     private val app get() = application as FogHikeApp
@@ -114,8 +114,32 @@ class DownloadActivity : ComponentActivity() {
                 progress.text = getString(R.string.too_many_tiles, total, MAX_TILES_PER_DOWNLOAD)
                 return@setOnClickListener
             }
-            download.isEnabled = false
-            downloadAll(from, to) { download.isEnabled = true }
+            areas.forEach { DownloadWorker.enqueue(this, it, from, to) }
+            areas.clear()
+            drawAreas()
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                WorkManager.getInstance(this@DownloadActivity)
+                    .getWorkInfosForUniqueWorkFlow(DownloadWorker.WORK_NAME)
+                    .collect { showProgress(it) }
+            }
+        }
+    }
+
+    private fun showProgress(works: List<WorkInfo>) {
+        if (works.isEmpty()) return
+        val left = works.count { !it.state.isFinished }
+        val running = works.firstOrNull { it.state == WorkInfo.State.RUNNING }
+        progress.text = when {
+            running != null -> getString(
+                R.string.download_progress, left,
+                running.progress.getInt(DownloadWorker.KEY_DONE, 0), running.progress.getInt(DownloadWorker.KEY_TOTAL, 0),
+            )
+            left > 0 -> getString(R.string.download_waiting, left)
+            works.any { it.state != WorkInfo.State.SUCCEEDED } -> getString(R.string.download_stopped)
+            else -> getString(R.string.download_done)
         }
     }
 
@@ -148,32 +172,6 @@ class DownloadActivity : ComponentActivity() {
         val features = areas.map { Feature.fromGeometry(Polygon.fromLngLats(listOf(it.points() + it.points().first()))) } +
             listOfNotNull(stroke?.takeIf { it.size >= 2 }?.let { Feature.fromGeometry(LineString.fromLngLats(it.points())) })
         areaSource.setGeoJson(FeatureCollection.fromFeatures(features))
-    }
-
-    // shortcut: tied to this screen, leaving it cancels the download; move to a WorkManager job if that bothers users.
-    private fun downloadAll(minZoom: Int, maxZoom: Int, onDone: () -> Unit) = lifecycleScope.launch {
-        val toDownload = areas.toList()
-        for ((i, polygon) in toDownload.withIndex()) {
-            val now = System.currentTimeMillis()
-            val name = "area-$now"
-            val box = boundsOf(polygon)
-            withContext(Dispatchers.IO) {
-                val tiles = tilesFor(polygon, minZoom, maxZoom).toList()
-                downloadArea(File(app.mapsDir, "$name.mbtiles"), tiles, box, minZoom, maxZoom) { done, total ->
-                    runOnUiThread {
-                        progress.text = getString(R.string.download_progress, i + 1, toDownload.size, done, total)
-                    }
-                }
-            }
-            app.db.areaDao().insert(DownloadedArea(
-                name = name, minLat = box.south, minLon = box.west, maxLat = box.north, maxLon = box.east,
-                minZoom = minZoom, maxZoom = maxZoom, fileName = "$name.mbtiles", downloadedAt = now,
-            ))
-        }
-        progress.setText(R.string.download_done)
-        areas.clear()
-        drawAreas()
-        onDone()
     }
 
     override fun onStart() { super.onStart(); mapView.onStart() }

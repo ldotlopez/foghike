@@ -10,9 +10,11 @@
     <string name="precise_location_required">Explorar necesita la ubicación precisa.</string>
     <string name="gpx_imported">Importados %1$d puntos de %2$d ficheros.</string>
     <string name="gpx_failed">%1$d ficheros no se pudieron leer.</string>
+    <string name="gpx_duplicates">%1$d ficheros ya estaban importados.</string>
 
     <string name="tracking_channel">Exploración</string>
     <string name="tracking_notification">Explorando: registrando tu ruta</string>
+    <string name="tracking_location_off">Ubicación desactivada: actívala para seguir explorando</string>
 
     <string name="download_help">Pulsa Dibujar y rodea con el dedo la zona a descargar. Puedes dibujar varias. Descargar necesita conexión.</string>
     <string name="min_zoom">Zoom mín.</string>
@@ -22,8 +24,13 @@
     <string name="invalid_zoom">El zoom debe estar entre 0 y 19, y el mínimo no puede superar al máximo.</string>
     <string name="no_areas">Dibuja antes al menos un área.</string>
     <string name="too_many_tiles">Demasiados tiles (%1$d, máximo %2$d): usa áreas más pequeñas o menos niveles de zoom.</string>
-    <string name="download_progress">Área %1$d/%2$d: tile %3$d/%4$d</string>
+    <string name="download_progress">Áreas pendientes: %1$d · tile %2$d/%3$d</string>
+    <string name="download_waiting">Áreas pendientes: %1$d · esperando conexión</string>
     <string name="download_done">Descarga terminada.</string>
+    <string name="download_stopped">Descarga cancelada o fallida.</string>
+    <string name="download_channel">Descarga de mapas</string>
+    <string name="download_notification">Descargando mapas</string>
+    <string name="cancel">Cancelar</string>
     <string name="location_required">Explorar necesita la ubicación activada.</string>
     <string name="background_location_why">Para no perder puntos GPS si Android detiene la app mientras exploras, elige \"Permitir todo el tiempo\" en la siguiente pantalla.</string>
     <string name="continue_button">Continuar</string>

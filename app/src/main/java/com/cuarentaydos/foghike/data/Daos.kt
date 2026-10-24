@@ -26,6 +26,9 @@ interface CellDao {
 interface TrackPointDao {
     @Insert
     suspend fun insert(points: List<TrackPoint>)
+
+    @Query("SELECT EXISTS(SELECT 1 FROM track_point WHERE trackId = :trackId)")
+    suspend fun exists(trackId: String): Boolean
 }
 
 @Dao
