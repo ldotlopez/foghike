@@ -30,9 +30,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.cuarentaydos.foghike.FogHikeApp
 import com.cuarentaydos.foghike.R
+import com.cuarentaydos.foghike.core.AppSettings
+import com.cuarentaydos.foghike.core.LocationMode
 import com.cuarentaydos.foghike.data.DownloadedArea
 import com.cuarentaydos.foghike.geo.Box
-import com.cuarentaydos.foghike.geo.CELL_SIZE_METERS
 import com.cuarentaydos.foghike.tracking.TrackingService
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
@@ -52,7 +53,6 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 
-private const val USER_ZOOM = 14.0
 private const val CAMERA_TRANSITION_MS = 750L
 
 /**
@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
     private var map: MapLibreMap? = null
     private var fog: FogLayer? = null
     private var trail: TrailLayer? = null
+    private var settings = AppSettings() // read again in onStart: may change in Settings
 
     // Compose state: changing these redraws the parts of the screen that show them.
     private var areas by mutableStateOf<List<DownloadedArea>?>(null)
@@ -156,13 +157,14 @@ class MainActivity : ComponentActivity() {
                     onTracks = { startActivity(Intent(this, TracksActivity::class.java)) },
                     onSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
                     onLocation = ::nextLocationMode,
+                    onLocationMode = ::chooseLocationMode,
                 )
             }
         }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                app.db.cellDao().count(CELL_SIZE_METERS).collect { count ->
+                app.db.cellDao().count(settings.cellSize).collect { count ->
                     cellCount = count
                     map?.let { fog?.refresh(it, force = true) }
                 }
@@ -173,7 +175,7 @@ class MainActivity : ComponentActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 while (true) {
                     refreshTrail()
-                    delay(TRAIL_REFRESH_MS)
+                    delay(settings.trailRefreshMs)
                 }
             }
         }
@@ -193,22 +195,45 @@ class MainActivity : ComponentActivity() {
         if (snackbar.showSnackbar(text, action, duration = SnackbarDuration.Long) == SnackbarResult.ActionPerformed) onAction()
     }
 
-    /** My location button: Free → Follow → Compass → Follow. [cameraTracking] updates [locationMode]. */
-    private fun nextLocationMode() {
-        val m = map ?: return
-        if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            return startupPermissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
-        }
-        val location = m.locationComponent
-        if (!location.isLocationComponentActivated || location.lastKnownLocation == null) {
-            showMessage(getString(R.string.waiting_location))
-            return
-        }
+    /** My location button tap: Free → Follow → Compass → Follow. */
+    private fun nextLocationMode() = chooseLocationMode(
         when (locationMode) {
-            // From Free, also zoom to walking level; from Compass, keep the zoom and turn north up.
-            LocationMode.FREE -> location.setCameraMode(CameraMode.TRACKING, CAMERA_TRANSITION_MS, USER_ZOOM, 0.0, null, null)
-            LocationMode.COMPASS -> location.setCameraMode(CameraMode.TRACKING, CAMERA_TRANSITION_MS, null, 0.0, null, null)
-            LocationMode.FOLLOW -> location.cameraMode = CameraMode.TRACKING_COMPASS
+            LocationMode.FREE, LocationMode.COMPASS -> LocationMode.FOLLOW
+            LocationMode.FOLLOW -> LocationMode.COMPASS
+        }
+    )
+
+    /** A mode picked with the my location button (tap or long-press menu); following needs a known position. */
+    private fun chooseLocationMode(mode: LocationMode) {
+        val m = map ?: return
+        if (mode != LocationMode.FREE) {
+            if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                return startupPermissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+            }
+            val location = m.locationComponent
+            if (!location.isLocationComponentActivated || location.lastKnownLocation == null) {
+                showMessage(getString(R.string.waiting_location))
+                return
+            }
+        }
+        setLocationMode(m, mode)
+    }
+
+    /**
+     * Puts the camera in [mode]; [cameraTracking] then updates [locationMode]. Coming from Free also
+     * zooms to walking level; leaving Compass turns north up.
+     */
+    private fun setLocationMode(m: MapLibreMap, mode: LocationMode) {
+        val location = m.locationComponent
+        if (!location.isLocationComponentActivated) return
+        val zoom = if (locationMode == LocationMode.FREE) settings.userZoom.toDouble() else null
+        when (mode) {
+            LocationMode.FREE -> {
+                location.cameraMode = CameraMode.NONE
+                m.animateCamera(CameraUpdateFactory.bearingTo(0.0), CAMERA_TRANSITION_MS.toInt())
+            }
+            LocationMode.FOLLOW -> location.setCameraMode(CameraMode.TRACKING, CAMERA_TRANSITION_MS, zoom, 0.0, null, null)
+            LocationMode.COMPASS -> location.setCameraMode(CameraMode.TRACKING_COMPASS, CAMERA_TRANSITION_MS, zoom, null, null, null)
         }
     }
 
@@ -263,7 +288,7 @@ class MainActivity : ComponentActivity() {
 
     private fun startTracking() = startForegroundService(Intent(this, TrackingService::class.java))
 
-    private fun centerOnUser(m: MapLibreMap) = m.centerOnUser(this, USER_ZOOM)
+    private fun centerOnUser(m: MapLibreMap) = m.centerOnUser(this, settings.userZoom.toDouble())
 
     /** Frames [area], but never below its min zoom: the downloaded imagery doesn't exist there. */
     private fun frameArea(m: MapLibreMap, area: DownloadedArea) {
@@ -283,15 +308,18 @@ class MainActivity : ComponentActivity() {
         fog = null // its source dies with the old style
         trail = null
         m.setStyle(Style.Builder().fromJson(mapStyleJson(app.tileServer, list, onlineIgn = false))) { style ->
-            fog = FogLayer(style, app.db.cellDao(), lifecycleScope, opacity)
-            trail = TrailLayer(style)
+            fog = FogLayer(style, app.db.cellDao(), lifecycleScope, opacity, settings)
+            trail = TrailLayer(style, settings)
             lifecycleScope.launch { refreshTrail() }
             showUserLocation()
             val latest = list.lastOrNull()
             if (latest != null) frameArea(m, latest)
             else m.moveCamera(CameraUpdateFactory.newLatLngBounds(SPAIN_BOUNDS.toLatLngBounds(), 40))
-            // On launch the user's position wins; after a download, the new area does.
-            if (firstLoad) centerOnUser(m)
+            // On launch the user's position wins, in the mode chosen in Settings; after a download, the new area does.
+            if (firstLoad) {
+                centerOnUser(m)
+                if (settings.startMode != LocationMode.FREE) setLocationMode(m, settings.startMode)
+            }
             fog?.refresh(m, force = true)
         }
     }
@@ -299,7 +327,7 @@ class MainActivity : ComponentActivity() {
     private suspend fun refreshTrail() {
         val layer = trail ?: return
         val now = System.currentTimeMillis()
-        layer.show(app.db.trackPointDao().since(now - TRAIL_DURATION_MS), now)
+        layer.show(app.db.trackPointDao().since(now - settings.trailDurationMs), now, settings)
     }
 
     /**
@@ -322,7 +350,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onStart() { super.onStart(); mapView.onStart() }
+    override fun onStart() {
+        // Before super: the collectors started for STARTED already use the new values.
+        settings = app.settings
+        fog?.settings = settings // the cell count collector forces the fog refresh
+        trail?.apply(settings)
+        super.onStart()
+        mapView.onStart()
+    }
     override fun onResume() {
         super.onResume()
         mapView.onResume()

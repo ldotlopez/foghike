@@ -12,12 +12,6 @@
 - **Name a track when it ends.** When the user stops a recording, ask for a name (stored in `track.name`, decision 0010; today recordings show "Exploration HH:MM"). Prefill it with the town where the track started, when known; otherwise leave it empty or use the date.
   - Assume no network: the town must come from an offline source. The IGN maps are raster satellite imagery with no place names, so bundle a small gazetteer instead, e.g. Spain's ~8,100 municipalities with their coordinates (IGN Nomenclátor / INE), and take the nearest one to the first point. Generate it with a script in `tools/` like `spain.mbtiles`.
 
-## Settings
-
-- **Configurable values in Settings.** Show in the Settings screen the values listed in `docs/configurable-values.md` that make sense as preferences. Before implementing, go through them with the author **one by one**: for each, whether it is exposed in the main sections, under an "Advanced" subsection, or not at all. Values that force reprocessing follow "One recalculation when leaving Settings" below.
-
-- **One recalculation when leaving Settings.** When several changed preferences each need a recalculation, run it once when the user leaves the Settings screen instead of after each change. Under every changed preference that needs it, show a small warning line (smaller font) such as "Will be recalculated when you close this screen".
-
 ## UI
 
 - **Red heading arrow for the user's position.** Replace MapLibre's default puck (blue dot with a heading arrow, `RenderMode.COMPASS` in `showUserLocation`, `ui/MainActivity.kt`) with a red compass-needle style arrow: a clearer cue of where the user faces. MapLibre's `LocationComponentOptions` takes custom drawables (e.g. `foregroundDrawable` / `bearingDrawable`), so no new layer should be needed. Keep it distinct from the red record button (decision 0007 picked red for record so it isn't confused with the blue dot) and readable over satellite imagery; update `docs/ui/screens/main.md` and re-check `docs/HUMAN_TEST.md` "Heading arrow".

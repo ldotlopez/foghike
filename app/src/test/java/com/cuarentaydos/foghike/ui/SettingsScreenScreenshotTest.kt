@@ -29,4 +29,11 @@ class SettingsScreenScreenshotTest {
 
     @Config(qualifiers = "+night")
     @Test fun s3Dark() = capture { SettingsDark() }
+
+    // A tall window, so every row fits in one image.
+    @Config(qualifiers = "w360dp-h1800dp-xhdpi")
+    @Test fun s4AllRows() = capture { SettingsAll() }
+    @Config(qualifiers = "w360dp-h1500dp-xhdpi")
+    @Test fun s5PendingAndGrouped() = capture { SettingsPending() }
+    @Test fun s6Recalculating() = capture { SettingsRecalculating() }
 }

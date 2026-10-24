@@ -89,7 +89,6 @@ val DarkColors = darkColorScheme(
 
 // Map layer colors: fixed brand colors (not from the theme), as MapLibre CSS strings.
 const val BACKGROUND_COLOR = "#101418" // also behind the map view while the style loads
-const val TRAIL_COLOR = "#ff7a1a"
 const val AREA_COLOR = "#ffcc00" // areas being drawn on the download screen
 const val DOWNLOADED_AREA_COLOR = "#4fc3f7" // bounding boxes of areas already downloaded
 

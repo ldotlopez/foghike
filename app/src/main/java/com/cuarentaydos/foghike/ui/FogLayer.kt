@@ -1,9 +1,9 @@
 package com.cuarentaydos.foghike.ui
 
+import com.cuarentaydos.foghike.core.AppSettings
 import com.cuarentaydos.foghike.core.fogPieces
 import com.cuarentaydos.foghike.data.CellDao
 import com.cuarentaydos.foghike.geo.Box
-import com.cuarentaydos.foghike.geo.CELL_SIZE_METERS
 import com.cuarentaydos.foghike.geo.lodLevelFor
 import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
@@ -32,9 +32,10 @@ private const val DENSITY = "density"
 /**
  * Fog over the whole map except revealed cells. It is computed ([fogPieces]) only for the visible
  * region plus one screen of margin on each side, at the LOD level that fits the zoom, and only when
- * the camera stops outside the computed region or the cells change — never per frame.
+ * the camera stops outside the computed region or the cells change — never per frame. [settings]
+ * may change on return from Settings; the caller then forces a [refresh].
  */
-class FogLayer(style: Style, private val cells: CellDao, private val scope: CoroutineScope, opacity: Float) {
+class FogLayer(style: Style, private val cells: CellDao, private val scope: CoroutineScope, opacity: Float, var settings: AppSettings) {
     private val source = GeoJsonSource("fog")
     private val layer = FillLayer("fog", "fog")
         .withProperties(fillPattern(FOG_TEXTURE), fogOpacity(opacity), fillAntialias(false))
@@ -57,13 +58,14 @@ class FogLayer(style: Style, private val cells: CellDao, private val scope: Coro
     fun refresh(map: MapLibreMap, force: Boolean = false) {
         val b = map.projection.visibleRegion.latLngBounds
         val visible = Box(b.latitudeSouth, b.longitudeWest, b.latitudeNorth, b.longitudeEast)
-        val level = lodLevelFor(CELL_SIZE_METERS, map.cameraPosition.zoom, b.center.latitude)
+        val s = settings
+        val level = lodLevelFor(s.cellSize, map.cameraPosition.zoom, b.center.latitude, s.minCellPixels)
         if (!force && level == computedLevel && computed?.contains(visible) == true) return
 
         val area = visible.expanded()
         job?.cancel()
         job = scope.launch {
-            val features = fogPieces(cells, area, level).map { it.box.toFeature(it.density) }
+            val features = fogPieces(cells, area, level, s).map { it.box.toFeature(it.density) }
             source.setGeoJson(FeatureCollection.fromFeatures(features))
             computed = area
             computedLevel = level

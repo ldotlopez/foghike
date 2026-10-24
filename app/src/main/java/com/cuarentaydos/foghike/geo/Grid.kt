@@ -16,9 +16,11 @@ import kotlin.math.sqrt
 const val EARTH_RADIUS_M = 6_371_008.8
 const val METERS_PER_DEG_LAT = PI * EARTH_RADIUS_M / 180.0
 
-// shortcut: fixed in code, the Settings screen (roadmap step 4) will make them configurable.
-const val CELL_SIZE_METERS = 25
-const val REVEAL_RADIUS_METERS = 30.0
+/**
+ * Base cell size and reveal radius in meters (Settings, Advanced). Every stored cell depends on both,
+ * so changing either one means rebuilding them all.
+ */
+data class RevealGrid(val cellSize: Int = 25, val radius: Double = 30.0)
 
 /** Each LOD level has cells LOD_FACTOR times larger than the previous one; level 0 is the base grid. */
 const val LOD_FACTOR = 8

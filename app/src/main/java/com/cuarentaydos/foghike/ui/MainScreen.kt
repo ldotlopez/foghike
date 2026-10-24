@@ -1,6 +1,7 @@
 package com.cuarentaydos.foghike.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,11 +17,15 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -34,18 +39,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cuarentaydos.foghike.R
-
-/** The my location button's state; [MainActivity] maps it to MapLibre's camera modes. */
-enum class LocationMode { FREE, FOLLOW, COMPASS }
+import com.cuarentaydos.foghike.core.LocationMode
 
 /**
  * Main screen layout (docs/ui/screens/main.md): the map fills the screen, with the status chip and
@@ -66,6 +71,7 @@ fun MainScreen(
     onTracks: () -> Unit,
     onSettings: () -> Unit,
     onLocation: () -> Unit,
+    onLocationMode: (LocationMode) -> Unit,
 ) {
     // Collapsed while exploring, so the map is as free as possible; reset whenever exploring starts or stops.
     var expanded by rememberSaveable(tracking) { mutableStateOf(!tracking) }
@@ -95,7 +101,7 @@ fun MainScreen(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 onExpandedChange = if (tracking) ({ expanded = it }) else null,
                 // Stays when collapsed: re-centering is what a walker needs after dragging the map.
-                pinned = { LocationButton(locationMode, onLocation) },
+                pinned = { LocationButton(locationMode, onLocation, onLocationMode) },
             ) {
                 MapIconButton(R.drawable.ic_map, stringResource(R.string.action_maps), onMaps)
                 MapIconButton(R.drawable.ic_route, stringResource(R.string.action_tracks), onTracks)
@@ -159,15 +165,55 @@ private fun ExploreButton(tracking: Boolean, onTrack: () -> Unit) {
     }
 }
 
-/** Cycles Free → Follow → Compass → Follow; its label says what the next tap does. */
+/**
+ * Tap cycles Free → Follow → Compass → Follow; its label says what the next tap does. A long press
+ * opens a menu to pick any mode, so this button has no tooltip: the menu names the modes.
+ */
 @Composable
-private fun LocationButton(mode: LocationMode, onClick: () -> Unit) {
-    val (icon, label) = when (mode) {
-        LocationMode.FREE -> R.drawable.ic_location_searching to R.string.action_follow
-        LocationMode.FOLLOW -> R.drawable.ic_my_location to R.string.action_compass
-        LocationMode.COMPASS -> R.drawable.ic_explore to R.string.action_north_up
+private fun LocationButton(mode: LocationMode, onClick: () -> Unit, onMode: (LocationMode) -> Unit) {
+    val label = stringResource(
+        when (mode) {
+            LocationMode.FREE -> R.string.action_follow
+            LocationMode.FOLLOW -> R.string.action_compass
+            LocationMode.COMPASS -> R.string.action_north_up
+        }
+    )
+    var menu by remember { mutableStateOf(false) }
+    Box {
+        Box(
+            Modifier.size(MIN_TOUCH_TARGET).clip(CircleShape).combinedClickable(
+                role = Role.Button,
+                onLongClickLabel = stringResource(R.string.action_location_mode),
+                onLongClick = { menu = true },
+                onClick = onClick,
+            ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(painterResource(locationModeIcon(mode)), contentDescription = label)
+        }
+        DropdownMenu(menu, { menu = false }) {
+            for (m in LocationMode.entries) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(locationModeName(m))) },
+                    onClick = { menu = false; onMode(m) },
+                    leadingIcon = { Icon(painterResource(locationModeIcon(m)), contentDescription = null) },
+                    trailingIcon = { RadioButton(selected = m == mode, onClick = null) },
+                )
+            }
+        }
     }
-    MapIconButton(icon, stringResource(label), onClick)
+}
+
+fun locationModeIcon(mode: LocationMode) = when (mode) {
+    LocationMode.FREE -> R.drawable.ic_location_searching
+    LocationMode.FOLLOW -> R.drawable.ic_my_location
+    LocationMode.COMPASS -> R.drawable.ic_explore
+}
+
+fun locationModeName(mode: LocationMode) = when (mode) {
+    LocationMode.FREE -> R.string.location_mode_free
+    LocationMode.FOLLOW -> R.string.location_mode_follow
+    LocationMode.COMPASS -> R.string.location_mode_compass
 }
 
 // Previews: one per state in docs/ui/screens/main.md. ui/MainScreenScreenshotTest.kt renders them.
@@ -184,7 +230,7 @@ internal fun MainPreview(
 ) = FogHikeTheme {
     val snackbar = remember { SnackbarHostState() }
     if (snackbarText != null) LaunchedEffect(Unit) { snackbar.showSnackbar(snackbarText) }
-    MainScreen({ MapPlaceholder() }, 1234, mapCount, tracking, locationMode, snackbar, {}, {}, {}, {}, {})
+    MainScreen({ MapPlaceholder() }, 1234, mapCount, tracking, locationMode, snackbar, {}, {}, {}, {}, {}, {})
 }
 
 @Preview(showSystemUi = true) @Composable internal fun MainDefault() = MainPreview()

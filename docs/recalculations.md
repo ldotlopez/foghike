@@ -10,18 +10,18 @@ There are three cost levels:
 
 ## 1. Reprocess stored data (expensive)
 
-Only track deletion is implemented (`deleteTracks` in `core/Exploration.kt`, decision 0010); the Settings rows arrive with roadmap step 4 and will reuse it. All of them are the same operation: delete `revealed_cell` and reveal the cells of every track left in `track_point` again, own tracks first and imported ones after, so own sources win. Rebuilt cells get the current time as `firstRevealedAt`.
+Track deletion (decision 0010) and the Settings changes (decision 0011) are implemented; both call `rebuildCells` in `core/Exploration.kt`. All of them are the same operation: delete `revealed_cell` and reveal the cells of every track left in `track_point` again, own tracks first and imported ones after, so own sources win. Rebuilt cells get the current time as `firstRevealedAt`.
 
 | Interaction | Why it forces reprocessing | What is rebuilt |
 | --- | --- | --- |
-| Change the cell size (`CELL_SIZE_METERS`) | Every cell id and geometry changes | All fine and coarse cells and `revealedCount` |
-| Change the reveal radius (`REVEAL_RADIUS_METERS`) | Changes which cells each point clears and which points count as accurate (`isAccurate` uses the same radius) | All cells and `revealedCount` |
+| Change the cell size (Settings → Advanced) — implemented | Every cell id and geometry changes | All fine and coarse cells and `revealedCount`, once when leaving Settings even if the radius changed too. The new values are saved first with a `cellsStale` flag, so a rebuild cut short by the process dying runs again at the next start (`FogHikeApp`) |
+| Change the reveal radius (Settings → Advanced) — implemented | Changes which cells each point clears and which points count as accurate (`isAccurate` uses the same radius) | Same as the cell size, in the same single rebuild |
 | Change `LOD_FACTOR` or `LOD_LEVELS` | Coarse cell sizes change | Coarse cells and `revealedCount` (fine cells stay) |
 | Delete one or more tracks (tracks screen; own or imported) — implemented | Cells don't know which track revealed them; cells only those tracks cleared must be fogged again | All cells from the remaining points, in one transaction; the main screen's fog refreshes when it comes back (cell table changed) |
 | Data stored before database version 2 | The migration left `revealedCount = 1` on old coarse cells, so `DENSITY` draws them almost fully fogged | `revealedCount` (one reprocess is enough) |
 | Receive an NFC track crossing own cells (future) | The own source must win; outside reprocessing the insert ignores duplicates | Only the `source` field; reprocessing order fixes it |
 
-**Not reprocessing:** changing `FOG_MODE` or the `fogDensity` formula (applied when drawing), or the threshold of the "Threshold" strategy in the design document, because `revealedCount` stores the number, not a yes/no.
+**Not reprocessing:** changing the fog mode (Settings) or the `fogDensity` formula (applied when drawing), or the threshold of the "Threshold" strategy in the design document, because `revealedCount` stores the number, not a yes/no.
 
 ## 2. Store new points (incremental)
 
@@ -29,7 +29,7 @@ Everything goes through `recordPoints` (`core/Exploration.kt`) in one transactio
 
 | Interaction | Frequency | What is computed |
 | --- | --- | --- |
-| Live tracking (`TrackingService`) | Every GPS batch, about 5 s (`INTERVAL_MS`); also with the screen off | Raw points, new fine cells, their coarse cells and the `revealedCount` increment (new fine cells only) |
+| Live tracking (`TrackingService`) | Every GPS batch: the GPS interval from Settings (5 s by default, 15 s with battery saver; read when exploring starts); also with the screen off. Cell size and radius are read per batch | Raw points, new fine cells, their coarse cells and the `revealedCount` increment (new fine cells only) |
 | Import one or more GPX files (tracks screen) | When files are picked; one file = one track | Same; if the fingerprint already exists the file is skipped without computing anything |
 | Google Maps or NFC import (future) | On import | Same, through the same path |
 
@@ -45,11 +45,12 @@ None of this runs with the screen off or while the camera moves.
 | The cell table changes (new point, import) | Fog, forced | Every time Room reports a change in `revealed_cell`, while the main screen is visible |
 | Back to the main screen (`onResume`) with a changed list of downloaded areas | Whole map style: map layers, fog, trail and position; the camera frames the latest area | Only if the list changed (e.g. back from a download) |
 | First start of the screen | Same as above, centering the camera on the user | Always |
-| Time passes (trail) | Last-hour trail and its fade | Every 10 s (`TRAIL_REFRESH_MS`) while the main screen is visible, and on style reload |
+| Time passes (trail) | Trail of the chosen duration and its fade | Every 10 s (30 s with slow phone or battery saver, `AppSettings.trailRefreshMs`) while the main screen is visible, and on style reload |
 | Back to the main screen (`onResume`) after changing the fog opacity in Settings | Nothing: only a layer property changes | Always (cheap) |
+| Back to the main screen (`onStart`) from Settings | Settings read again; fog forced (the cell count collector restarts, with the new cell size, mode, detail and piece limit); trail color, width and visibility set on the layer | Always (cheap; the cell rebuild already ran in Settings) |
 | My location button in Follow or Compass mode | The camera moves with every GPS fix; each camera idle runs the fog row above | Same condition as above: walking only recomputes when the view leaves the computed area |
 | Rotate the phone (compass) | Nothing in the app: MapLibre's location component draws it | — |
-| Too many fog rectangles (over `MAX_FOG_RECTS`) | The computation is repeated at the next, coarser detail level | Inside the same computation |
+| Too many fog rectangles (over `AppSettings.maxFogRects`: 5,000, or 1,500 with slow phone) | The computation is repeated at the next, coarser detail level | Inside the same computation |
 
 ## Download screen
 

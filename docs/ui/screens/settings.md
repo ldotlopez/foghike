@@ -1,6 +1,6 @@
 # Settings screen
 
-User preferences and debugging controls. For now it holds only the Advanced section with the fog opacity. Reveal radius, cell size and alias come with roadmap step 4, and the layout leaves room for them. Follows `docs/ui/guidelines.md`. It is the one screen without a map, so the map-screen rules (floating toolbar, chips, attribution) don't apply, and text labels are allowed ("Icons over text" excludes Settings).
+User preferences and debugging controls: a Map section, an Advanced section and About (decision 0011). The alias comes with the exchange. Follows `docs/ui/guidelines.md`. It is the one screen without a map, so the map-screen rules (floating toolbar, chips, attribution) don't apply, and text labels are allowed ("Icons over text" excludes Settings).
 
 Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsScreen.kt` (stateless layout). Opened from the `settings` icon of the main screen's toolbar; the system back button returns.
 
@@ -11,7 +11,13 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 │ (status bar)                         │
 │ ←  Settings                          │  TopAppBar: back arrow + title
 │                                      │
-│ Advanced                             │  section header (primary color, labelLarge)
+│ Map                                  │  section header (primary color, labelLarge)
+│   Open the map in                    │  choice row: opens a single-choice dialog
+│   Free: the map stays still          │
+│   Battery saver                 (○ ) │  switch row; the whole row toggles
+│   GPS every 15 s and trail …         │
+│                                      │
+│ Advanced                             │
 │ ┌──────────────────────────────────┐ │
 │ │ Fog opacity                 70 % │ │  ListItem: headline row with the value at the end
 │ │ ●━━━━━━━━━━━━━━━━━━━━━○───────── │ │  Slider 0–100, step 5
@@ -20,6 +26,13 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 │ │ └──────────────────────────────┘ │ │
 │ │ PNOA cedido por © IGN de España  │ │  required: the preview shows IGN imagery
 │ └──────────────────────────────────┘ │
+│   Cell size                          │
+│   50 m                               │
+│   Will be recalculated when you …    │  note (bodySmall, tertiary) while changed
+│   Reveal radius · Fog when zoomed out│
+│   Slow phone (switch) · Fog detail   │  fog detail hidden while slow phone is on
+│   GPS interval · Zoom when centering │  GPS interval hidden while battery saver is on
+│   Recent trail (switch)              │  when on: duration, color (swatch), width
 │                                      │
 │ About                                │
 │   Version                    0.1 (1) │  ListItem: versionName (versionCode)
@@ -28,19 +41,34 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 └──────────────────────────────────────┘
 ```
 
-- `Scaffold` + `TopAppBar` with a back arrow (`arrow_back`, `contentDescription` "Back"). The arrow calls `finish()`, the same as the system back button.
+- `Scaffold` + `TopAppBar` with a back arrow (`arrow_back`, `contentDescription` "Back"). The arrow and the system back button both leave through `SettingsActivity.leave()`, which first runs the pending recalculation, if any.
 - Content is a scrolling `Column` of sections, each a header followed by Material 3 `ListItem`s. No preference library: Material 3 for Compose has none, and `androidx.preference` uses XML views and Fragments.
-- The help button `(?)` is only added when a setting needs an explanation (step 4: radius and cell size trigger reprocessing). It then goes in the `TopAppBar` actions, top right.
+- Two row types besides the opacity slider: **choice** (`ChoiceItem`: headline, current value below, tap opens a single-choice `AlertDialog` with radio rows and Cancel) and **switch** (`SwitchItem`: headline, one-line explanation, `Switch` at the end; the whole row toggles). The trail color shows a color dot in the row and in each option.
+- No help button `(?)`: each switch explains itself in its supporting text, and the recalculation note says what will happen.
 
 ## Settings
 
 | Section | Setting | Control | Storage | Default |
 | --- | --- | --- | --- | --- |
-| Advanced | Fog opacity | `Slider` 0–100 %, steps of 5, value at the end of the headline row (a trailing slot would center it on the whole item, preview included) | `SharedPreferences` `ui` → `fogOpacity` (unchanged) | 70 % |
+| Map | Open the map in | Choice: Free / Follow, north up / Follow, rotating with the compass | `startMode` | Free |
+| Map | Battery saver | Switch. GPS every 15 s, trail redrawn every 30 s | `batterySaver` | Off |
+| Advanced | Fog opacity | `Slider` 0–100 %, steps of 5, value at the end of the headline row (a trailing slot would center it on the whole item, preview included) | `fogOpacity` (unchanged) | 70 % |
+| Advanced | Cell size | Choice: 10 / 25 / 50 / 100 m. Recalculation note while changed | `cellSize` | 25 m |
+| Advanced | Reveal radius | Choice: 1.2× / 2× / 3× the cell, with the meters for the current cell size. Recalculation note while changed | `radiusFactor` | 1.2× |
+| Advanced | Fog when zoomed out | Choice: thinner the more explored (`DENSITY`) / clear if anything inside is explored (`ANY_CELL`) | `fogMode` | `DENSITY` |
+| Advanced | Slow phone | Switch. Coarser fog (8 px detail, at most 1,500 pieces), trail redrawn every 30 s | `slowPhone` | Off |
+| Advanced | Fog detail when zoomed out | Choice: High / Medium / Low (2 / 4 / 8 px). Hidden while slow phone is on | `fogDetail` | Medium |
+| Advanced | GPS interval | Choice: 2 / 5 / 10 / 30 s. Hidden while battery saver is on | `gpsInterval` | 5 s |
+| Advanced | Zoom when centering on you | Choice: 12–17 | `userZoom` | 14 |
+| Advanced | Recent trail | Switch. When on, shows the three rows below | `showTrail` | On |
+| Advanced | Trail duration | Choice: 15 / 30 / 60 / 120 min | `trailMinutes` | 60 min |
+| Advanced | Trail color | Choice with color dots: orange, yellow, pink, cyan | `trailColor` | Orange |
+| Advanced | Trail width | Choice: 2 / 4 / 6 px | `trailWidth` | 4 px |
 | About | Version | Read-only `ListItem` with `versionName (versionCode)` from `packageManager.getPackageInfo` (`BuildConfig` is off in this project) | — | — |
 
-- Changes are saved as the slider moves, with no "Save" button. Android settings screens apply changes immediately.
-- The main screen reads `fogOpacity` again when it comes back to the foreground (`onResume`) and sets it on the fog layer. It is only a layer property: nothing is recalculated. Update the trigger row in `docs/recalculations.md` and the "where" column in `docs/configurable-values.md` when implementing it.
+- All keys are in `SharedPreferences` `ui`; the values and their lists are `AppSettings` in `core/Settings.kt`.
+- Changes are saved at once, with no "Save" button, as Android settings screens do. **Except cell size and reveal radius:** both force rebuilding every stored cell, so they are held until the user leaves. Meanwhile a small note (`bodySmall`, tertiary color) under each changed one says "Will be recalculated when you close this screen". Setting a value back to the stored one removes its note. On leaving, the content is replaced by a progress bar and "Recalculating the explored area…" and back is disabled until the single rebuild ends (`docs/recalculations.md`).
+- The main screen reads every setting again when it comes back to the foreground (`onStart`); the fog opacity is set on the fog layer in `onResume`.
 - The Advanced section is always visible: every user is a tester for now (< 100 testers installing the APK by hand). Hide it when the app reaches regular users.
 - The version row lets testers say which APK they run when reporting a problem.
 
@@ -54,17 +82,9 @@ Settings covers the map, so a small card under the opacity slider shows the effe
 - The IGN attribution goes under the card (`IgnAttribution()`), as on every screen that shows IGN imagery.
 - Decorative: `contentDescription = null`, since the slider's value already tells screen readers the opacity.
 
-### Planned (roadmap step 4)
+### Planned
 
-Not built now. They go in a "Exploration" section above Advanced:
-
-| Setting | Control |
-| --- | --- |
-| Reveal radius | `ListItem` that opens a single-choice `AlertDialog` (closed list) |
-| Cell size | Same |
-| Alias | `ListItem` that opens a dialog with an `OutlinedTextField` |
-
-Saving radius or cell size asks for confirmation and starts reprocessing (design document, "Ajustes").
+The alias, with the exchange: a `ListItem` in the Map section that opens a dialog with an `OutlinedTextField`.
 
 ## States
 
@@ -75,6 +95,9 @@ Each state has a `@Preview` and a Roborazzi reference image.
 | 1 | Default | Opacity 70 % |
 | 2 | Opacity at limits | 0 % and 100 % (checks the trailing text width and the preview's two ends) |
 | 3 | Dark | State 1 in the dark scheme |
+| 4 | All rows | Defaults in a tall window: every row visible, trail sub-rows included |
+| 5 | Pending and grouped | Cell size 50 m and radius 2× (two recalculation notes), slow phone and battery saver on (fog detail and GPS interval hidden), trail off (its sub-rows hidden) |
+| 6 | Recalculating | Progress bar and message instead of the content |
 
 ## Strings
 
@@ -87,6 +110,8 @@ New keys. `fog_opacity` is kept (now the setting's headline), and the title reus
 | `version` | Version | Versión |
 | `percent` | %1$d %% | %1$d %% |
 | `action_back` | Back | Atrás |
+
+Decision 0011 adds `section_map`, `start_mode`, `location_mode_*` (shared with the my location menu), `battery_saver(_detail)`, `recalculate_on_close`, `recalculating`, `cell_size`, `reveal_radius`, `radius_option`, `fog_mode(_density|_any_cell)`, `slow_phone(_detail)`, `fog_detail`, `detail_high|medium|low`, `gps_interval`, `user_zoom`, `show_trail(_detail)`, `trail_duration`, `trail_color`, `color_*`, `trail_width` and the unit formats `meters`, `seconds`, `minutes`, `pixels`; see `res/values*/strings.xml`.
 
 ## Exceptions
 

@@ -50,7 +50,6 @@ class TrackingService : Service() {
 
         private const val CHANNEL_ID = "tracking"
         private const val NOTIFICATION_ID = 1
-        private const val INTERVAL_MS = 5_000L
     }
 
     // Not cancelled on destroy, so writes of the last points still finish.
@@ -69,8 +68,9 @@ class TrackingService : Service() {
             val points = result.locations.map { GpsPoint(it.latitude, it.longitude, it.time, if (it.hasAccuracy()) it.accuracy else null) }
             val first = nextIndex
             nextIndex += points.size
-            val db = (application as FogHikeApp).db
-            scope.launch { recordPoints(db, trackId, first, points, Source.LIVE) }
+            val app = application as FogHikeApp
+            // Settings read per batch: a cell size change in Settings applies to the next points.
+            scope.launch { recordPoints(app.db, app.settings.grid, trackId, first, points, Source.LIVE) }
         }
     }
 
@@ -96,7 +96,9 @@ class TrackingService : Service() {
             return
         }
 
-        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, INTERVAL_MS).build()
+        // A changed interval (Settings) applies from the next exploration.
+        val interval = (application as FogHikeApp).settings.gpsIntervalMs
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, interval).build()
         client.requestLocationUpdates(request, callback, Looper.getMainLooper())
         // System broadcast only, so no exported/not-exported flag is needed.
         registerReceiver(locationSwitch, IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION))
