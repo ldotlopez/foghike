@@ -3,7 +3,7 @@
 ## Fog
 
 - **Animated fog (optional).** Setting to show real-looking moving fog, generated procedurally (e.g. scrolling/evolving noise), only while the screen is on and the map is visible; stop animating when the screen is off or the app is in the background. Default stays the current static texture to save battery.
-- **Soft fog edges.** The fog still ends in hard cell-shaped edges; a feathered border would look more natural.
+- **Soft fog edges.** The fog still ends in hard cell-shaped edges; blur (feather) the border so it looks more natural.
 - **Less visible fog pattern.** At low zoom the 256 px texture visibly repeats as a grid of blobs; use a larger texture or broader noise (lower-frequency octaves).
 
 ## Tracks
@@ -14,6 +14,16 @@
   - Rejected for now: a cell↔track link table. Deleting would be instant, but the table grows several rows per point (each point touches ~4–5 cells) and insertion gets more complex. Reconsider only if full reprocessing is too slow on a real device (cost grows with the total number of stored points; not measured yet).
   - UI: a simple list of tracks (date, source, name, point count) with a delete button and a confirmation, plus a progress indicator while cells are rebuilt.
   - Room schema change: the database is at version 2 with an auto migration; adding `Track` needs version 3 and a migration that creates a `Track` row for every existing `trackId` in `track_point`.
+- **Track and import management screen.** Design (spec in `docs/ui/screens/`) and implement the screen that lists recordings and imports and lets the user delete them; it is the UI of "Deletable tracks" above.
+
+## Settings
+
+- **Rename the Debug section to Advanced.** Section header and strings (`section_debug`), `docs/ui/screens/settings.md` and the main screen spec.
+- **One recalculation when leaving Settings.** When several changed preferences each need a recalculation, run it once when the user leaves the Settings screen instead of after each change. Under every changed preference that needs it, show a small warning line (smaller font) such as "Will be recalculated when you close this screen".
+
+## Docs
+
+- **README in Spanish.** Translate `README.md` to Spanish.
 
 ## UI
 
