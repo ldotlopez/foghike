@@ -115,7 +115,7 @@
     <string name="detail_low">Low</string>
     <string name="gps_interval">GPS interval</string>
     <string name="seconds">%1$d s</string>
-    <string name="user_zoom">Zoom when centering on you</string>
+    <string name="user_zoom">Zoom when opening the map</string>
     <string name="show_trail">Recent trail</string>
     <string name="show_trail_detail">Line over the map where you walked recently</string>
     <string name="trail_duration">Trail duration</string>

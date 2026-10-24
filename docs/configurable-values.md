@@ -17,7 +17,7 @@ Settings values live in `AppSettings` (`core/Settings.kt`: defaults, closed opti
 | Slow phone | Settings → Advanced; `slowPhone` | On/off | Off | No | Fog detail 8 px, at most 1,500 fog pieces, trail refresh 30 s. While on, the fog detail row is hidden |
 | Fog detail | Settings → Advanced; `fogDetail` | High 2 px, Medium 4 px, Low 8 px | 4 px | No | `minPixels` of `lodLevelFor`: minimum on-screen cell size before a coarser level |
 | GPS interval | Settings → Advanced; `gpsInterval` | 2, 5, 10, 30 s | 5 s | No | Read when exploring starts |
-| Zoom when centering on you | Settings → Advanced; `userZoom` | 12–17 | 14 | No | At startup and when the my location button starts following from Free |
+| Zoom when opening the map | Settings → Advanced; `userZoom` | 12–17 | 14 | No | Only at startup, when centering on the user. The my location button keeps the current zoom |
 | Recent trail | Settings → Advanced; `showTrail` | On/off | On | No | When on, shows the three rows below |
 | Trail duration | Settings → Advanced; `trailMinutes` | 15, 30, 60, 120 min | 60 min | No | The design doc's `trailMinutes` |
 | Trail color | Settings → Advanced; `trailColor` | Orange `#ff7a1a`, yellow `#ffd400`, pink `#ff40c0`, cyan `#00e5ff` | Orange | No | No red: that is the record button |

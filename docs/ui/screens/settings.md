@@ -31,7 +31,7 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 │   Will be recalculated when you …    │  note (bodySmall, tertiary) while changed
 │   Reveal radius · Fog when zoomed out│
 │   Slow phone (switch) · Fog detail   │  fog detail hidden while slow phone is on
-│   GPS interval · Zoom when centering │  GPS interval hidden while battery saver is on
+│   GPS interval · Zoom when opening   │  GPS interval hidden while battery saver is on
 │   Recent trail (switch)              │  when on: duration, color (swatch), width
 │                                      │
 │ About                                │
@@ -59,7 +59,7 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 | Advanced | Slow phone | Switch. Coarser fog (8 px detail, at most 1,500 pieces), trail redrawn every 30 s | `slowPhone` | Off |
 | Advanced | Fog detail when zoomed out | Choice: High / Medium / Low (2 / 4 / 8 px). Hidden while slow phone is on | `fogDetail` | Medium |
 | Advanced | GPS interval | Choice: 2 / 5 / 10 / 30 s. Hidden while battery saver is on | `gpsInterval` | 5 s |
-| Advanced | Zoom when centering on you | Choice: 12–17 | `userZoom` | 14 |
+| Advanced | Zoom when opening the map | Choice: 12–17. Only at startup; the my location button keeps the current zoom | `userZoom` | 14 |
 | Advanced | Recent trail | Switch. When on, shows the three rows below | `showTrail` | On |
 | Advanced | Trail duration | Choice: 15 / 30 / 60 / 120 min | `trailMinutes` | 60 min |
 | Advanced | Trail color | Choice with color dots: orange, yellow, pink, cyan | `trailColor` | Orange |
