@@ -1,4 +1,4 @@
-package com.cuarentaydos.foghike.ui
+package com.cuarentaydos.foghike.core
 
 import com.cuarentaydos.foghike.data.TrackPoint
 import org.junit.Assert.assertEquals

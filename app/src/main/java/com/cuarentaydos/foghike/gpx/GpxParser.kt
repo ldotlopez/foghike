@@ -1,7 +1,7 @@
 package com.cuarentaydos.foghike.gpx
 
 import android.util.Xml
-import com.cuarentaydos.foghike.GpsPoint
+import com.cuarentaydos.foghike.core.GpsPoint
 import org.xmlpull.v1.XmlPullParser
 import java.io.InputStream
 import java.time.OffsetDateTime

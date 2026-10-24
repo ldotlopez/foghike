@@ -18,10 +18,10 @@ import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import com.cuarentaydos.foghike.FogHikeApp
-import com.cuarentaydos.foghike.GpsPoint
+import com.cuarentaydos.foghike.core.GpsPoint
 import com.cuarentaydos.foghike.R
 import com.cuarentaydos.foghike.data.Source
-import com.cuarentaydos.foghike.recordPoints
+import com.cuarentaydos.foghike.core.recordPoints
 import com.cuarentaydos.foghike.ui.MainActivity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest

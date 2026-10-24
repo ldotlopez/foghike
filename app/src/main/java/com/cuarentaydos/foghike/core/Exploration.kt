@@ -1,4 +1,4 @@
-package com.cuarentaydos.foghike
+package com.cuarentaydos.foghike.core
 
 import androidx.room.withTransaction
 import com.cuarentaydos.foghike.data.AppDatabase
@@ -10,6 +10,7 @@ import com.cuarentaydos.foghike.geo.LatLon
 import com.cuarentaydos.foghike.geo.REVEAL_RADIUS_METERS
 import com.cuarentaydos.foghike.geo.cellsInRadius
 import com.cuarentaydos.foghike.geo.coarseCells
+import com.cuarentaydos.foghike.geo.trackFingerprint
 
 /** Inaccurate points are kept but ignored by everything the user sees. */
 fun isAccurate(accuracy: Float?) = accuracy == null || accuracy <= REVEAL_RADIUS_METERS
@@ -28,6 +29,8 @@ suspend fun recordPoints(db: AppDatabase, trackId: String, firstIndex: Int, poin
     for (p in points.filter { isAccurate(it.accuracy) }) {
         cells += cellsInRadius(LatLon(p.lat, p.lon), CELL_SIZE_METERS, REVEAL_RADIUS_METERS)
     }
+    // shortcut: System.currentTimeMillis and withTransaction are JVM/Android-only; at the iOS port use
+    // kotlin.time.Clock and db.useWriterConnection { it.immediateTransaction { ... } }.
     val now = System.currentTimeMillis()
     db.withTransaction {
         db.trackPointDao().insert(
@@ -40,4 +43,15 @@ suspend fun recordPoints(db: AppDatabase, trackId: String, firstIndex: Int, poin
         cellDao.insertIgnoringExisting(coarse.keys.map { RevealedCell(it.id, it.size, it.row, it.col, now, source, 0) })
         coarse.forEach { (cell, n) -> cellDao.addToCount(cell.id, n) }
     }
+}
+
+/**
+ * Stores a whole route read from a file. Its id is [idPrefix] plus a fingerprint of its coordinates,
+ * so a route already imported is skipped instead of duplicated: returns false in that case.
+ */
+suspend fun importTrack(db: AppDatabase, idPrefix: String, points: List<GpsPoint>, source: String): Boolean {
+    val trackId = idPrefix + trackFingerprint(points.map { LatLon(it.lat, it.lon) })
+    if (db.trackPointDao().exists(trackId)) return false
+    recordPoints(db, trackId, 0, points, source)
+    return true
 }

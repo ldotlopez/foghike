@@ -1,22 +1,14 @@
 package com.cuarentaydos.foghike.ui
 
+import com.cuarentaydos.foghike.core.fogPieces
 import com.cuarentaydos.foghike.data.CellDao
 import com.cuarentaydos.foghike.geo.Box
 import com.cuarentaydos.foghike.geo.CELL_SIZE_METERS
-import com.cuarentaydos.foghike.geo.Cell
-import com.cuarentaydos.foghike.geo.LOD_LEVELS
-import com.cuarentaydos.foghike.geo.colRange
-import com.cuarentaydos.foghike.geo.fogDensity
-import com.cuarentaydos.foghike.geo.fogRects
 import com.cuarentaydos.foghike.geo.lodLevelFor
-import com.cuarentaydos.foghike.geo.lodSize
-import com.cuarentaydos.foghike.geo.rowRange
 import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.style.expressions.Expression.get
 import org.maplibre.android.style.expressions.Expression.literal
@@ -35,24 +27,12 @@ import org.maplibre.geojson.Polygon
 
 private const val FOG_TEXTURE = "fog-texture"
 private const val FOG_TEXTURE_SIZE = 256
-private const val MAX_FOG_RECTS = 5_000
 private const val DENSITY = "density"
 
-/** How revealed coarse (LOD) cells are drawn. Alternatives: "Niebla a zoom bajo" in the design doc. */
-enum class FogMode {
-    /** Clear as soon as any revealed base cell lies inside: the trace looks wider when zooming out. */
-    ANY_CELL,
-    /** Partly fogged, thinner the more of the cell has been explored ([fogDensity]). */
-    DENSITY,
-}
-
-// shortcut: picked in code to compare modes on the device; move to Settings if more than one stays.
-val FOG_MODE = FogMode.DENSITY
-
 /**
- * Fog over the whole map except revealed cells. It is computed only for the visible region plus one
- * screen of margin on each side, at the LOD level that fits the zoom, and only when the camera stops
- * outside the computed region or the cells change — never per frame.
+ * Fog over the whole map except revealed cells. It is computed ([fogPieces]) only for the visible
+ * region plus one screen of margin on each side, at the LOD level that fits the zoom, and only when
+ * the camera stops outside the computed region or the cells change — never per frame.
  */
 class FogLayer(style: Style, private val cells: CellDao, private val scope: CoroutineScope, opacity: Float) {
     private val source = GeoJsonSource("fog")
@@ -83,26 +63,7 @@ class FogLayer(style: Style, private val cells: CellDao, private val scope: Coro
         val area = visible.expanded()
         job?.cancel()
         job = scope.launch {
-            var lvl = level
-            var features: List<Feature>
-            while (true) {
-                val size = lodSize(CELL_SIZE_METERS, lvl)
-                val rows = rowRange(area, size)
-                val cols = colRange(area, size)
-                val revealed = cells.inRange(size, rows.first, rows.last, cols.first, cols.last)
-                val fogLevel = lvl
-                features = withContext(Dispatchers.Default) {
-                    val rects = fogRects(area, size, revealed.map { Cell(size, it.gridRow, it.gridCol) })
-                    val partial = if (FOG_MODE != FogMode.DENSITY) emptyList() else revealed.mapNotNull {
-                        val density = fogDensity(it.revealedCount, fogLevel)
-                        if (density > 0f) Cell(size, it.gridRow, it.gridCol).bounds().toFeature(density) else null
-                    }
-                    rects.map { it.toFeature(1f) } + partial
-                }
-                // Too many rectangles: fall back to a coarser level instead of not drawing.
-                if (features.size <= MAX_FOG_RECTS || lvl == LOD_LEVELS - 1) break
-                lvl++
-            }
+            val features = fogPieces(cells, area, level).map { it.box.toFeature(it.density) }
             source.setGeoJson(FeatureCollection.fromFeatures(features))
             computed = area
             computedLevel = level

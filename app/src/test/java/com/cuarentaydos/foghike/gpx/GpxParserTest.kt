@@ -1,6 +1,6 @@
 package com.cuarentaydos.foghike.gpx
 
-import com.cuarentaydos.foghike.GpsPoint
+import com.cuarentaydos.foghike.core.GpsPoint
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.kxml2.io.KXmlParser
