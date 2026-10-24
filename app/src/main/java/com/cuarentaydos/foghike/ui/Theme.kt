@@ -50,7 +50,7 @@ fun FogHikeTheme(content: @Composable () -> Unit) {
  */
 @Composable
 fun MapPanel(sides: WindowInsetsSides, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Surface(modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)) {
+    Surface(modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)) {
         Column(
             Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(sides + WindowInsetsSides.Horizontal)).padding(8.dp),
             content = content,
