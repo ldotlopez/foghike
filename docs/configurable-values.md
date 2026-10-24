@@ -34,7 +34,7 @@ Inventory of the values and behaviors the user can already change, or that depen
 | `LOD_LEVELS` | `geo/Grid.kt` | 4 | Levels: 25 m, 200 m, 1.6 km, 12.8 km | Yes (coarse cells) | No |
 | `MAX_FOG_RECTS` | `core/FogCells.kt` | 5,000 | Above it, a coarser level is used. Protects old phones | No | Maybe ("slow phone" mode) |
 | `FOG_TEXTURE_SIZE` | `ui/FogLayer.kt` | 256 px | Noise texture size; repetition shows at low zoom (`PLAN.md`) | No | No |
-| Texture colors and alpha | `fogTexture` in `ui/FogLayer.kt` (inline numbers) | Blue-grey to white, alpha 205–255 | Fog look | No | Maybe (fog theme, with the animated fog in `PLAN.md`) |
+| Texture colors and alpha | `fogTexture` in `ui/FogLayer.kt` (inline numbers) | Blue-grey to white, opaque (the fog opacity setting does the thinning) | Fog look | No | Maybe (fog theme, with the animated fog in `PLAN.md`) |
 | Computation margin | `Box.expanded()` in `geo/Grid.kt` | One screen per side (3×3) | How far the map can move without recomputing fog | No | No |
 
 ### Trail and position

@@ -115,7 +115,7 @@ fun fogTexture(size: Int, seed: Int = 7): IntArray {
         val r = (170 + 75 * n).toInt()
         val g = (178 + 70 * n).toInt()
         val b = (188 + 62 * n).toInt()
-        val a = (205 + 50 * n).toInt() // thinner patches let a hint of the map through
-        (a shl 24) or (r shl 16) or (g shl 8) or b
+        // Opaque: the layer opacity alone thins the fog, so 100 % fully covers the map.
+        (0xff shl 24) or (r shl 16) or (g shl 8) or b
     }
 }
