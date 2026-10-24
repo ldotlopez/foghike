@@ -155,7 +155,7 @@ class MainActivity : ComponentActivity() {
                 MainScreen(
                     map = { AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize()) },
                     cellCount = cellCount,
-                    mapCount = areas?.size ?: 0,
+                    mapCount = areas?.size,
                     tracking = tracking,
                     locationMode = locationMode,
                     snackbar = snackbar,

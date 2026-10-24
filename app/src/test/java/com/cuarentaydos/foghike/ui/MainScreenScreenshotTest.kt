@@ -52,4 +52,5 @@ class MainScreenScreenshotTest {
 
     @Test fun s8Following() = capture { MainFollowing() }
     @Test fun s9Compass() = capture { MainCompass() }
+    @Test fun s10Loading() = capture { MainLoading() }
 }
