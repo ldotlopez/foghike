@@ -15,6 +15,10 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 │ ┌──────────────────────────────────┐ │
 │ │ Fog opacity                 70 % │ │  ListItem: headline + trailing value
 │ │ ●━━━━━━━━━━━━━━━━━━━━━○───────── │ │  Slider 0–100, step 5
+│ │ ┌──────────────────────────────┐ │ │
+│ │ │ ░░▒▒ IGN sample + fog ▒▒░░   │ │ │  fog preview card, updates live
+│ │ └──────────────────────────────┘ │ │
+│ │ PNOA cedido por © IGN de España  │ │  required: the preview shows IGN imagery
 │ └──────────────────────────────────┘ │
 │                                      │
 │ About                                │
@@ -37,8 +41,18 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 
 - Changes are saved as the slider moves, with no "Save" button. Android settings screens apply changes immediately.
 - The main screen reads `fogOpacity` again when it comes back to the foreground (`onResume`) and sets it on the fog layer. It is only a layer property: nothing is recalculated. Update the trigger row in `docs/recalculations.md` and the "where" column in `docs/configurable-values.md` when implementing it.
-- The Debug section is always visible: every user is a tester for now. See open question 2.
+- The Debug section is always visible: every user is a tester for now (< 100 testers installing the APK by hand). Hide it when the app reaches regular users.
 - The version row lets testers say which APK they run when reporting a problem.
+
+### Fog preview
+
+Settings covers the map, so a small card under the opacity slider shows the effect while moving it.
+
+- **Background:** one IGN orthophoto tile (256 × 256, zoom 15–16, a hiking area with paths and trees), bundled as `res/drawable-nodpi/fog_preview_sample.jpg` (a few tens of KB). It is fetched once from `IGN_TILE_URL` when implementing this, and committed.
+- **Fog:** the same texture the map uses, `fogTexture(FOG_TEXTURE_SIZE)` from `FogLayer.kt`, turned into an `ImageBitmap` once and drawn over the background with alpha = opacity. It reuses the code, so the preview matches the map.
+- Shown at full density (as unexplored fog), not the partial density of low zoom levels.
+- The IGN attribution goes under the card (`IgnAttribution()`), as on every screen that shows IGN imagery.
+- Decorative: `contentDescription = null`, since the slider's value already tells screen readers the opacity.
 
 ### Planned (roadmap step 4)
 
@@ -59,7 +73,7 @@ Each state has a `@Preview` and a Roborazzi reference image.
 | # | State | Differences |
 | --- | --- | --- |
 | 1 | Default | Opacity 70 % |
-| 2 | Opacity at limits | 0 % and 100 % (checks the trailing text width) |
+| 2 | Opacity at limits | 0 % and 100 % (checks the trailing text width and the preview's two ends) |
 | 3 | Dark | State 1 in the dark scheme |
 
 ## Strings
@@ -77,10 +91,8 @@ New keys. `fog_opacity` is kept (now the setting's headline).
 
 ## Exceptions
 
-- No map, toolbar, chips or attribution, and text labels instead of icons: the guidelines exempt Settings.
+- No map, toolbar or chips, and text labels instead of icons: the guidelines exempt Settings. The IGN attribution does appear, under the fog preview.
 
 ## Open questions
 
-1. **Building blocks.** Plain Material 3 `ListItem`s in a `Column` (above), or a Compose preference library (e.g. `me.zhanghai.compose.preference`)?
-2. **Debug section visibility.** Always visible (above), or hidden until the version row is tapped seven times (the Android "developer options" pattern)?
-3. **Seeing the fog while adjusting.** Settings covers the map, so the opacity can't be judged while moving the slider. Accept it (go back and look), or add a small preview (a sample image with the fog over it) next to the slider?
+None.
