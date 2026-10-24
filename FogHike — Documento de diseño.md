@@ -1,10 +1,10 @@
-# FogHike — Documento de diseño
+# Hike Explorer — Documento de diseño
 
 Oct 23, 2026 · actualizado Oct 24, 2026 · @Luis
 
 ## Visión y concepto
 
-FogHike es una app Android de senderismo en la que el mapa empieza cubierto por una niebla opaca que se despeja alrededor de los lugares por los que el usuario camina, igual que en los juegos de estrategia.
+Hike Explorer (nombre interno FogHike) es una app Android de senderismo en la que el mapa empieza cubierto por una niebla opaca que se despeja alrededor de los lugares por los que el usuario camina, igual que en los juegos de estrategia.
 
 La niebla se revela a partir de la posición GPS en vivo o de rutas ya recorridas: el usuario puede importar ficheros GPX (y, más adelante, el JSON que exporta la Cronología de Google Maps desde el móvil) para revelar el mapa de forma retroactiva. Los mapas base son vistas satélite del Instituto Geográfico Nacional (IGN) de España, descargadas para usarse sin conexión.
 
@@ -307,3 +307,4 @@ El siguiente paso lógico es generar el mapa general y probar la app en un dispo
 - Niebla por capas: cubre toda la pantalla; se calcula solo para la ventana visible con margen y con el nivel de detalle que corresponde al zoom.
 - Persistencia: Room KMP (≥ 2.7) en lugar de migrar a SQLDelight; `data/` se escribe compatible desde hoy.
 - Versión mínima: Android 12 (API 31).
+- Marca: la app se llama «Hike Explorer» para el usuario; FogHike se mantiene como nombre interno (paquete, `applicationId`, clases, ficheros y documentación técnica).
