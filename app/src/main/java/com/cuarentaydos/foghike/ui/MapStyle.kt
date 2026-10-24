@@ -26,7 +26,6 @@ val SPAIN_BOUNDS = Box(35.9, -9.6, 43.9, 4.4)
 /** Below this zoom nothing is drawn, so the camera is not allowed further out. */
 const val BASE_MAP_MIN_ZOOM = 5
 private const val BASE_MAP_MAX_ZOOM = 9
-const val BACKGROUND_COLOR = "#101418" // also behind the map view while the style loads
 
 /** Moves the camera to the user, if location is allowed; otherwise the camera stays where it is. */
 @SuppressLint("MissingPermission") // checked just below

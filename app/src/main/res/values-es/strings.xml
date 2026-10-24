@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="start_exploring">Iniciar exploración</string>
-    <string name="stop_exploring">Parar exploración</string>
-    <string name="maps">Mapas</string>
-    <string name="import_gpx">Importar GPX</string>
     <string name="fog_opacity">Opacidad de la niebla</string>
-    <string name="status">Celdas reveladas: %1$d · Mapas offline: %2$d</string>
-    <string name="no_maps">Aún no hay mapas offline: descarga uno desde Mapas.</string>
     <string name="precise_location_required">Explorar necesita la ubicación precisa.</string>
     <string name="gpx_imported">Importados %1$d puntos de %2$d ficheros.</string>
     <string name="gpx_failed">%1$d ficheros no se pudieron leer.</string>
@@ -16,16 +10,8 @@
     <string name="tracking_notification">Explorando: registrando tu ruta</string>
     <string name="tracking_location_off">Ubicación desactivada: actívala para seguir explorando</string>
 
-    <string name="download_help">Rodea con un dedo la zona a descargar; usa dos dedos para mover y ampliar el mapa. Puedes dibujar varias. Descargar necesita conexión.</string>
-    <string name="min_zoom">Zoom mín.</string>
-    <string name="max_zoom">Zoom máx.</string>
-    <string name="clear">Limpiar</string>
-    <string name="download">Descargar</string>
-    <string name="invalid_zoom">El zoom debe estar entre 0 y 19, y el mínimo no puede superar al máximo.</string>
     <string name="no_areas">Dibuja antes al menos un área.</string>
     <string name="too_many_tiles">Demasiados tiles (%1$d, máximo %2$d): usa áreas más pequeñas o menos niveles de zoom.</string>
-    <string name="download_progress">Áreas pendientes: %1$d · tile %2$d/%3$d</string>
-    <string name="download_waiting">Áreas pendientes: %1$d · esperando conexión</string>
     <string name="download_done">Descarga terminada.</string>
     <string name="download_stopped">Descarga cancelada o fallida.</string>
     <string name="download_channel">Descarga de mapas</string>
@@ -35,4 +21,44 @@
     <string name="background_location_why">Para no perder puntos GPS si Android detiene la app mientras exploras, elige \"Permitir todo el tiempo\" en la siguiente pantalla.</string>
     <string name="continue_button">Continuar</string>
     <string name="not_now">Ahora no</string>
+    <string name="action_help">Ayuda</string>
+    <string name="close">Cerrar</string>
+    <string name="action_explore">Empezar a explorar</string>
+    <string name="action_stop">Dejar de explorar</string>
+    <string name="action_maps">Mapas sin conexión</string>
+    <string name="action_import_gpx">Importar GPX</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="action_show_toolbar">Mostrar acciones</string>
+    <string name="action_hide_toolbar">Ocultar acciones</string>
+    <string name="action_follow">Centrar en mi ubicación</string>
+    <string name="action_compass">Girar el mapa con la brújula</string>
+    <string name="action_north_up">Mantener el norte arriba</string>
+    <string name="waiting_location">Esperando tu ubicación…</string>
+    <string name="chip_status">%1$s celdas reveladas, %2$d mapas sin conexión</string>
+    <string name="chip_cells">%1$s celdas reveladas</string>
+    <string name="chip_no_maps">Ningún mapa descargado</string>
+    <string name="help_main">El mapa empieza cubierto de niebla. Pulsa el botón rojo de grabar para empezar a explorar: la niebla se despeja alrededor de los sitios por los que caminas, también con la pantalla apagada. Pulsa parar al terminar.\n\nEl icono del mapa descarga mapas de satélite para usarlos sin conexión, y el del fichero importa rutas que ya hiciste (ficheros GPX).\n\nLa etiqueta de arriba muestra las cuadrículas que has revelado y los mapas sin conexión que tienes.\n\nEl botón encima de la barra centra el mapa en ti y te sigue; púlsalo otra vez para girar el mapa con la brújula.</string>
+    <string name="section_debug">Depuración</string>
+    <string name="section_about">Acerca de</string>
+    <string name="version">Versión</string>
+    <string name="percent">%1$d %%</string>
+    <string name="action_back">Atrás</string>
+    <string name="action_download">Descargar las áreas dibujadas</string>
+    <string name="action_undo_area">Quitar la última área</string>
+    <string name="action_clear_areas">Quitar todas las áreas</string>
+    <string name="action_zoom_range">Niveles de zoom</string>
+    <string name="action_recenter">Centrar en mi ubicación</string>
+    <string name="action_view">Ver</string>
+    <string name="chip_tiles">%1$s / %2$s tiles</string>
+    <string name="zoom_range">Zoom %1$d – %2$d</string>
+    <string name="help_download_title">Descargar mapas</string>
+    <string name="help_download">Rodea con un dedo la zona a descargar; usa dos dedos para mover y ampliar el mapa. Puedes dibujar varias áreas: deshacer quita la última y la papelera las quita todas.\n\nLa etiqueta de arriba cuenta los tiles a descargar; se pone en rojo si pasan del límite. El botón de zoom elige cuánto detalle descargar: cada nivel más multiplica los tiles por unas cuatro.\n\nLas áreas que ya descargaste se ven con borde azul. Descargar necesita conexión y sigue en segundo plano si sales de esta pantalla.</string>
+    <plurals name="chip_progress">
+        <item quantity="one">Queda %1$d área · %2$d %%</item>
+        <item quantity="other">Quedan %1$d áreas · %2$d %%</item>
+    </plurals>
+    <plurals name="chip_waiting">
+        <item quantity="one">Queda %1$d área · sin conexión</item>
+        <item quantity="other">Quedan %1$d áreas · sin conexión</item>
+    </plurals>
 </resources>

@@ -33,7 +33,7 @@ El stack elegido es Kotlin Multiplatform con MapLibre nativo, priorizando tener 
 
 - **Multiplataforma:** hoy el código es Kotlin para Android, organizado para pasar a Kotlin Multiplatform sin reescribirlo. Se pensó el stack con una futura versión iOS en mente y se compararon Kotlin Multiplatform, Flutter y React Native. Flutter y React Native se descartaron por peor rendimiento en overlays personalizados sobre el mapa.
 - **Mapa:** MapLibre, que tiene SDK nativo en Android e iOS.
-- **Interfaz:** Jetpack Compose con Material 3 y color dinámico (los colores salen del fondo de pantalla del teléfono, disponible desde Android 12). El mapa sigue siendo la vista nativa de MapLibre, que Compose coloca bajo los paneles con `AndroidView`; cada pantalla es una Activity sin librería de navegación ni ViewModel. Al portar a iOS se puede pasar a Compose Multiplatform y compartir las pantallas, o hacerlas en SwiftUI.
+- **Interfaz:** Jetpack Compose con Material 3 y una paleta fija de marca generada a partir del verde del icono (`#3DDC84`), en claro y oscuro. Las reglas de diseño de cada pantalla están en `docs/ui/`. El mapa sigue siendo la vista nativa de MapLibre, que Compose coloca bajo los paneles con `AndroidView`; cada pantalla es una Activity sin librería de navegación ni ViewModel. Al portar a iOS se puede pasar a Compose Multiplatform y compartir las pantallas, o hacerlas en SwiftUI.
 - **Un solo módulo:** hoy existe únicamente el módulo Android `app`. La lógica pura (`geo/` y `data/`) se extraerá a un módulo `shared` de KMP cuando haga falta portar a iOS, no antes.
 - **Persistencia:** Room (2.7 o superior, con KSP). Desde la 2.7 Room también funciona en iOS dentro de Kotlin Multiplatform con su driver SQLite incluido, así que al portar no hace falta cambiar a SQLDelight: basta con que `data/` se escriba desde hoy de forma compatible (ver «Estructura y convenciones»).
 - **Versiones de Android:** mínimo Android 12 (API 31), porque algunos usuarios usan móviles antiguos como GPS de senderismo; `targetSdk` y `compileSdk` en la última versión estable. Ver «Compatibilidad con Android 12».
@@ -213,10 +213,10 @@ El PoC tiene dos pantallas propias y usa el selector de ficheros del sistema par
 
 | Pantalla | Qué muestra | Acciones |
 | --- | --- | --- |
-| Principal | Mapas descargados bajo la niebla, deslizador de opacidad y contador de celdas reveladas | Iniciar o parar la exploración; abrir la descarga de mapas; importar GPX; ajustar la opacidad de la niebla |
-| Descarga de mapas | Mapa centrado en el usuario, texto de ayuda, campos de zoom mínimo y máximo y progreso de la descarga | Dibujar áreas a mano alzada / mover el mapa; limpiar áreas; descargar |
+| Principal | Mapas descargados bajo la niebla, etiqueta con celdas reveladas y mapas, posición y rastro | Iniciar o parar la exploración (se pliega la barra); abrir la descarga de mapas; importar GPX; centrar y seguir la posición, con brújula; ayuda `(?)`. Detalle en `docs/ui/screens/main.md` |
+| Descarga de mapas | Mapa centrado en el usuario con las áreas ya descargadas, recuento de tiles frente al límite, progreso de la descarga y ayuda `(?)` (se abre sola la primera vez) | Dibujar áreas a mano alzada / mover el mapa; deshacer la última área o quitarlas todas; elegir el rango de zoom; recentrar; descargar. Detalle en `docs/ui/screens/download.md` |
 | Selector de ficheros | Selector del sistema | Elegir uno o varios GPX a importar |
-| Ajustes | Radio de revelado y tamaño de celda (listas cerradas) y alias | Pendiente: cambiarlos y guardar, lo que lanza el reprocesamiento tras confirmar |
+| Ajustes | Hoy: sección Depuración (opacidad de la niebla con vista previa) y versión. Pendiente: radio de revelado y tamaño de celda (listas cerradas) y alias | Ajustar la opacidad (se guarda al momento). Pendiente: cambiar radio, celda y alias y guardar, lo que lanza el reprocesamiento tras confirmar. Detalle en `docs/ui/screens/settings.md` |
 
 El intercambio por NFC añadiría una pantalla de contacto y confirmación (dirección, «Todas / Seleccionar» y alias propio) y un botón en la pantalla principal para resaltar las celdas importadas (ver «Intercambio de áreas por NFC»).
 
@@ -310,7 +310,7 @@ El siguiente paso lógico es generar el mapa general y probar la app en un dispo
 - Distribución: APK firmado directo, siempre con la misma clave.
 - Niebla por capas: cubre toda la pantalla; se calcula solo para la ventana visible con margen y con el nivel de detalle que corresponde al zoom.
 - Persistencia: Room KMP (≥ 2.7) en lugar de migrar a SQLDelight; `data/` se escribe compatible desde hoy.
-- Interfaz: Jetpack Compose con Material 3; el mapa sigue como vista nativa dentro de `AndroidView`. Compose Multiplatform o SwiftUI se decide al portar a iOS.
+- Interfaz: Jetpack Compose con Material 3 y paleta fija de marca (no color dinámico); el mapa sigue como vista nativa dentro de `AndroidView`. Solo vertical. Barras flotantes con iconos en las pantallas de mapa, ayuda en un `(?)` y capturas de referencia con Roborazzi. Compose Multiplatform o SwiftUI se decide al portar a iOS.
 - Lógica compartible: lo que iOS también necesitaría vive en `core/`, `geo/` y `data/`, sin Android; pantallas y servicios solo hacen de pegamento con la plataforma. Sin módulo `shared` ni interfaces hasta portar.
 - Versión mínima: Android 12 (API 31).
 - Marca: la app se llama «Hike Explorer» para el usuario; FogHike se mantiene como nombre interno (paquete, `applicationId`, clases, ficheros y documentación técnica).

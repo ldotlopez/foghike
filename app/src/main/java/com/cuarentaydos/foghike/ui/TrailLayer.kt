@@ -22,8 +22,6 @@ const val TRAIL_DURATION_MS = 60 * 60 * 1000L
 /** How often the trail is redrawn while the screen is on: picks up new points and fades old ones. */
 const val TRAIL_REFRESH_MS = 10_000L
 
-private const val TRAIL_COLOR = "#ff7a1a"
-
 /** Where the user walked in the last [TRAIL_DURATION_MS], drawn above the fog and fading with age. */
 class TrailLayer(style: Style) {
     private val source = GeoJsonSource("trail")

@@ -26,7 +26,7 @@ import org.maplibre.geojson.Point
 import org.maplibre.geojson.Polygon
 
 private const val FOG_TEXTURE = "fog-texture"
-private const val FOG_TEXTURE_SIZE = 256
+const val FOG_TEXTURE_SIZE = 256
 private const val DENSITY = "density"
 
 /**

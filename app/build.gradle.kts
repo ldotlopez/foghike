@@ -3,6 +3,7 @@ plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("io.github.takahirom.roborazzi")
 }
 
 android {
@@ -19,6 +20,13 @@ android {
 
     buildFeatures {
         compose = true
+    }
+
+    // Robolectric needs the app's resources (strings, drawables) to render screens in JVM tests.
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        // Robolectric's Android 16 (SDK 36) setup touches java.io internals, closed by default since JDK 17.
+        unitTests.all { it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED") }
     }
 
     // The release key never lives in the repo: CI (and local release builds) pass it via env vars.
@@ -45,11 +53,19 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
+// Reference screenshots live in the repo, next to the tests that render them.
+roborazzi {
+    outputDir.set(file("src/test/screenshots"))
+}
+
 dependencies {
     implementation("androidx.activity:activity-compose:1.10.1")
     // The BOM picks matching versions for every Compose library below.
     implementation(platform("androidx.compose:compose-bom:2026.06.01"))
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview") // @Preview
+    debugImplementation("androidx.compose.ui:ui-tooling") // renders previews in Android Studio
+    debugImplementation("androidx.compose.ui:ui-test-manifest") // empty activity that screenshot tests render into
     // Not used directly; pins the version that older transitive copies would otherwise give lint (release build fails).
     implementation("androidx.fragment:fragment:1.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.2")
@@ -63,4 +79,9 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("net.sf.kxml:kxml2:2.3.0") // XmlPullParser implementation for GPX parser tests on the JVM
+    testImplementation(platform("androidx.compose:compose-bom:2026.06.01"))
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.77.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.77.0")
 }

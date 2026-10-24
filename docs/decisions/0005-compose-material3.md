@@ -1,6 +1,6 @@
 # 0005. Jetpack Compose + Material 3 for the UI
 
-- Status: Accepted
+- Status: Accepted; dynamic color superseded by 0006 (fixed brand palette)
 - Date: 2026-10-24
 
 ## Context

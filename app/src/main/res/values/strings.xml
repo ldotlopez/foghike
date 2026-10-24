@@ -3,13 +3,7 @@
     <string name="app_name">Hike Explorer</string>
     <string name="ign_attribution" translatable="false">PNOA cedido por © Instituto Geográfico Nacional de España</string>
 
-    <string name="start_exploring">Start exploring</string>
-    <string name="stop_exploring">Stop exploring</string>
-    <string name="maps">Maps</string>
-    <string name="import_gpx">Import GPX</string>
     <string name="fog_opacity">Fog opacity</string>
-    <string name="status">Revealed cells: %1$d · Offline maps: %2$d</string>
-    <string name="no_maps">No offline maps yet: download one from Maps.</string>
     <string name="precise_location_required">Exploring needs precise location.</string>
     <string name="gpx_imported">Imported %1$d points from %2$d files.</string>
     <string name="gpx_failed">%1$d files could not be read.</string>
@@ -19,16 +13,8 @@
     <string name="tracking_notification">Exploring: recording your route</string>
     <string name="tracking_location_off">Location is off: turn it on to keep exploring</string>
 
-    <string name="download_help">Circle the area to download with one finger; use two fingers to move and zoom the map. You can draw several. Downloading needs a connection.</string>
-    <string name="min_zoom">Min zoom</string>
-    <string name="max_zoom">Max zoom</string>
-    <string name="clear">Clear</string>
-    <string name="download">Download</string>
-    <string name="invalid_zoom">Zoom must be between 0 and 19, min not above max.</string>
     <string name="no_areas">Draw at least one area first.</string>
     <string name="too_many_tiles">Too many tiles (%1$d, max %2$d): use smaller areas or fewer zoom levels.</string>
-    <string name="download_progress">Areas left: %1$d · tile %2$d/%3$d</string>
-    <string name="download_waiting">Areas left: %1$d · waiting for a connection</string>
     <string name="download_done">Download finished.</string>
     <string name="download_stopped">Download cancelled or failed.</string>
     <string name="download_channel">Map download</string>
@@ -38,4 +24,44 @@
     <string name="background_location_why">So no GPS points are lost if Android stops the app while you explore, choose \"Allow all the time\" on the next screen.</string>
     <string name="continue_button">Continue</string>
     <string name="not_now">Not now</string>
+    <string name="action_help">Help</string>
+    <string name="close">Close</string>
+    <string name="action_explore">Start exploring</string>
+    <string name="action_stop">Stop exploring</string>
+    <string name="action_maps">Offline maps</string>
+    <string name="action_import_gpx">Import GPX</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_show_toolbar">Show actions</string>
+    <string name="action_hide_toolbar">Hide actions</string>
+    <string name="action_follow">Center on my location</string>
+    <string name="action_compass">Rotate map with compass</string>
+    <string name="action_north_up">Keep north up</string>
+    <string name="waiting_location">Waiting for your location…</string>
+    <string name="chip_status">%1$s revealed cells, %2$d offline maps</string>
+    <string name="chip_cells">%1$s revealed cells</string>
+    <string name="chip_no_maps">No offline maps</string>
+    <string name="help_main">The map starts covered by fog. Tap the red record button to start exploring: the fog clears around the places you walk, also with the screen off. Tap stop when you finish.\n\nThe map icon downloads satellite maps to use without a connection, and the file icon imports routes you already walked (GPX files).\n\nThe chip at the top shows the squares you have revealed and the offline maps you have.\n\nThe button above the toolbar centers the map on you and follows you; tap it again to turn the map with the compass.</string>
+    <string name="section_debug">Debug</string>
+    <string name="section_about">About</string>
+    <string name="version">Version</string>
+    <string name="percent">%1$d %%</string>
+    <string name="action_back">Back</string>
+    <string name="action_download">Download drawn areas</string>
+    <string name="action_undo_area">Remove last area</string>
+    <string name="action_clear_areas">Remove all areas</string>
+    <string name="action_zoom_range">Zoom levels</string>
+    <string name="action_recenter">Center on my location</string>
+    <string name="action_view">View</string>
+    <string name="chip_tiles">%1$s / %2$s tiles</string>
+    <string name="zoom_range">Zoom %1$d – %2$d</string>
+    <string name="help_download_title">Download maps</string>
+    <string name="help_download">Circle the area to download with one finger; use two fingers to move and zoom the map. You can draw several areas: undo removes the last one and the bin removes them all.\n\nThe chip at the top counts the tiles to download; it turns red above the limit. The zoom button sets how much detail to download: each extra level multiplies the tiles by about four.\n\nAreas you already downloaded are outlined in blue. Downloading needs a connection and goes on in the background if you leave this screen.</string>
+    <plurals name="chip_progress">
+        <item quantity="one">%1$d area left · %2$d %%</item>
+        <item quantity="other">%1$d areas left · %2$d %%</item>
+    </plurals>
+    <plurals name="chip_waiting">
+        <item quantity="one">%1$d area left · no connection</item>
+        <item quantity="other">%1$d areas left · no connection</item>
+    </plurals>
 </resources>

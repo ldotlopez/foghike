@@ -10,12 +10,17 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -46,6 +51,7 @@ import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.location.LocationComponentActivationOptions
+import org.maplibre.android.location.OnCameraTrackingChangedListener
 import org.maplibre.android.location.modes.CameraMode
 import org.maplibre.android.location.modes.RenderMode
 import org.maplibre.android.maps.MapLibreMap
@@ -53,10 +59,11 @@ import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 
 private const val USER_ZOOM = 14.0
+private const val CAMERA_TRANSITION_MS = 750L
 
 /**
- * Main screen: offline maps under the fog, the recent trail and the user's position arrow, opacity
- * slider, cell counter and the three actions.
+ * Main screen: offline maps under the fog, the recent trail and the user's position arrow, the cell
+ * counter and the actions. Layout in [MainScreen], spec in docs/ui/screens/main.md.
  */
 class MainActivity : ComponentActivity() {
     private val app get() = application as FogHikeApp
@@ -70,7 +77,20 @@ class MainActivity : ComponentActivity() {
     // Compose state: changing these redraws the parts of the screen that show them.
     private var areas by mutableStateOf<List<DownloadedArea>?>(null)
     private var cellCount by mutableIntStateOf(0)
-    private var fogOpacity by mutableIntStateOf(70)
+    private var locationMode by mutableStateOf(LocationMode.FREE)
+    private val snackbar = SnackbarHostState()
+
+    // MapLibre is the source of truth for the camera mode: dragging the map leaves follow mode by itself.
+    private val cameraTracking = object : OnCameraTrackingChangedListener {
+        override fun onCameraTrackingDismissed() {}
+        override fun onCameraTrackingChanged(mode: Int) {
+            locationMode = when (mode) {
+                CameraMode.TRACKING -> LocationMode.FOLLOW
+                CameraMode.TRACKING_COMPASS -> LocationMode.COMPASS
+                else -> LocationMode.FREE
+            }
+        }
+    }
 
     // Starting exploration is a chain of steps, each one may open a system screen and continues in
     // its result callback: permissions -> background location -> battery -> location switched on.
@@ -83,7 +103,9 @@ class MainActivity : ComponentActivity() {
             showUserLocation()
             askBackgroundLocation()
         }
-        else toast(R.string.precise_location_required)
+        else showMessage(getString(R.string.precise_location_required), getString(R.string.action_settings)) {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
+        }
     }
 
     // "Allow all the time" lets Android restart the service with GPS access if it ever kills it.
@@ -97,7 +119,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private val enableLocation = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-        if (it.resultCode == RESULT_OK) startTracking() else toast(R.string.location_required)
+        if (it.resultCode == RESULT_OK) startTracking() else showMessage(getString(R.string.location_required))
     }
 
     // Asked once at first launch, only to open the map where the user is.
@@ -126,18 +148,17 @@ class MainActivity : ComponentActivity() {
             m.addOnCameraIdleListener { fog?.refresh(m) }
             lifecycleScope.launch { reloadMaps() }
         }
-        fogOpacity = prefs.getInt("fogOpacity", 70)
 
         setContent {
             FogHikeTheme {
                 val tracking by TrackingService.running.collectAsState()
                 MainScreen(
-                    mapView = mapView,
+                    map = { AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize()) },
                     cellCount = cellCount,
                     mapCount = areas?.size ?: 0,
                     tracking = tracking,
-                    fogOpacity = fogOpacity,
-                    onFogOpacity = ::changeFogOpacity,
+                    locationMode = locationMode,
+                    snackbar = snackbar,
                     onTrack = {
                         if (tracking) stopService(Intent(this, TrackingService::class.java)) else requestTracking()
                     },
@@ -146,6 +167,8 @@ class MainActivity : ComponentActivity() {
                     onImportGpx = {
                         pickGpx.launch(arrayOf("application/gpx+xml", "application/xml", "text/xml", "application/octet-stream"))
                     },
+                    onSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
+                    onLocation = ::nextLocationMode,
                 )
             }
         }
@@ -174,15 +197,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun changeFogOpacity(value: Int) {
-        fogOpacity = value
-        fog?.setOpacity(value / 100f)
-        prefs.edit().putInt("fogOpacity", value).apply()
-    }
+    private fun fogOpacity() = prefs.getInt("fogOpacity", 70) / 100f
 
     private fun hasPermission(permission: String) = checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
-    private fun toast(message: Int) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    /** Transient message over the toolbar, with at most one action. */
+    private fun showMessage(text: String, action: String? = null, onAction: () -> Unit = {}) = lifecycleScope.launch {
+        if (snackbar.showSnackbar(text, action, duration = SnackbarDuration.Long) == SnackbarResult.ActionPerformed) onAction()
+    }
+
+    /** My location button: Free → Follow → Compass → Follow. [cameraTracking] updates [locationMode]. */
+    private fun nextLocationMode() {
+        val m = map ?: return
+        if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            return startupPermissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+        }
+        val location = m.locationComponent
+        if (!location.isLocationComponentActivated || location.lastKnownLocation == null) {
+            showMessage(getString(R.string.waiting_location))
+            return
+        }
+        when (locationMode) {
+            // From Free, also zoom to walking level; from Compass, keep the zoom and turn north up.
+            LocationMode.FREE -> location.setCameraMode(CameraMode.TRACKING, CAMERA_TRANSITION_MS, USER_ZOOM, 0.0, null, null)
+            LocationMode.COMPASS -> location.setCameraMode(CameraMode.TRACKING, CAMERA_TRANSITION_MS, null, 0.0, null, null)
+            LocationMode.FOLLOW -> location.cameraMode = CameraMode.TRACKING_COMPASS
+        }
+    }
 
     private fun requestTracking() {
         val permissions = mutableListOf(
@@ -229,7 +270,7 @@ class MainActivity : ComponentActivity() {
             .addOnSuccessListener { startTracking() }
             .addOnFailureListener { e ->
                 if (e is ResolvableApiException) enableLocation.launch(IntentSenderRequest.Builder(e.resolution).build())
-                else toast(R.string.location_required)
+                else showMessage(getString(R.string.location_required))
             }
     }
 
@@ -266,7 +307,7 @@ class MainActivity : ComponentActivity() {
             getString(R.string.gpx_duplicates, duplicates).takeIf { duplicates > 0 },
             getString(R.string.gpx_failed, failed).takeIf { failed > 0 },
         ).joinToString(" ")
-        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+        showMessage(message)
     }
 
     /** Rebuilds the style when the list of downloaded areas changed (e.g. back from the download screen). */
@@ -276,7 +317,7 @@ class MainActivity : ComponentActivity() {
         if (list == areas) return
         val firstLoad = areas == null
         areas = list
-        val opacity = fogOpacity / 100f
+        val opacity = fogOpacity()
         fog = null // its source dies with the old style
         trail = null
         m.setStyle(Style.Builder().fromJson(mapStyleJson(app.tileServer, list, onlineIgn = false))) { style ->
@@ -314,6 +355,8 @@ class MainActivity : ComponentActivity() {
             isLocationComponentEnabled = true
             cameraMode = CameraMode.NONE
             renderMode = RenderMode.COMPASS
+            removeOnCameraTrackingChangedListener(cameraTracking) // activated again on every style reload
+            addOnCameraTrackingChangedListener(cameraTracking)
         }
     }
 
@@ -321,6 +364,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         mapView.onResume()
+        fog?.setOpacity(fogOpacity()) // may have changed in Settings
         lifecycleScope.launch { reloadMaps() }
     }
     override fun onPause() { mapView.onPause(); super.onPause() }
