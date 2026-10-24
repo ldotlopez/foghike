@@ -19,7 +19,7 @@ Code: `ui/DownloadActivity.kt` (state, drawing gesture, validation, WorkManager)
 │        │  drawn area │  ← map + IGN online imagery
 │        ╰─────────────╯               │
 │                               ╭──╮   │
-│                               │◎ │   │  my location (open question 4)
+│                               │◎ │   │  recenter on the user
 │      ╭───────────────────╮ ╭──╰──╯   │
 │      │  ↶    🗑    ⚙z     │ │ ⇩  │    │  toolbar: undo · clear · zoom range + Download FAB
 │      ╰───────────────────╯ ╰────╯    │
@@ -89,6 +89,14 @@ While a finger draws, the stroke is a line as today, plus:
 
 Both are extra features in the existing `areas` GeoJSON source, drawn with the area color. See open question 2.
 
+### Recenter button
+
+A `SmallFloatingActionButton` with `my_location` (56 dp touch target) at the bottom right, above the toolbar, in the same place as on the main screen. One tap centers the map on the user at `AREA_PICK_ZOOM`. It has no follow or compass modes: following would move the map under a stroke being drawn. Without location permission or a fix, the same behavior as on the main screen (permission request, "Waiting for your location…" Snackbar).
+
+### Downloaded areas
+
+Areas already downloaded are drawn on the map so they aren't downloaded twice: the bounding box stored in `DownloadedArea` (min/max lat and lon), as a thin line with a very light fill, in a fixed brand color different from the drawn-area color. A bounding box covers more than the shape that was drawn; it marks "something is downloaded around here", not the exact edge. It uses a second GeoJSON source and two layers, with no database change.
+
 ### Snackbar
 
 One `SnackbarHost` above the toolbar. Replaces the message text.
@@ -108,7 +116,7 @@ Each state has a `@Preview` and a Roborazzi reference image; the map slot is a p
 | --- | --- | --- |
 | 1 | Empty | No areas: no selection chip, undo and clear disabled |
 | 2 | Drawing | Stroke with start dot and closing segment |
-| 3 | Areas drawn | Two areas, selection chip with the tile count |
+| 3 | Areas drawn | Two areas, selection chip with the tile count, one downloaded area's box |
 | 4 | Too many tiles | Selection chip in error colors |
 | 5 | Zoom sheet | Bottom sheet open with the range slider |
 | 6 | Downloading | Progress chip with percentage and progress bar |
@@ -158,6 +166,7 @@ New or changed keys. Removed: `download_help` (moves into the help dialog as `he
 | `action_undo_area` | Remove last area | Quitar la última área |
 | `action_clear_areas` | Remove all areas | Quitar todas las áreas |
 | `action_zoom_range` | Zoom levels | Niveles de zoom |
+| `action_recenter` | Center on my location | Centrar en mi ubicación |
 | `chip_tiles` | %1$s / %2$s tiles | %1$s / %2$s teselas |
 | `chip_progress` | %1$d areas left · %2$d %% | Quedan %1$d áreas · %2$d %% |
 | `chip_waiting` | %1$d areas left · waiting for a connection | Quedan %1$d áreas · esperando conexión |
@@ -174,8 +183,4 @@ Kept: `no_areas`, `too_many_tiles`, `download_done`, `download_stopped`, `downlo
 
 ## Open questions
 
-1. **Zoom control.** Range slider in a bottom sheet (above), or keep the two number fields on screen?
-2. **Drawing feedback.** Start dot plus dashed closing segment (above), or only the start dot?
-3. **Undo and clear.** Both buttons (above), only undo, or only clear (today)?
-4. **My location button.** Reuse the main screen button (Free/Follow/Compass), a simpler recenter-only button, or none (today the screen centers on the user once)?
-5. **Downloaded areas.** Today this screen doesn't show areas already downloaded, so they can be downloaded twice. Outline them on the map (e.g. a thin line in a second color)?
+None.
