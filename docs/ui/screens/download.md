@@ -18,11 +18,11 @@ Code: `ui/DownloadActivity.kt` (state, drawing gesture, validation, WorkManager)
 │        ╭─────────────╮               │
 │        │  drawn area │  ← map + IGN online imagery
 │        ╰─────────────╯               │
-│                               ╭──╮   │
-│                               │◎ │   │  recenter on the user
-│      ╭───────────────────╮ ╭──╰──╯   │
-│      │  ↶    🗑    ⚙z     │ │ ⇩  │    │  toolbar: undo · clear · zoom range + Download FAB
-│      ╰───────────────────╯ ╰────╯    │
+│                                      │
+│                                      │
+│   ╭────╮ ╭───────────────────────╮   │
+│   │ ⇩  │ │  ↶    🗑    ⚙z    ◎   │   │  Download FAB + toolbar: undo · clear · zoom range · recenter
+│   ╰────╯ ╰───────────────────────╯   │
 │ PNOA cedido por © IGN de España      │
 │ (navigation bar)                     │
 └──────────────────────────────────────┘
@@ -60,7 +60,7 @@ It **opens by itself the first time** the screen is entered, because the drawing
 
 ### Floating toolbar
 
-A `MapToolbar` (hand-made, decision 0007), like the main screen, with Download as its floating action button.
+A `MapToolbar` (hand-made, decision 0007), like the main screen: the Download floating action button on the left, then the pill.
 
 | Slot | Icon | Action |
 | --- | --- | --- |
@@ -68,6 +68,7 @@ A `MapToolbar` (hand-made, decision 0007), like the main screen, with Download a
 | 1 | `undo` | Remove the last drawn area |
 | 2 | `delete` | Remove all drawn areas |
 | 3 | `tune` | Open the zoom range sheet |
+| 4 (pinned) | `my_location` | Recenter (see "Recenter button") |
 
 - 56 dp touch targets, `contentDescription` and long-press tooltip on every button, as in `main.md`.
 - Undo and clear are disabled (`enabled = false`) while there are no areas.
@@ -91,7 +92,7 @@ Both are extra features in the existing `areas` GeoJSON source, drawn with the a
 
 ### Recenter button
 
-A 56 dp `FloatingActionButton` with `my_location` at the bottom right, above the toolbar, in the same place as on the main screen. One tap centers the map on the user at `AREA_PICK_ZOOM`. It has no follow or compass modes: following would move the map under a stroke being drawn. Without location permission or a fix, the same behavior as on the main screen (permission request, "Waiting for your location…" Snackbar).
+The last button of the toolbar pill (`my_location`), in the same place as the main screen's my location button. One tap centers the map on the user at `AREA_PICK_ZOOM`. It has no follow or compass modes: following would move the map under a stroke being drawn. Without location permission or a fix, the same behavior as on the main screen (permission request, "Waiting for your location…" Snackbar).
 
 ### Downloaded areas
 

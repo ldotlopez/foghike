@@ -52,7 +52,7 @@ data class DownloadProgress(val areasLeft: Int, val percent: Int?)
 
 /**
  * Download screen layout (docs/ui/screens/download.md): the map (where areas are drawn) fills the
- * screen, with the selection and progress chips and help on top, and the recenter button, toolbar and
+ * screen, with the selection and progress chips and help on top, and the toolbar (recenter included) and
  * IGN attribution at the bottom. Holds no app state: [DownloadActivity] passes values and actions.
  * [tiles] is the tile count of the drawn areas at [zoom], null while counting or with no areas.
  */
@@ -94,18 +94,10 @@ fun DownloadScreen(
         Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             SnackbarHost(snackbar)
-            val recenter = stringResource(R.string.action_recenter)
-            Box(Modifier.align(Alignment.End)) {
-                WithTooltip(recenter) {
-                    FloatingActionButton(onRecenter, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-                        Icon(painterResource(R.drawable.ic_my_location), contentDescription = recenter)
-                    }
-                }
-            }
             // Never collapses: nobody explores from here, and these are the controls used while drawing.
             MapToolbar(
                 expanded = true,
@@ -116,6 +108,7 @@ fun DownloadScreen(
                     }
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally),
+                pinned = { MapIconButton(R.drawable.ic_my_location, stringResource(R.string.action_recenter), onRecenter) },
             ) {
                 MapIconButton(R.drawable.ic_undo, stringResource(R.string.action_undo_area), onUndo, enabled = areaCount > 0)
                 MapIconButton(R.drawable.ic_delete, stringResource(R.string.action_clear_areas), onClear, enabled = areaCount > 0)

@@ -16,11 +16,11 @@ Code: `ui/MainActivity.kt` (state, permissions, file picker, map) and `ui/MainSc
 │              map + fog               │
 │                 ➤                    │  user position (MapLibre location component)
 │                                      │
-│                               ╭──╮   │
-│                               │◎ │   │  my location (follow mode)
-│      ╭───────────────────╮ ╭──╰──╯   │
-│      │  🗺    ⇪    ⚙     │ │ ●  │    │  floating toolbar + Explore FAB
-│      ╰───────────────────╯ ╰────╯    │
+│                                      │
+│                                      │
+│   ╭────╮ ╭───────────────────────╮   │
+│   │ ●  │ │  🗺    ⇪    ⚙    ◎    │   │  Explore FAB + toolbar (◎ = my location)
+│   ╰────╯ ╰───────────────────────╯   │
 │ PNOA cedido por © IGN de España      │  IGN attribution (bottom left, one line)
 │ (navigation bar)                     │
 └──────────────────────────────────────┘
@@ -43,6 +43,7 @@ A Material 3 `AssistChip` at the top left, below the status bar.
 
 - Tapping the chip does nothing while there are maps. Its `contentDescription` reads both values in full ("1,234 revealed cells, 3 offline maps").
 - **No maps:** the chip shows `warning` + "No offline maps" instead of the map count. Tapping it opens the download screen.
+- **Loading:** the chip is hidden until the downloaded areas have been read (`mapCount` null), so it never flashes "No offline maps" on launch.
 
 ### Help button
 
@@ -50,7 +51,7 @@ A Material 3 `AssistChip` at the top left, below the status bar.
 
 ### Floating toolbar
 
-`MapToolbar` (`ui/Theme.kt`), centered at the bottom: a pill of icon buttons with the Explore floating action button beside it. Hand-made with stable components because Material's `HorizontalFloatingToolbar` needs material3 1.5, not stable yet (see Exceptions and `docs/PLAN.md`).
+`MapToolbar` (`ui/Theme.kt`), centered at the bottom: the Explore floating action button on the left, then a pill of icon buttons ending with the my location button. Hand-made with stable components because Material's `HorizontalFloatingToolbar` needs material3 1.5, not stable yet (see Exceptions and `docs/PLAN.md`).
 
 | Slot | Icon | Action | Opens |
 | --- | --- | --- | --- |
@@ -58,18 +59,20 @@ A Material 3 `AssistChip` at the top left, below the status bar.
 | 1 | `map` | Offline maps | Download screen |
 | 2 | `upload_file` | Import GPX | System file picker (multiple files) |
 | 3 | `settings` | Settings | Settings screen (Debug section only for now) |
+| 4 (pinned) | see "My location button" | Center / follow / compass | — |
 
+- Spacing is tight (4 dp between FAB and pill, 8 dp screen margin) so the FAB, the handle and four 56 dp icons fit a 360 dp wide phone.
 - Every icon button is at least 56 dp. The default Material 3 icon buttons are 48 dp, so they get an explicit size.
 - Each one has a `contentDescription` and a tooltip on long press (`TooltipBox` + `PlainTooltip`).
 - The record/stop pair (● / ■) reads as "recording your route". Not exploring: `fiber_manual_record` tinted with the error color (red) on the regular FAB container, so it can't be mistaken for the blue, containerless user-position dot. Exploring: `stop` on the error container color, so the state can be seen at a glance.
-- **Collapsing.** The toolbar collapses by itself when exploring starts: only the Explore FAB (now Stop) and a handle stay visible, so the map is as free as possible while walking.
-  - The handle is a 56 dp icon button next to the FAB: `more_horiz` when collapsed (expands), `close` when expanded (collapses again). Same tooltip rules as the other buttons.
+- **Collapsing.** The toolbar collapses by itself when exploring starts: only the Explore FAB (now Stop), the handle and the my location button stay visible, so the map is as free as possible while walking. My location stays because re-centering is what a walker needs after dragging the map.
+  - The handle is the pill's first button, next to the FAB: `more_horiz` when collapsed (expands), `close` when expanded (collapses again). Same tooltip rules as the other buttons.
   - The handle exists only while exploring. When exploring stops, the toolbar expands and the handle goes away.
   - The expanded/collapsed choice is not stored: it follows the exploring state each time the screen opens.
 
 ### My location button
 
-A 56 dp `FloatingActionButton` in the surface container color, at the bottom right, above the toolbar (a `SmallFloatingActionButton` is 40 dp, below the guidelines' 56 dp). It cycles through the camera modes MapLibre's location component already has:
+The last button of the toolbar pill (a `MapIconButton`, pinned: visible also when the toolbar is collapsed). It cycles through the camera modes MapLibre's location component already has:
 
 | State | Icon | MapLibre `CameraMode` | Tap goes to |
 | --- | --- | --- | --- |
@@ -108,28 +111,29 @@ Each state has a Roborazzi reference image (`ui/MainScreenScreenshotTest.kt`) an
 | --- | --- | --- |
 | 1 | Default | Maps present, not exploring, toolbar expanded |
 | 2 | Exploring, expanded | Toolbar opened with the handle: FAB shows `stop` in the error container color, handle shows `close` |
-| 3 | Exploring, collapsed | Only the Stop FAB and the `more_horiz` handle |
+| 3 | Exploring, collapsed | Only the Stop FAB, the `more_horiz` handle and my location |
 | 4 | No maps | Chip shows `warning` + "No offline maps" |
 | 5 | Snackbar | GPX import result shown above the toolbar |
 | 6 | Help | Help dialog open |
 | 7 | Dark | State 1 in the dark scheme |
 | 8 | Following | My location button shows `my_location` |
 | 9 | Compass | My location button shows `explore` |
+| 10 | Loading | No status chip yet (downloaded areas not read) |
 
 ### State 2 — Exploring, expanded
 
 ```
-│   ╭─────────────────────────╮ ╭────╮ │
-│   │  ✕   🗺    ⇪    ⚙       │ │ ■  │ │  handle (close) · FAB: stop, error container color
-│   ╰─────────────────────────╯ ╰────╯ │
+│ ╭────╮ ╭───────────────────────────╮ │
+│ │ ■  │ │  ✕   🗺    ⇪    ⚙    ◎    │ │  FAB: stop, error container color · handle (close)
+│ ╰────╯ ╰───────────────────────────╯ │
 ```
 
 ### State 3 — Exploring, collapsed
 
 ```
-│                       ╭────╮ ╭────╮  │
-│                       │ ⋯  │ │ ■  │  │  handle (more_horiz) · FAB: stop
-│                       ╰────╯ ╰────╯  │
+│          ╭────╮ ╭──────────╮         │
+│          │ ■  │ │  ⋯    ◎  │         │  FAB: stop · handle (more_horiz) · my location
+│          ╰────╯ ╰──────────╯         │
 ```
 
 ### State 4 — No maps
@@ -146,8 +150,8 @@ Each state has a Roborazzi reference image (`ui/MainScreenScreenshotTest.kt`) an
 │ ┌──────────────────────────────────┐ │
 │ │ Imported 3 412 points, 2 files.  │ │
 │ └──────────────────────────────────┘ │
-│      ╭───────────────────╮ ╭────╮    │
-│      │  🗺    ⇪    ⚙     │ │ ●  │    │
+│   ╭────╮ ╭───────────────────────╮   │
+│   │ ●  │ │  🗺    ⇪    ⚙    ◎    │   │
 ```
 
 ## Strings
@@ -187,7 +191,7 @@ Not built now; listed so the toolbar layout leaves room for them.
 | Highlight imported cells | Roadmap step 6 | Toggle icon button under the help button, top right |
 | Google Maps Timeline import | Roadmap step 3 | Inside the tracks list screen, next to Import GPX |
 
-With all of them the toolbar holds four icons plus the FAB: maps, tracks, exchange, settings.
+With all of them the pill would hold maps, tracks, exchange, settings and my location, plus the handle: too wide for a 360 dp phone at 56 dp each. Before adding the fourth entry, decide what moves out (e.g. settings into an overflow menu, or exchange into the tracks screen).
 
 ## Exceptions
 

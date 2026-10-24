@@ -49,14 +49,15 @@ enum class LocationMode { FREE, FOLLOW, COMPASS }
 
 /**
  * Main screen layout (docs/ui/screens/main.md): the map fills the screen, with the status chip and
- * help on top and the my location button, toolbar and IGN attribution at the bottom. Holds no app
- * state: [MainActivity] passes values and actions.
+ * help on top and the toolbar and IGN attribution at the bottom. [mapCount] is null until the
+ * downloaded areas are read, so the chip doesn't flash "no maps". Holds no app state: [MainActivity]
+ * passes values and actions.
  */
 @Composable
 fun MainScreen(
     map: @Composable () -> Unit,
     cellCount: Int,
-    mapCount: Int,
+    mapCount: Int?,
     tracking: Boolean,
     locationMode: LocationMode,
     snackbar: SnackbarHostState,
@@ -76,7 +77,7 @@ fun MainScreen(
             Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)).padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            StatusChip(cellCount, mapCount, onMaps)
+            if (mapCount != null) StatusChip(cellCount, mapCount, onMaps)
             Spacer(Modifier.weight(1f))
             HelpButton(stringResource(R.string.app_name), stringResource(R.string.help_main))
         }
@@ -84,16 +85,17 @@ fun MainScreen(
         Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             SnackbarHost(snackbar)
-            LocationButton(locationMode, onLocation, Modifier.align(Alignment.End))
             MapToolbar(
                 expanded = expanded,
                 fab = { ExploreButton(tracking, onTrack) },
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 onExpandedChange = if (tracking) ({ expanded = it }) else null,
+                // Stays when collapsed: re-centering is what a walker needs after dragging the map.
+                pinned = { LocationButton(locationMode, onLocation) },
             ) {
                 MapIconButton(R.drawable.ic_map, stringResource(R.string.action_maps), onMaps)
                 MapIconButton(R.drawable.ic_upload_file, stringResource(R.string.action_import_gpx), onImportGpx)
@@ -159,20 +161,13 @@ private fun ExploreButton(tracking: Boolean, onTrack: () -> Unit) {
 
 /** Cycles Free → Follow → Compass → Follow; its label says what the next tap does. */
 @Composable
-private fun LocationButton(mode: LocationMode, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun LocationButton(mode: LocationMode, onClick: () -> Unit) {
     val (icon, label) = when (mode) {
         LocationMode.FREE -> R.drawable.ic_location_searching to R.string.action_follow
         LocationMode.FOLLOW -> R.drawable.ic_my_location to R.string.action_compass
         LocationMode.COMPASS -> R.drawable.ic_explore to R.string.action_north_up
     }
-    val text = stringResource(label)
-    Box(modifier) {
-        WithTooltip(text) {
-            FloatingActionButton(onClick, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-                Icon(painterResource(icon), contentDescription = text)
-            }
-        }
-    }
+    MapIconButton(icon, stringResource(label), onClick)
 }
 
 // Previews: one per state in docs/ui/screens/main.md. ui/MainScreenScreenshotTest.kt renders them.
@@ -183,7 +178,7 @@ private fun MapPlaceholder() = Box(Modifier.fillMaxSize().background(Color(0xFF5
 @Composable
 internal fun MainPreview(
     tracking: Boolean = false,
-    mapCount: Int = 3,
+    mapCount: Int? = 3,
     locationMode: LocationMode = LocationMode.FREE,
     snackbarText: String? = null,
 ) = FogHikeTheme {
@@ -195,6 +190,7 @@ internal fun MainPreview(
 @Preview(showSystemUi = true) @Composable internal fun MainDefault() = MainPreview()
 @Preview(showSystemUi = true) @Composable internal fun MainExploringCollapsed() = MainPreview(tracking = true)
 @Preview(showSystemUi = true) @Composable internal fun MainNoMaps() = MainPreview(mapCount = 0)
+@Preview(showSystemUi = true) @Composable internal fun MainLoading() = MainPreview(mapCount = null)
 @Preview(showSystemUi = true) @Composable internal fun MainSnackbar() = MainPreview(snackbarText = "Imported 3,412 points from 2 files.")
 @Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES) @Composable internal fun MainDark() = MainPreview()
 @Preview(showSystemUi = true) @Composable internal fun MainFollowing() = MainPreview(locationMode = LocationMode.FOLLOW)
