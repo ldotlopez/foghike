@@ -9,6 +9,8 @@ The design document is the source of truth: `FogHike — Documento de diseño.md
 - `docs/` holds technical documentation, in English. Keep it current in the same commit as the code change:
   - `docs/recalculations.md` — every interaction that triggers a recalculation (reprocessing stored data, storing new points, redrawing). Update it when adding or changing a trigger.
   - `docs/configurable-values.md` — every user setting and every constant or inline value that changes behavior; input for the preferences panel. Update it when adding, changing or removing one.
+- `docs/PLAN.md` — ideas and planned work not yet in the roadmap; move an item out when it is implemented or becomes a decision.
+- `docs/HUMAN_TEST.md` — hands-on checks that need a person and a device (walking, gestures, other phones). Add an item when a change can't be verified with adb or JVM tests.
 - `docs/decisions/` — one numbered file per implemented decision (`NNNN-short-title.md`, template in `docs/decisions/README.md`). Add one whenever a design choice lands in code; never renumber or delete, mark replaced ones as superseded. Also reflect the decision in the design document.
 - The design document stays in Spanish and remains the source of truth for product decisions; `docs/` explains how the code implements them.
 
