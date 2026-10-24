@@ -16,7 +16,21 @@
 
 - **Red heading arrow for the user's position.** Replace MapLibre's default puck (blue dot with a heading arrow, `RenderMode.COMPASS` in `showUserLocation`, `ui/MainActivity.kt`) with a red compass-needle style arrow: a clearer cue of where the user faces. MapLibre's `LocationComponentOptions` takes custom drawables (e.g. `foregroundDrawable` / `bearingDrawable`), so no new layer should be needed. Keep it distinct from the red record button (decision 0007 picked red for record so it isn't confused with the blue dot) and readable over satellite imagery; update `docs/ui/screens/main.md` and re-check `docs/HUMAN_TEST.md` "Heading arrow".
 
+- **Centering on the user must not change the zoom.** Today switching the location mode from Free to Follow/Compass (the my location button) also zooms to `userZoom` (`setLocationMode`, `ui/MainActivity.kt`). Changing the tracking mode should keep the current zoom: pass `null` as the zoom. `userZoom` (Settings → Advanced) is also used at startup (`centerOnUser`), so it stays unless that use goes too; if it ends up unused, remove it from `core/Settings.kt`, the Settings screen, strings and `docs/configurable-values.md`.
+
 - **Material 3 floating toolbar (when material3 1.5 is stable).** The map toolbars are hand-made (`MapToolbar` in `ui/Theme.kt`, decision 0007) because `HorizontalFloatingToolbar` only exists from material3 1.5, which is still beta (1.5.0-beta02 in Oct 2026). Material3 1.5 requires `compileSdk 37`, AGP ≥ 9.1, and a Compose BOM of 2026.08 or later (2026.08+ already needs `compileSdk 37`, decision 0005).
   - Steps: install SDK 37 and set `compileSdk = 37` (targetSdk can stay); update the Compose BOM; replace the body of `MapToolbar` with `HorizontalFloatingToolbar(expanded, floatingActionButton = …)`, keeping its signature so the screens don't change; move the collapsed handle into the toolbar if the component supports it, or keep it outside; re-record the Roborazzi references and compare.
   - Then remove the "Toolbar" exception from `docs/ui/screens/main.md` and `download.md`, and mark decision 0007 superseded.
   - Same check for other Expressive components the specs could use then (e.g. `FloatingToolbarDefaults.VibrantFloatingActionButton` for Explore).
+
+## Settings
+
+- **Export / import data and settings (idea).** Let the user save the database (tracks, points, revealed cells) and the settings to a file and restore them, e.g. to move to another phone or keep a backup. An imported file is untrusted: limit its size and validate it as for exchange files.
+- **Cycling profile (idea).** A set of settings tuned for riding a bike (e.g. GPS interval, reveal radius, trail), chosen when starting a track (walking or cycling).
+- **Setting presets: "Battery saver" and "Old device".** Two switches that each set a group of the existing settings to fixed values; while a preset is on, the settings it controls are shown disabled in the UI. Pick which settings each preset covers (e.g. GPS interval, fog texture/animation, LOD detail). Document the behaviour and the affected settings in the user manual (`README.md`).
+
+## Release
+
+- **Signed release builds in GitHub Actions (idea).** Store the signing keystore and its passwords as GitHub secrets and build the signed release APK in the workflow that runs when a tag is pushed; the workflow must be able to run on its own (also manually) without local files. That APK is the release version, not debug.
+  - Debug builds on the test phone: Android never installs an unsigned APK, but debug builds don't need the release key — Gradle signs them with the local debug keystore (`~/.android/debug.keystore`), so `./gradlew installDebug` keeps working.
+  - To keep release and debug installed side by side, add `applicationIdSuffix = ".debug"` (and e.g. a different app name) to the debug build type; otherwise both share the application id and installing one over the other fails with a signature mismatch.
