@@ -23,6 +23,11 @@ class FogTextureTest {
     }
 
     @Test
+    fun isOpaque() {
+        assertTrue(px.all { it ushr 24 == 0xff })
+    }
+
+    @Test
     fun isNotFlat() {
         assertTrue(px.indices.map { green(it % size, it / size) }.let { it.max() - it.min() } > 20)
     }
