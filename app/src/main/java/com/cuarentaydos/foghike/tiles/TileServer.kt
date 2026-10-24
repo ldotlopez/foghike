@@ -3,6 +3,7 @@ package com.cuarentaydos.foghike.tiles
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import java.io.File
+import java.io.IOException
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -41,14 +42,18 @@ class TileServer(private val dir: File) {
             Log.w("TileServer", "Bad request", e)
             null
         }
-        val out = it.getOutputStream()
-        if (tile == null) {
-            out.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".toByteArray())
-        } else {
-            out.write("HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: ${tile.size}\r\nConnection: close\r\n\r\n".toByteArray())
-            out.write(tile)
+        try {
+            val out = it.getOutputStream()
+            if (tile == null) {
+                out.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".toByteArray())
+            } else {
+                out.write("HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: ${tile.size}\r\nConnection: close\r\n\r\n".toByteArray())
+                out.write(tile)
+            }
+            out.flush()
+        } catch (_: IOException) {
+            // MapLibre drops requests for tiles it no longer needs (e.g. while zooming); the client is gone.
         }
-        out.flush()
     }
 
     private fun read(name: String, z: Int, x: Int, y: Int): ByteArray? {
