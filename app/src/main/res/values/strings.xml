@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Hike Explorer</string>
+    <!-- Launcher label; debug builds override it (src/debug) so the in-app name stays the same. -->
+    <string name="launcher_name" translatable="false">@string/app_name</string>
     <string name="ign_attribution" translatable="false">PNOA cedido por © Instituto Geográfico Nacional de España</string>
 
     <string name="fog_opacity">Fog opacity</string>
