@@ -19,7 +19,7 @@ Code: `ui/MainActivity.kt` (state, permissions, map) and `ui/MainScreen.kt` (sta
 │                                      │
 │                                      │
 │   ╭────╮ ╭───────────────────────╮   │
-│   │ ●  │ │  🗺    ⫝    ⚙    ◎    │   │  Explore FAB + toolbar (◎ = my location)
+│   │ ●  │ │  ◎    🗺    ⫝    ⚙    │   │  Explore FAB + toolbar (◎ = my location)
 │   ╰────╯ ╰───────────────────────╯   │
 │ PNOA cedido por © IGN de España      │  IGN attribution (bottom left, one line)
 │ (navigation bar)                     │
@@ -51,22 +51,22 @@ A Material 3 `AssistChip` at the top left, below the status bar.
 
 ### Floating toolbar
 
-`MapToolbar` (`ui/Theme.kt`), centered at the bottom: the Explore floating action button on the left, then a pill of icon buttons ending with the my location button. Hand-made with stable components because Material's `HorizontalFloatingToolbar` needs material3 1.5, not stable yet (see Exceptions and `docs/PLAN.md`).
+`MapToolbar` (`ui/Theme.kt`), centered at the bottom: the Explore floating action button on the left, then a pill of icon buttons starting with the my location button. Hand-made with stable components because Material's `HorizontalFloatingToolbar` needs material3 1.5, not stable yet (see Exceptions and `docs/PLAN.md`).
 
 | Slot | Icon | Action | Opens |
 | --- | --- | --- | --- |
 | FAB | `fiber_manual_record` / `stop` | Start / stop exploring | Permission flow on first start (unchanged) |
-| 1 | `map` | Offline maps | Download screen |
-| 2 | `route` | My tracks | Tracks screen (list, import GPX, delete; `docs/ui/screens/tracks.md`) |
-| 3 | `settings` | Settings | Settings screen (Advanced section only for now) |
-| 4 (pinned) | see "My location button" | Center / follow / compass | — |
+| 1 (pinned) | see "My location button" | Center / follow / compass | — |
+| 2 | `map` | Offline maps | Download screen |
+| 3 | `route` | My tracks | Tracks screen (list, import GPX, delete; `docs/ui/screens/tracks.md`) |
+| 4 | `settings` | Settings | Settings screen (Advanced section only for now) |
 
 - Spacing is tight (4 dp between FAB and pill, 8 dp screen margin) so the FAB, the handle and four 56 dp icons fit a 360 dp wide phone.
 - Every icon button is at least 56 dp. The default Material 3 icon buttons are 48 dp, so they get an explicit size.
 - Each one has a `contentDescription` and a tooltip on long press (`TooltipBox` + `PlainTooltip`), except my location, whose long press opens its mode menu.
 - The record/stop pair (● / ■) reads as "recording your route". Not exploring: `fiber_manual_record` tinted with the error color (red) on the regular FAB container, so it stands apart from the user-position needle (a red-tipped arrow on the map, not a filled circle on a button). Exploring: `stop` on the error container color, so the state can be seen at a glance.
 - **Collapsing.** The toolbar collapses by itself when exploring starts: only the Explore FAB (now Stop), the handle and the my location button stay visible, so the map is as free as possible while walking. My location stays because re-centering is what a walker needs after dragging the map.
-  - The handle is the pill's first button, next to the FAB: `more_horiz` when collapsed (expands), `close` when expanded (collapses again). Same tooltip rules as the other buttons.
+  - The handle is the pill's last button, at its right end in both states: `more_horiz` when collapsed (expands), `close` when expanded (collapses again), so opening and closing are tapped in the same place. The other buttons unfold out of it. Same tooltip rules as the other buttons.
   - The handle exists only while exploring. When exploring stops, the toolbar expands and the handle goes away.
   - The expanded/collapsed choice is not stored: it follows the exploring state each time the screen opens.
 
@@ -76,7 +76,7 @@ MapLibre's location component in `RenderMode.COMPASS`, with custom icons (decisi
 
 ### My location button
 
-The last button of the toolbar pill (a `MapIconButton`, pinned: visible also when the toolbar is collapsed). It cycles through the camera modes MapLibre's location component already has:
+The first button of the toolbar pill (a `MapIconButton`, pinned: visible also when the toolbar is collapsed). It cycles through the camera modes MapLibre's location component already has:
 
 | State | Icon | MapLibre `CameraMode` | Tap goes to |
 | --- | --- | --- | --- |
@@ -128,7 +128,7 @@ Each state has a Roborazzi reference image (`ui/MainScreenScreenshotTest.kt`) an
 
 ```
 │ ╭────╮ ╭───────────────────────────╮ │
-│ │ ■  │ │  ✕   🗺    ⫝    ⚙    ◎    │ │  FAB: stop, error container color · handle (close)
+│ │ ■  │ │  ◎    🗺    ⫝    ⚙    ✕   │ │  FAB: stop, error container color · handle (close)
 │ ╰────╯ ╰───────────────────────────╯ │
 ```
 
@@ -136,7 +136,7 @@ Each state has a Roborazzi reference image (`ui/MainScreenScreenshotTest.kt`) an
 
 ```
 │          ╭────╮ ╭──────────╮         │
-│          │ ■  │ │  ⋯    ◎  │         │  FAB: stop · handle (more_horiz) · my location
+│          │ ■  │ │  ◎    ⋯  │         │  FAB: stop · my location · handle (more_horiz)
 │          ╰────╯ ╰──────────╯         │
 ```
 
