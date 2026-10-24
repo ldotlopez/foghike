@@ -15,6 +15,24 @@ android {
         versionCode = 1
         versionName = "0.1"
     }
+
+    // The release key never lives in the repo: CI (and local release builds) pass it via env vars.
+    signingConfigs {
+        create("release") {
+            System.getenv("SIGNING_STORE_FILE")?.let { storeFile = file(it) }
+            storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+            keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        release {
+            if (System.getenv("SIGNING_STORE_FILE") != null) signingConfig = signingConfigs.getByName("release")
+            // Only ARM phones are targeted; drops MapLibre's x86 native libraries from the APK.
+            ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
+        }
+    }
 }
 
 // Room writes the schema of each version here; needed for real migrations later.
@@ -24,6 +42,8 @@ ksp {
 
 dependencies {
     implementation("androidx.activity:activity-ktx:1.10.1")
+    // Not used directly; pins the version that older transitive copies would otherwise give lint (release build fails).
+    implementation("androidx.fragment:fragment:1.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("org.maplibre.gl:android-sdk:11.13.0")
