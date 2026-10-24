@@ -4,6 +4,14 @@ Android hiking app: the map starts covered by fog that clears around places the 
 
 The design document is the source of truth: `FogHike — Documento de diseño.md` (Spanish). Read it before any non-trivial change, and update it when a decision changes. Its "Hoja de ruta y decisiones" section lists closed decisions — don't re-open them without asking.
 
+## Documentation
+
+- `docs/` holds technical documentation, in English. Keep it current in the same commit as the code change:
+  - `docs/recalculations.md` — every interaction that triggers a recalculation (reprocessing stored data, storing new points, redrawing). Update it when adding or changing a trigger.
+  - `docs/configurable-values.md` — every user setting and every constant or inline value that changes behavior; input for the preferences panel. Update it when adding, changing or removing one.
+- `docs/decisions/` — one numbered file per implemented decision (`NNNN-short-title.md`, template in `docs/decisions/README.md`). Add one whenever a design choice lands in code; never renumber or delete, mark replaced ones as superseded. Also reflect the decision in the design document.
+- The design document stays in Spanish and remains the source of truth for product decisions; `docs/` explains how the code implements them.
+
 ## Stack
 
 - Kotlin, single Android module `app`, application id `com.cuarentaydos.foghike`.
