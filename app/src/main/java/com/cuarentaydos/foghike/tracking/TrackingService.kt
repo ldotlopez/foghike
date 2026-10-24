@@ -44,6 +44,9 @@ class TrackingService : Service() {
     companion object {
         private val _running = MutableStateFlow(false)
         val running: StateFlow<Boolean> = _running
+        // The track being recorded, so the tracks screen doesn't offer to delete it.
+        private val _activeTrackId = MutableStateFlow<String?>(null)
+        val activeTrackId: StateFlow<String?> = _activeTrackId
 
         private const val CHANNEL_ID = "tracking"
         private const val NOTIFICATION_ID = 1
@@ -98,6 +101,7 @@ class TrackingService : Service() {
         // System broadcast only, so no exported/not-exported flag is needed.
         registerReceiver(locationSwitch, IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION))
         _running.value = true
+        _activeTrackId.value = trackId
     }
 
     private fun notification(): Notification {
@@ -126,6 +130,7 @@ class TrackingService : Service() {
             unregisterReceiver(locationSwitch)
         }
         _running.value = false
+        _activeTrackId.value = null
         super.onDestroy()
     }
 

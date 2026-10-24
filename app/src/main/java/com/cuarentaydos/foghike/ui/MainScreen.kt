@@ -63,7 +63,7 @@ fun MainScreen(
     snackbar: SnackbarHostState,
     onTrack: () -> Unit,
     onMaps: () -> Unit,
-    onImportGpx: () -> Unit,
+    onTracks: () -> Unit,
     onSettings: () -> Unit,
     onLocation: () -> Unit,
 ) {
@@ -98,7 +98,7 @@ fun MainScreen(
                 pinned = { LocationButton(locationMode, onLocation) },
             ) {
                 MapIconButton(R.drawable.ic_map, stringResource(R.string.action_maps), onMaps)
-                MapIconButton(R.drawable.ic_upload_file, stringResource(R.string.action_import_gpx), onImportGpx)
+                MapIconButton(R.drawable.ic_route, stringResource(R.string.action_tracks), onTracks)
                 MapIconButton(R.drawable.ic_settings, stringResource(R.string.action_settings), onSettings)
             }
             MapAttribution()
@@ -191,7 +191,7 @@ internal fun MainPreview(
 @Preview(showSystemUi = true) @Composable internal fun MainExploringCollapsed() = MainPreview(tracking = true)
 @Preview(showSystemUi = true) @Composable internal fun MainNoMaps() = MainPreview(mapCount = 0)
 @Preview(showSystemUi = true) @Composable internal fun MainLoading() = MainPreview(mapCount = null)
-@Preview(showSystemUi = true) @Composable internal fun MainSnackbar() = MainPreview(snackbarText = "Imported 3,412 points from 2 files.")
+@Preview(showSystemUi = true) @Composable internal fun MainSnackbar() = MainPreview(snackbarText = "Waiting for your location…")
 @Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES) @Composable internal fun MainDark() = MainPreview()
 @Preview(showSystemUi = true) @Composable internal fun MainFollowing() = MainPreview(locationMode = LocationMode.FOLLOW)
 @Preview(showSystemUi = true) @Composable internal fun MainCompass() = MainPreview(locationMode = LocationMode.COMPASS)

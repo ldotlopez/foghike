@@ -61,7 +61,7 @@ Los dos valores se eligen de una lista cerrada, para acotar el coste de la niebl
 
 ## Modelo de datos
 
-La base de datos local guarda tres tablas implementadas; otras dos están diseñadas pero aún no existen.
+La base de datos local guarda cuatro tablas implementadas; otra está diseñada pero aún no existe.
 
 | Tabla | Clave | Campos | Para qué sirve | Estado |
 | --- | --- | --- | --- | --- |
@@ -69,11 +69,11 @@ La base de datos local guarda tres tablas implementadas; otras dos están diseñ
 | `track_point` | `trackId` + `sequenceIndex` | `lat`, `lon`, `timestamp` (opcional), `accuracy` (metros, opcional), `source` | Puntos GPS crudos, necesarios para reprocesar (el origen permite procesar primero los propios). El `trackId` de un GPX es su huella de coordenadas | Implementada |
 | `downloaded_area` | `id` autogenerado | nombre, límites (lat/lon mínimas y máximas), zoom mínimo y máximo, nombre del fichero `.mbtiles`, fecha de descarga | Registro de las áreas de mapa descargadas | Implementada |
 | `AppSettings` | — | `revealRadiusMeters`, `cellSizeMeters`, `trailMinutes`, `userAlias` | Ajustes configurables por el usuario; el alias se envía con las rutas compartidas | Solo diseñada |
-| `Track` | `trackId` | `source`, `createdAt`, `fingerprint`, `senderAlias` (solo `nfc_import`) | Describir cada ruta, evitar importarla dos veces y saber de quién viene | Solo diseñada |
+| `track` | `trackId` | `source`, `createdAt` (inicio de la grabación o momento de importar), `name` (opcional), `startedAt` (hora del primer punto, opcional). Con el intercambio: `fingerprint` y `senderAlias` (solo `nfc_import`) | Describir cada ruta para listarla y borrarla; con el intercambio, evitar importarla dos veces y saber de quién viene | Implementada (versión 3), sin las columnas del intercambio |
 
 Mientras nadie más que el autor use la app, Room usa migración destructiva: si cambia el esquema, se borran los datos locales. Desde la primera versión que se reparta a usuarios de prueba, cada cambio de esquema lleva su migración real, para no borrar las rutas de los probadores.
 
-Con el intercambio por NFC, el campo `source` de `revealed_cell` admitirá un cuarto valor, `nfc_import`, para las celdas derivadas de rutas recibidas. La tabla `Track` pasa a ser necesaria: guarda el identificador, el origen, una huella de cada ruta para no importar dos veces la misma y el alias de quien la envió (ver «Intercambio de áreas por NFC»).
+Con el intercambio por NFC, el campo `source` de `revealed_cell` admitirá un cuarto valor, `nfc_import`, para las celdas derivadas de rutas recibidas. La tabla `track` crecerá para guardar el identificador, el origen, una huella de cada ruta para no importar dos veces la misma y el alias de quien la envió (ver «Intercambio de áreas por NFC»).
 
 ## Mapas offline
 
@@ -148,7 +148,9 @@ Las celdas gruesas guardadas antes de la versión 2 de la base de datos empiezan
 
 Importar una ruta consiste en pasar sus puntos por el mismo cálculo de revelado que usa el seguimiento en vivo, de modo que las caminatas pasadas despejan el mapa igual que las nuevas.
 
-**GPX (implementado).** El usuario elige uno o varios ficheros desde el selector del sistema. De él se leen los puntos de la pista (latitud, longitud y hora) y se ignora todo lo demás: rutas, waypoints y extensiones. Los puntos se guardan como puntos crudos para poder reprocesarlos, y las celdas reveladas quedan marcadas con el origen `gpx_import`. El identificador de la ruta es `gpx-` más una huella de su secuencia de coordenadas (sin horas, redondeadas a 1e-6°, la misma idea que el intercambio): si ya existe, el fichero se omite y el aviso lo cuenta como ya importado.
+**GPX (implementado).** El usuario elige uno o varios ficheros desde el selector del sistema. De él se leen los puntos de la pista (latitud, longitud y hora) y se ignora todo lo demás: rutas, waypoints y extensiones. Los puntos se guardan como puntos crudos para poder reprocesarlos, y las celdas reveladas quedan marcadas con el origen `gpx_import`. El identificador de la ruta es `gpx-` más una huella de su secuencia de coordenadas (sin horas, redondeadas a 1e-6°, la misma idea que el intercambio): si ya existe, el fichero se omite y el aviso lo cuenta como ya importado. Un fichero sin puntos de pista cuenta como ilegible. La ruta se llama como el `<name>` de su pista (o de `<metadata>`) y, si no tiene, como el fichero; se importa desde la pantalla de rutas.
+
+**Borrar rutas (implementado).** Desde la pantalla de rutas se borra una o varias, siempre tras confirmar. Como las celdas no saben qué ruta las reveló, se borran la ruta y sus puntos y se reconstruyen todas las celdas con los puntos que quedan, primero las propias (decisión 0010). La ruta que se está grabando no se puede borrar.
 
 **JSON de Google Maps (pendiente).** El formato de referencia es el que exporta el móvil (Ajustes > Ubicación > Cronología > Exportar), porque la Cronología ya se guarda en el dispositivo y Takeout no la incluye para la mayoría de usuarios. El formato antiguo de Takeout (`Records.json`, Semantic Location History) no se soporta. Antes de escribir el parser hay que conseguir una muestra real para fijar los campos: lo esperable es leer los puntos de `timelinePath` dentro de `semanticSegments`. El parser alimentará el mismo cálculo de revelado y marcará sus celdas con el origen `gmaps_import`.
 
@@ -209,12 +211,13 @@ Dos usuarios pueden fusionar sus áreas exploradas acercando los teléfonos, y l
 
 ## Pantallas y flujos
 
-El PoC tiene dos pantallas propias y usa el selector de ficheros del sistema para importar rutas.
+El PoC tiene cuatro pantallas propias y usa el selector de ficheros del sistema para importar rutas.
 
 | Pantalla | Qué muestra | Acciones |
 | --- | --- | --- |
-| Principal | Mapas descargados bajo la niebla, etiqueta con celdas reveladas y mapas, posición y rastro | Iniciar o parar la exploración (se pliega la barra); abrir la descarga de mapas; importar GPX; centrar y seguir la posición, con brújula; ayuda `(?)`. Detalle en `docs/ui/screens/main.md` |
+| Principal | Mapas descargados bajo la niebla, etiqueta con celdas reveladas y mapas, posición y rastro | Iniciar o parar la exploración (se pliega la barra); abrir la descarga de mapas; abrir las rutas; centrar y seguir la posición, con brújula; ayuda `(?)`. Detalle en `docs/ui/screens/main.md` |
 | Descarga de mapas | Mapa centrado en el usuario con las áreas ya descargadas, recuento de tiles frente al límite, progreso de la descarga y ayuda `(?)` (se abre sola la primera vez) | Dibujar áreas a mano alzada / mover el mapa; deshacer la última área o quitarlas todas; elegir el rango de zoom; recentrar; descargar. Detalle en `docs/ui/screens/download.md` |
+| Rutas | Grabaciones e importaciones, de la más reciente a la más antigua: nombre (las importadas con la fecha de la ruta) y, en letra menor, fecha de alta y origen | Importar GPX; borrar una (papelera o deslizar a la izquierda) o varias (selección múltiple), siempre tras confirmar. Detalle en `docs/ui/screens/tracks.md` |
 | Selector de ficheros | Selector del sistema | Elegir uno o varios GPX a importar |
 | Ajustes | Hoy: sección Avanzado (opacidad de la niebla con vista previa) y versión. Pendiente: radio de revelado y tamaño de celda (listas cerradas) y alias | Ajustar la opacidad (se guarda al momento). Pendiente: cambiar radio, celda y alias y guardar, lo que lanza el reprocesamiento tras confirmar. Detalle en `docs/ui/screens/settings.md` |
 
@@ -281,7 +284,7 @@ El código del PoC se reescribió desde cero el 24 oct 2026 siguiendo este docum
 - Los mapas solo se ven entre el zoom mínimo y el máximo descargados: por debajo el área aparece vacía (se ve el mapa general) y por encima se amplía el último nivel.
 - La configuración de la rejilla (25 m de celda, 30 m de radio) está fijada en el código.
 - La descarga de tiles es secuencial y sin reintentos.
-- La base de datos se borra al cambiar el esquema (aceptable hasta repartir la primera versión).
+- Desde la versión 3 de la base de datos los cambios de esquema llevan migración (la 2→3 crea la tabla `track`); la migración destructiva solo cubre versiones sin ella.
 
 ## Hoja de ruta y decisiones
 
@@ -292,7 +295,7 @@ El siguiente paso lógico es generar el mapa general y probar la app en un dispo
 3. Conseguir una muestra del export de Cronología del móvil y escribir su parser.
 4. Crear la pantalla de ajustes (tabla `AppSettings`: valores de lista, alias) y el reprocesamiento al guardar, que también recalcula `revealedCount`. Si tras probarlos se conserva más de un modo de niebla a zoom bajo, el selector va aquí.
 5. Antes de repartir el primer APK: clave de firma definitiva y paso a migraciones reales de Room.
-6. Implementar el intercambio por NFC y Nearby Connections con GPX (tabla `Track` con huella y alias, selección «Todas / Seleccionar» y resaltado activable de las celdas importadas).
+6. Implementar el intercambio por NFC y Nearby Connections con GPX (columnas de huella y alias en la tabla `track`, selección «Todas / Seleccionar» y resaltado activable de las celdas importadas).
 7. Añadir reintentos a la descarga.
 8. Portar a iOS: mover `geo/`, `data/` y `core/` a un módulo `shared` de KMP, con Room KMP, y convertir la creación de la base de datos en `expect/actual`.
 

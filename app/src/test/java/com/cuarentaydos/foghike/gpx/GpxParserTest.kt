@@ -32,7 +32,18 @@ class GpxParserTest {
                 GpsPoint(40.2, -3.6, 1714557605000),
                 GpsPoint(40.3, -3.7, null),
             ),
-            parseGpx(parser),
+            parseGpx(parser).points,
         )
+    }
+
+    private fun nameOf(xml: String) = parseGpx(KXmlParser().apply { setInput(StringReader(xml)) }).name
+
+    @Test
+    fun readsTheRouteName() {
+        val author = "<metadata><author><name>Author</name></author></metadata><wpt lat=\"1\" lon=\"1\"><name>Spring</name></wpt>"
+        assertEquals(null, nameOf("<gpx>$author<trk><trkseg/></trk></gpx>"))
+        assertEquals("Meta", nameOf("<gpx><metadata><name>Meta</name></metadata>$author<trk><trkseg/></trk></gpx>"))
+        assertEquals("Castellón", nameOf("<gpx><metadata><name>Meta</name></metadata><trk><name> Castellón </name></trk></gpx>"))
+        assertEquals("x".repeat(MAX_GPX_NAME), nameOf("<gpx><trk><name>${"x".repeat(500)}</name></trk></gpx>"))
     }
 }

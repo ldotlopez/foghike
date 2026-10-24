@@ -10,14 +10,14 @@ There are three cost levels:
 
 ## 1. Reprocess stored data (expensive)
 
-None of these is implemented yet: reprocessing arrives with the Settings screen (roadmap step 4) and is reused by track deletion (`PLAN.md`, "Tracks"). All of them are the same operation: delete `revealed_cell` and feed every point in `track_point` through `recordPoints` again, own tracks first and imported ones after, so own sources win.
+Only track deletion is implemented (`deleteTracks` in `core/Exploration.kt`, decision 0010); the Settings rows arrive with roadmap step 4 and will reuse it. All of them are the same operation: delete `revealed_cell` and reveal the cells of every track left in `track_point` again, own tracks first and imported ones after, so own sources win. Rebuilt cells get the current time as `firstRevealedAt`.
 
 | Interaction | Why it forces reprocessing | What is rebuilt |
 | --- | --- | --- |
 | Change the cell size (`CELL_SIZE_METERS`) | Every cell id and geometry changes | All fine and coarse cells and `revealedCount` |
 | Change the reveal radius (`REVEAL_RADIUS_METERS`) | Changes which cells each point clears and which points count as accurate (`isAccurate` uses the same radius) | All cells and `revealedCount` |
 | Change `LOD_FACTOR` or `LOD_LEVELS` | Coarse cell sizes change | Coarse cells and `revealedCount` (fine cells stay) |
-| Delete a track (own or imported) | Cells don't know which track revealed them; cells only that track cleared must be fogged again | All cells from the remaining points |
+| Delete one or more tracks (tracks screen; own or imported) — implemented | Cells don't know which track revealed them; cells only those tracks cleared must be fogged again | All cells from the remaining points, in one transaction; the main screen's fog refreshes when it comes back (cell table changed) |
 | Data stored before database version 2 | The migration left `revealedCount = 1` on old coarse cells, so `DENSITY` draws them almost fully fogged | `revealedCount` (one reprocess is enough) |
 | Receive an NFC track crossing own cells (future) | The own source must win; outside reprocessing the insert ignores duplicates | Only the `source` field; reprocessing order fixes it |
 
@@ -30,7 +30,7 @@ Everything goes through `recordPoints` (`core/Exploration.kt`) in one transactio
 | Interaction | Frequency | What is computed |
 | --- | --- | --- |
 | Live tracking (`TrackingService`) | Every GPS batch, about 5 s (`INTERVAL_MS`); also with the screen off | Raw points, new fine cells, their coarse cells and the `revealedCount` increment (new fine cells only) |
-| Import one or more GPX files | When files are picked; one file = one track | Same; if the fingerprint already exists the file is skipped without computing anything |
+| Import one or more GPX files (tracks screen) | When files are picked; one file = one track | Same; if the fingerprint already exists the file is skipped without computing anything |
 | Google Maps or NFC import (future) | On import | Same, through the same path |
 
 Inaccurate points (`accuracy` above the reveal radius) are stored but neither clear cells nor show in the trail.

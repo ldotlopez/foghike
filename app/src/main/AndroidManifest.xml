@@ -39,6 +39,11 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.TracksActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.SettingsActivity"
             android:screenOrientation="portrait"
             android:exported="false" />

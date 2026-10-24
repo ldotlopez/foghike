@@ -43,6 +43,21 @@ data class TrackPoint(
     val source: String,
 )
 
+/**
+ * One recording or imported route; its points are the [TrackPoint]s with the same [trackId].
+ * [createdAt] is when it entered the app (recording start or import). [name] is null when the
+ * screen makes one up (recordings: "Exploration 10:32"). [startedAt] is the time of its first
+ * timed point, null when the file has no times.
+ */
+@Entity(tableName = "track")
+data class Track(
+    @PrimaryKey val trackId: String,
+    val source: String,
+    val createdAt: Long,
+    val name: String? = null,
+    val startedAt: Long? = null,
+)
+
 @Entity(tableName = "downloaded_area")
 data class DownloadedArea(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
