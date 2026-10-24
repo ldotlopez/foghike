@@ -6,6 +6,7 @@ import com.cuarentaydos.foghike.tiles.BASE_MAP_NAME
 import com.cuarentaydos.foghike.tiles.IGN_ATTRIBUTION
 import com.cuarentaydos.foghike.tiles.IGN_MAX_ZOOM
 import com.cuarentaydos.foghike.tiles.IGN_TILE_URL
+import com.cuarentaydos.foghike.tiles.TILE_STORE_NAME
 import com.cuarentaydos.foghike.tiles.TileServer
 import android.Manifest
 import android.annotation.SuppressLint
@@ -70,9 +71,11 @@ fun mapStyleJson(server: TileServer, areas: List<DownloadedArea>, onlineIgn: Boo
 
     addRaster(BASE_MAP_NAME, server.urlTemplate(BASE_MAP_NAME), BASE_MAP_MIN_ZOOM, BASE_MAP_MAX_ZOOM)
     if (onlineIgn) addRaster("ign-online", IGN_TILE_URL, 0, IGN_MAX_ZOOM, layerMinZoom = BASE_MAP_MAX_ZOOM)
-    for (area in areas) {
-        val name = area.fileName.removeSuffix(".mbtiles")
-        addRaster(name, server.urlTemplate(name), area.minZoom, area.maxZoom)
+    // Every download shares one tile store (decision 0015). One source per distinct max zoom, lowest
+    // first: above its max zoom a source shows its last level enlarged (overzoom), and where a higher
+    // source has no tile it is transparent, so each area keeps showing above its own max zoom.
+    for (maxZoom in areas.map { it.maxZoom }.distinct().sorted()) {
+        addRaster("$TILE_STORE_NAME-$maxZoom", server.urlTemplate(TILE_STORE_NAME), 0, maxZoom)
     }
     return JSONObject().put("version", 8).put("sources", sources).put("layers", layers).toString()
 }

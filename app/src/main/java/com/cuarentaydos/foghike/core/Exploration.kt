@@ -41,12 +41,18 @@ suspend fun recordPoints(
     }
 }
 
-/** Must run inside a transaction: the cells and their coarse counts change together. */
-private suspend fun revealCells(db: AppDatabase, grid: RevealGrid, points: List<GpsPoint>, source: String, now: Long) {
+/** The base cells [points] reveal with [grid]; inaccurate points reveal nothing. */
+fun cellsRevealedBy(points: List<GpsPoint>, grid: RevealGrid): Set<Cell> {
     val cells = linkedSetOf<Cell>()
     for (p in points.filter { isAccurate(it.accuracy, grid.radius) }) {
         cells += cellsInRadius(LatLon(p.lat, p.lon), grid.cellSize, grid.radius)
     }
+    return cells
+}
+
+/** Must run inside a transaction: the cells and their coarse counts change together. */
+private suspend fun revealCells(db: AppDatabase, grid: RevealGrid, points: List<GpsPoint>, source: String, now: Long) {
+    val cells = cellsRevealedBy(points, grid)
     val cellDao = db.cellDao()
     val ids = cellDao.insertIgnoringExisting(cells.map { RevealedCell(it.id, it.size, it.row, it.col, now, source) })
     // Only base cells revealed for the first time add to their coarse cells' counts.
@@ -57,15 +63,16 @@ private suspend fun revealCells(db: AppDatabase, grid: RevealGrid, points: List<
 
 /**
  * Stores a whole route read from a file. Its id is [idPrefix] plus a fingerprint of its coordinates,
- * so a route already imported is skipped instead of duplicated: returns false in that case.
+ * so a route already imported is skipped instead of duplicated. Returns the new track's id, or null
+ * if it was already imported.
  */
 suspend fun importTrack(
     db: AppDatabase, grid: RevealGrid, idPrefix: String, points: List<GpsPoint>, source: String, name: String? = null,
-): Boolean {
+): String? {
     val trackId = idPrefix + trackFingerprint(points.map { LatLon(it.lat, it.lon) })
-    if (db.trackPointDao().exists(trackId)) return false
+    if (db.trackPointDao().exists(trackId)) return null
     recordPoints(db, grid, trackId, 0, points, source, name)
-    return true
+    return trackId
 }
 
 /**

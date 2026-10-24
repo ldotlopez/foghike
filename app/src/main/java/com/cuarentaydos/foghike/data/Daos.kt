@@ -21,6 +21,10 @@ interface CellDao {
     )
     suspend fun inRange(size: Int, firstRow: Int, lastRow: Int, firstCol: Int, lastCol: Int): List<GridPosition>
 
+    /** Every cell of one size (the base size: every revealed cell); for offline map downloads. */
+    @Query("SELECT gridRow, gridCol, revealedCount FROM revealed_cell WHERE cellSize = :size")
+    suspend fun ofSize(size: Int): List<GridPosition>
+
     @Query("DELETE FROM revealed_cell")
     suspend fun deleteAll()
 
@@ -72,4 +76,10 @@ interface AreaDao {
 
     @Query("SELECT * FROM downloaded_area ORDER BY downloadedAt")
     suspend fun all(): List<DownloadedArea>
+
+    @Query("UPDATE downloaded_area SET fileName = :fileName WHERE id = :id")
+    suspend fun setFileName(id: Long, fileName: String)
+
+    @Query("DELETE FROM downloaded_area WHERE id IN (:ids)")
+    suspend fun delete(ids: List<Long>)
 }
