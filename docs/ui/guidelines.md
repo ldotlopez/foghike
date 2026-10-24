@@ -7,6 +7,7 @@ General rules for every Hike Explorer screen. Read before designing or changing 
 - **Common patterns first.** The author is new to Android: by default use the most common, officially recommended pattern. Use Material 3 components; build a custom component only when Material 3 has no equivalent, and note why in the screen spec.
 - **The map is the center.** Every screen is built around the map, except Settings. Actions and access to other screens live in floating, collapsible toolbars over the map.
 - **No text that takes useful space.** Help and explanations never take permanent space on screen: a `(?)` icon opens a modal with the text.
+- **Icons over text.** Outside Settings, actions are icon buttons (`IconButton`, `FloatingActionButton`), not text buttons. Each one shows its `contentDescription` as a tooltip on long press (Material 3 `TooltipBox` + `PlainTooltip`), so its meaning can always be checked. Text stays where an icon would be ambiguous or the pattern expects it: dialog buttons ("Cancel", "Download"), Snackbar actions, form fields.
 
 ## Screens and navigation
 
@@ -39,7 +40,7 @@ General rules for every Hike Explorer screen. Read before designing or changing 
 ## Look
 
 - **Fixed brand palette**, not dynamic color: generated with Material Theme Builder from the launcher icon green (`#3DDC84`) as seed, light and dark schemes. Map layer colors (fog, trail, download areas, imported-cells highlight) are fixed brand colors defined next to the theme and must keep contrast with the panels and toolbars.
-- Icons: Material Symbols, every icon button with a `contentDescription` (string resource, translated).
+- Icons: [Material Symbols](https://fonts.google.com/icons) (Apache 2.0; the same Google set that MUI wraps for React), Outlined style, one style for the whole app. Import only the icons used, as vector drawables in `res/drawable/` (Android Studio → New → Vector Asset, or the "Android" download on the Symbols site), and draw them with `painterResource`. Don't add the `material-icons-extended` library: it is no longer maintained and Google recommends Material Symbols instead. Every icon button has a `contentDescription` (string resource, translated).
 - All UI text in `strings.xml` (English) and `values-es` (Spanish), as before.
 
 ## Debug controls
