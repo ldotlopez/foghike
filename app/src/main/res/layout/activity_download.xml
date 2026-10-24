@@ -10,13 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Visible only in draw mode: catches the finger so the map doesn't pan. -->
-    <View
-        android:id="@+id/draw_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -80,13 +73,6 @@
             android:layout_height="wrap_content"
             android:baselineAligned="false"
             android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/draw"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/draw" />
 
             <Button
                 android:id="@+id/clear"

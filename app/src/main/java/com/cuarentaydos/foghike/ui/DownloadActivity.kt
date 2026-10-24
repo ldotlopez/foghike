@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.MotionEvent
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -45,7 +44,8 @@ private const val MIN_STROKE_STEP_PX = 12f
 private const val AREA_PICK_ZOOM = 11.0 // a hiking area of a few km fills the screen
 
 /**
- * Map download screen: in draw mode the user circles one or more areas with a finger; each area is
+ * Map download screen: the user circles one or more areas with one finger (two fingers move and
+ * zoom the map); each area is
  * downloaded as one MBTiles file with only the tiles that touch it, by [DownloadWorker] in the
  * background, so leaving this screen doesn't stop it.
  */
@@ -79,16 +79,7 @@ class DownloadActivity : ComponentActivity() {
             }
         }
 
-        // A transparent view over the map catches the finger while drawing; otherwise it is hidden
-        // and the map pans and zooms as usual.
-        val overlay = findViewById<View>(R.id.draw_overlay)
-        overlay.setOnTouchListener { _, e -> onDrawTouch(e); true }
-        val draw = findViewById<Button>(R.id.draw)
-        draw.setOnClickListener {
-            val drawing = overlay.visibility != View.VISIBLE
-            overlay.visibility = if (drawing) View.VISIBLE else View.GONE
-            draw.setText(if (drawing) R.string.move_map else R.string.draw)
-        }
+        mapView.setOnTouchListener { _, e -> onMapTouch(e) }
 
         val minZoom = findViewById<EditText>(R.id.min_zoom)
         val maxZoom = findViewById<EditText>(R.id.max_zoom)
@@ -143,6 +134,25 @@ class DownloadActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * One finger draws; the map never sees it. When a second finger lands, the stroke is dropped
+     * and the gesture goes to the map from then on. Returns true when the event was used for drawing.
+     */
+    private fun onMapTouch(e: MotionEvent): Boolean {
+        if (e.actionMasked == MotionEvent.ACTION_POINTER_DOWN && stroke != null) {
+            stroke = null
+            drawAreas()
+            // The map missed the first finger going down; replay it so the two-finger gesture makes sense.
+            val down = MotionEvent.obtain(e.downTime, e.eventTime, MotionEvent.ACTION_DOWN, e.getX(0), e.getY(0), e.metaState)
+            mapView.onTouchEvent(down)
+            down.recycle()
+            return false
+        }
+        if (stroke == null && e.actionMasked != MotionEvent.ACTION_DOWN) return false
+        onDrawTouch(e)
+        return true
+    }
+
     private fun onDrawTouch(e: MotionEvent) {
         val m = map ?: return
         val screen = PointF(e.x, e.y)
@@ -162,6 +172,7 @@ class DownloadActivity : ComponentActivity() {
                 stroke?.takeIf { it.size >= 3 }?.let { areas += it }
                 stroke = null
             }
+            MotionEvent.ACTION_CANCEL -> stroke = null
             else -> return
         }
         drawAreas()

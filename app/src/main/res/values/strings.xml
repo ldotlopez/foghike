@@ -19,7 +19,7 @@
     <string name="tracking_notification">Exploring: recording your route</string>
     <string name="tracking_location_off">Location is off: turn it on to keep exploring</string>
 
-    <string name="download_help">Tap Draw and circle the area to download with your finger. You can draw several. Downloading needs a connection.</string>
+    <string name="download_help">Circle the area to download with one finger; use two fingers to move and zoom the map. You can draw several. Downloading needs a connection.</string>
     <string name="min_zoom">Min zoom</string>
     <string name="max_zoom">Max zoom</string>
     <string name="clear">Clear</string>
@@ -38,6 +38,4 @@
     <string name="background_location_why">So no GPS points are lost if Android stops the app while you explore, choose \"Allow all the time\" on the next screen.</string>
     <string name="continue_button">Continue</string>
     <string name="not_now">Not now</string>
-    <string name="draw">Draw</string>
-    <string name="move_map">Move map</string>
 </resources>

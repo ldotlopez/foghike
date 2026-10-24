@@ -79,7 +79,7 @@ Con el intercambio por NFC, el campo `source` de `revealed_cell` admitirá un cu
 El usuario elige en un mapa general de España qué zonas quiere llevar sin conexión; cada zona se descarga como un fichero MBTiles independiente con la vista satélite del IGN.
 
 1. Desde la pantalla principal se abre la descarga de mapas, centrada en la posición del usuario a zoom 11 (o en España entera si no hay ubicación), sobre el mapa general incluido en la app.
-2. El botón «Dibujar» activa el modo dibujo: el usuario rodea con el dedo cada zona que quiere descargar, y cada trazo se cierra como un polígono. Se pueden dibujar varias. «Mover mapa» vuelve a desplazar y ampliar el mapa con normalidad.
+2. El usuario rodea con un dedo cada zona que quiere descargar, y cada trazo se cierra como un polígono. Se pueden dibujar varias. Con dos dedos se mueve y amplía el mapa: en cuanto se apoya el segundo dedo se descarta el trazo empezado y el gesto pasa al mapa. No hay botón para cambiar de modo; a cambio, un dedo no desplaza el mapa ni el doble toque lo amplía.
 3. El usuario fija el rango de zoom (13 a 16 por defecto) y pulsa el botón de descarga.
 4. Por cada polígono se calculan solo los tiles que lo tocan (esquina dentro, vértice dentro o borde que cruza), no todos los de su rectángulo envolvente, en el esquema Web Mercator estándar y se piden al servicio WMTS de ortofotos del IGN (capa `OI.OrthoimageCoverage`, matriz `GoogleMapsCompatible`, JPEG, hasta zoom 19).
 5. Los tiles se escriben en un `.mbtiles` conforme al estándar y se registra el área en la base de datos.
