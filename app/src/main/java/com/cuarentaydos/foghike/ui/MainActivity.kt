@@ -46,6 +46,7 @@ import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.location.LocationComponentActivationOptions
+import org.maplibre.android.location.LocationComponentOptions
 import org.maplibre.android.location.OnCameraTrackingChangedListener
 import org.maplibre.android.location.modes.CameraMode
 import org.maplibre.android.location.modes.RenderMode
@@ -331,7 +332,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * MapLibre's location component: a dot with an arrow pointing where the phone faces (compass).
+     * MapLibre's location component, drawn as a red compass needle pointing where the phone faces.
      * It follows the activity lifecycle, so GPS and compass stop with the screen off. Needs the
      * current style, so it is turned on again after every style reload.
      */
@@ -340,8 +341,19 @@ class MainActivity : ComponentActivity() {
         val m = map ?: return
         val style = m.style?.takeIf { it.isFullyLoaded } ?: return
         if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) return
+        // In COMPASS render mode only the bearing icon rotates; foreground and background stay as its pivot.
+        val icons = LocationComponentOptions.builder(this)
+            .bearingDrawable(R.drawable.location_needle)
+            .foregroundDrawable(R.drawable.location_pivot)
+            .backgroundDrawable(R.drawable.location_pivot)
+            .foregroundDrawableStale(R.drawable.location_pivot)
+            .foregroundStaleTintColor(android.graphics.Color.GRAY) // no recent fix
+            .backgroundDrawableStale(R.drawable.location_pivot)
+            .build()
         m.locationComponent.apply {
-            activateLocationComponent(LocationComponentActivationOptions.builder(this@MainActivity, style).build())
+            activateLocationComponent(
+                LocationComponentActivationOptions.builder(this@MainActivity, style).locationComponentOptions(icons).build()
+            )
             isLocationComponentEnabled = true
             cameraMode = CameraMode.NONE
             renderMode = RenderMode.COMPASS

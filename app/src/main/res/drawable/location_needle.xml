@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- User position: compass needle, red half towards where the phone faces. Same 44 dp canvas as
+     MapLibre's default bearing icon, centered, so it rotates around the position. The dark outline
+     keeps it readable over satellite imagery. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#99000000"
+        android:strokeWidth="1"
+        android:strokeLineJoin="round"
+        android:pathData="M18,31L22.5,18L13.5,18Z" />
+    <path
+        android:fillColor="#E53935"
+        android:strokeColor="#99000000"
+        android:strokeWidth="1"
+        android:strokeLineJoin="round"
+        android:pathData="M18,3L22.5,18L13.5,18Z" />
+</vector>

@@ -64,11 +64,15 @@ A Material 3 `AssistChip` at the top left, below the status bar.
 - Spacing is tight (4 dp between FAB and pill, 8 dp screen margin) so the FAB, the handle and four 56 dp icons fit a 360 dp wide phone.
 - Every icon button is at least 56 dp. The default Material 3 icon buttons are 48 dp, so they get an explicit size.
 - Each one has a `contentDescription` and a tooltip on long press (`TooltipBox` + `PlainTooltip`), except my location, whose long press opens its mode menu.
-- The record/stop pair (● / ■) reads as "recording your route". Not exploring: `fiber_manual_record` tinted with the error color (red) on the regular FAB container, so it can't be mistaken for the blue, containerless user-position dot. Exploring: `stop` on the error container color, so the state can be seen at a glance.
+- The record/stop pair (● / ■) reads as "recording your route". Not exploring: `fiber_manual_record` tinted with the error color (red) on the regular FAB container, so it stands apart from the user-position needle (a red-tipped arrow on the map, not a filled circle on a button). Exploring: `stop` on the error container color, so the state can be seen at a glance.
 - **Collapsing.** The toolbar collapses by itself when exploring starts: only the Explore FAB (now Stop), the handle and the my location button stay visible, so the map is as free as possible while walking. My location stays because re-centering is what a walker needs after dragging the map.
   - The handle is the pill's first button, next to the FAB: `more_horiz` when collapsed (expands), `close` when expanded (collapses again). Same tooltip rules as the other buttons.
   - The handle exists only while exploring. When exploring stops, the toolbar expands and the handle goes away.
   - The expanded/collapsed choice is not stored: it follows the exploring state each time the screen opens.
+
+### User position
+
+MapLibre's location component in `RenderMode.COMPASS`, with custom icons (decision 0012): a compass needle (`location_needle`, red half towards where the phone faces, white half behind, dark outline for satellite imagery) rotating around a small white pivot (`location_pivot`). The pivot turns gray when there is no recent fix. The accuracy circle stays MapLibre's default.
 
 ### My location button
 
