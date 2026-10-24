@@ -1,48 +1,49 @@
 # Hike Explorer
 
-An Android hiking app where the map starts covered by fog that clears around the places you have
-walked, like in a strategy game. Fog is revealed from live GPS tracking or from imported GPX routes.
-Base maps are IGN (Spain) satellite imagery, downloaded for offline use.
+App de senderismo para Android en la que el mapa empieza cubierto de niebla, que se despeja alrededor
+de los lugares por los que has caminado, como en un juego de estrategia. La niebla se revela con el
+GPS en directo o importando rutas GPX. Los mapas base son ortofotos del IGN (España), descargadas
+para usarlas sin conexión.
 
-FogHike is the internal name (package `com.cuarentaydos.foghike`, class and file names).
+FogHike es el nombre interno (paquete `com.cuarentaydos.foghike`, nombres de clases y archivos).
 
-## Features
+## Funciones
 
-- Offline maps: a bundled overview of Spain, plus hand-drawn areas downloaded as MBTiles.
-- GPX import (several files at once) to reveal routes walked in the past.
-- Tracking mode: a foreground service records your position; one button starts and stops it.
-- Fog drawn per viewport with levels of detail; adjustable opacity for debugging.
-- English and Spanish UI.
+- Mapas sin conexión: un mapa general de España incluido, más zonas dibujadas a mano y descargadas como MBTiles.
+- Importación de GPX (varios archivos a la vez) para revelar rutas recorridas en el pasado.
+- Modo seguimiento: un servicio en primer plano registra tu posición; un botón lo inicia y lo detiene.
+- Niebla dibujada por vista con niveles de detalle; opacidad ajustable en Ajustes → Avanzado.
+- Interfaz en inglés y español.
 
-## Requirements
+## Requisitos
 
-- Android 12 (API 31) or newer, ARM phone.
-- JDK 21 to build.
+- Android 12 (API 31) o superior, móvil ARM.
+- JDK 21 para compilar.
 
-## Build
+## Compilar
 
 ```sh
-./gradlew assembleDebug   # build
-./gradlew test            # JVM unit tests
-./gradlew installDebug    # install on a connected device
+./gradlew assembleDebug   # compilar
+./gradlew test            # tests unitarios en la JVM
+./gradlew installDebug    # instalar en un dispositivo conectado
 ```
 
-The bundled overview map `app/src/main/assets/spain.mbtiles` (zoom 5–9) is already in the repository.
-To regenerate it, run `python3 tools/build_spain_mbtiles.py` from the repository root.
+El mapa general incluido `app/src/main/assets/spain.mbtiles` (zoom 5–9) ya está en el repositorio.
+Para regenerarlo, ejecuta `python3 tools/build_spain_mbtiles.py` desde la raíz del repositorio.
 
-## Release
+## Publicación
 
-Pushing a tag builds a signed ARM release APK and publishes it as a GitHub release
-(`.github/workflows/release.yml`). The signing key never lives in the repository; it is passed
-through the `SIGNING_STORE_FILE`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` and
-`SIGNING_KEY_PASSWORD` environment variables. Every release must use the same key.
+Al subir una etiqueta (tag) se compila un APK de release ARM firmado y se publica como release de
+GitHub (`.github/workflows/release.yml`). La clave de firma nunca está en el repositorio; se pasa
+con las variables de entorno `SIGNING_STORE_FILE`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` y
+`SIGNING_KEY_PASSWORD`. Todas las releases deben usar la misma clave.
 
-## Documentation
+## Documentación
 
-- [`FogHike — Documento de diseño.md`](FogHike%20—%20Documento%20de%20diseño.md) — design document (Spanish), source of truth for product decisions.
-- [`docs/`](docs/) — technical documentation: recalculation triggers, configurable values,
-  decision records, planned work and manual device tests.
+- [`FogHike — Documento de diseño.md`](FogHike%20—%20Documento%20de%20diseño.md) — documento de diseño, fuente de verdad de las decisiones de producto.
+- [`docs/`](docs/) — documentación técnica (en inglés): disparadores de recálculo, valores
+  configurables, registro de decisiones, trabajo planificado y pruebas manuales en dispositivo.
 
-## Attribution
+## Atribución
 
-Satellite imagery: PNOA cedido por © Instituto Geográfico Nacional de España.
+Ortofotos: PNOA cedido por © Instituto Geográfico Nacional de España.

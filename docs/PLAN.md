@@ -20,10 +20,6 @@
 
 - **One recalculation when leaving Settings.** When several changed preferences each need a recalculation, run it once when the user leaves the Settings screen instead of after each change. Under every changed preference that needs it, show a small warning line (smaller font) such as "Will be recalculated when you close this screen".
 
-## Docs
-
-- **README in Spanish.** Translate `README.md` to Spanish.
-
 ## UI
 
 - **Material 3 floating toolbar (when material3 1.5 is stable).** The map toolbars are hand-made (`MapToolbar` in `ui/Theme.kt`, decision 0007) because `HorizontalFloatingToolbar` only exists from material3 1.5, which is still beta (1.5.0-beta02 in Oct 2026). Material3 1.5 requires `compileSdk 37`, AGP ≥ 9.1, and a Compose BOM of 2026.08 or later (2026.08+ already needs `compileSdk 37`, decision 0005).
