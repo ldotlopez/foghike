@@ -61,3 +61,13 @@ None of this runs with the screen off or while the camera moves.
 | Press "Download" | Nothing new: it uses the last tile count (counts again only if one is still running); above `MAX_TILES_PER_DOWNLOAD` nothing is downloaded |
 | Open the screen, or a download finishes with the screen open | The outlines of the downloaded areas (bounding boxes from the database) |
 | A download finishes | Nothing on the main screen until the user returns to it (see `onResume` above) |
+
+## Offline maps from cells (decision 0015)
+
+| Interaction | What is recalculated |
+| --- | --- |
+| Open the download sheet (Settings → "Download maps of explored areas", or "Download map" after an import), or move its zoom slider | Tiles under the cells (every revealed base cell, or the cells the imported tracks reveal, from their points), minus the tiles already in the store, and their estimated size; off the main thread, a newer range cancels the older count |
+| Press Download in the sheet | Nothing at once: `DownloadWorker` computes the tiles again when it runs (the cells may have grown), skips the stored ones and records the download when complete |
+| Open the clean-up dialog, or toggle "Keep areas downloaded by hand" | Every stored tile against the tiles under the revealed cells at the stored zoom levels (and the kept areas' boxes and zoom ranges): the tiles to delete and their size, off the main thread |
+| Confirm the clean-up | The same plan again, then the deletes in one transaction and `VACUUM` (rewrites the whole file); without kept areas, their `downloaded_area` rows are replaced by one with their zoom range. The main screen reloads its style when the area list changed |
+| App start with areas from before decision 0015 | Each old `.mbtiles` is copied into the store and deleted, once; the area rows change file name, so the main screen reloads its style |

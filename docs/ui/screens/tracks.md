@@ -64,6 +64,8 @@ While importing or deleting, the actions that start work are disabled and a `Lin
 
 The same importer the main screen had: one track per file, skipped if its fingerprint already exists, and a Snackbar with the imported / already imported / unreadable counts. New: a file with no track points counts as unreadable (it would leave an empty track in the list), and the track gets its name (see above).
 
+When at least one route was imported, the Snackbar is long and has the action "Download map" (decision 0015): imported routes are usually where no map was downloaded yet. It opens `TileOfferSheet` (`ui/OfflineMaps.kt`) titled "Download maps for the imported routes": the zoom range (13–17 the first time, then the last used, `trackDownloadMinZoom` / `trackDownloadMaxZoom`), the tiles under the routes' revealed cells that aren't stored yet against the 20,000 limit, the estimated size and a Download button (disabled at 0 tiles or over the limit). Download enqueues `DownloadWorker.enqueueTracks` and shows "Download started. Follow it in the notification."
+
 ### Empty list
 
 Centered text: "No tracks yet. Start exploring, or import GPX files with the button at the top."

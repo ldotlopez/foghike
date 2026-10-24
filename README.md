@@ -9,7 +9,7 @@ FogHike es el nombre interno (paquete `com.cuarentaydos.foghike`, nombres de cla
 
 ## Funciones
 
-- Mapas sin conexión: un mapa general de España incluido, más zonas dibujadas a mano y descargadas como MBTiles.
+- Mapas sin conexión: un mapa general de España incluido, más zonas dibujadas a mano, los mapas de las rutas importadas (se ofrecen al importar) y los de todo lo explorado (Ajustes → Mapas sin conexión), en un único MBTiles. Desde Ajustes también se borran los mapas fuera de lo explorado, conservando si quieres las zonas dibujadas a mano.
 - Importación de GPX (varios archivos a la vez) para revelar rutas recorridas en el pasado.
 - Modo seguimiento: un servicio en primer plano registra tu posición; un botón lo inicia y lo detiene.
 - Niebla dibujada por vista con niveles de detalle; opacidad ajustable en Ajustes → Avanzado.

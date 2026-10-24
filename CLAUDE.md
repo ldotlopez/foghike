@@ -31,7 +31,7 @@ Code lives in `app/src/main/java/com/cuarentaydos/foghike/`:
 
 - `geo/` — pure Kotlin: grid quantization, Haversine reveal, cell geometry, fog rectangles, LOD, tile math. No Android, no libraries.
 - `data/` — Room entities, DAOs, database only. LOD cells share `revealed_cell` (the id encodes the cell size).
-- `core/` — app logic used by screens and services, no Android: `Exploration.kt` (`recordPoints`: the single path from GPS points to stored points and revealed cells, used by tracking and every importer; `importTrack` for whole routes; `deleteTracks` rebuilds the cells from the points left), `FogCells.kt` (fog pieces for an area), `Trail.kt` (recent trail segments).
+- `core/` — app logic used by screens and services, no Android: `Exploration.kt` (`recordPoints`: the single path from GPS points to stored points and revealed cells, used by tracking and every importer; `importTrack` for whole routes; `deleteTracks` rebuilds the cells from the points left), `FogCells.kt` (fog pieces for an area), `Trail.kt` (recent trail segments), `OfflineMaps.kt` (tiles to download for revealed cells or tracks, and which tiles a clean-up keeps).
 - Root — `FogHikeApp` (builds the database and tile server; the one Android-specific DB file).
 - `tiles/` — local tile server and IGN download to MBTiles. `gpx/` — GPX reader. `tracking/` — foreground tracking service. `ui/` — the screens (main, tracks, download, settings: Activity + `*Screen.kt` Compose layout), `Color.kt` (generated palette and map layer colors), `Theme.kt` (Material 3 theme, shared buttons, help and tooltips), map style JSON, fog and trail layers.
 - `tools/build_spain_mbtiles.py` — generates the bundled `app/src/main/assets/spain.mbtiles` (zoom 5–9).
