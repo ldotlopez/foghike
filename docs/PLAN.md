@@ -28,9 +28,3 @@
 - **Export / import data and settings (idea).** Let the user save the database (tracks, points, revealed cells) and the settings to a file and restore them, e.g. to move to another phone or keep a backup. An imported file is untrusted: limit its size and validate it as for exchange files.
 - **Cycling profile (idea).** A set of settings tuned for riding a bike (e.g. GPS interval, reveal radius, trail), chosen when starting a track (walking or cycling).
 - **Setting presets: "Battery saver" and "Old device".** Two switches that each set a group of the existing settings to fixed values; while a preset is on, the settings it controls are shown disabled in the UI. Pick which settings each preset covers (e.g. GPS interval, fog texture/animation, LOD detail). Document the behaviour and the affected settings in the user manual (`README.md`).
-
-## Release
-
-- **Signed release builds in GitHub Actions (idea).** Store the signing keystore and its passwords as GitHub secrets and build the signed release APK in the workflow that runs when a tag is pushed; the workflow must be able to run on its own (also manually) without local files. That APK is the release version, not debug.
-  - Debug builds on the test phone: Android never installs an unsigned APK, but debug builds don't need the release key — Gradle signs them with the local debug keystore (`~/.android/debug.keystore`), so `./gradlew installDebug` keeps working.
-  - To keep release and debug installed side by side, add `applicationIdSuffix = ".debug"` (and e.g. a different app name) to the debug build type; otherwise both share the application id and installing one over the other fails with a signature mismatch.
