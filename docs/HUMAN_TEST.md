@@ -29,3 +29,4 @@ What can't be checked with adb or JVM tests: it needs walking, turning the phone
 
 - [ ] **Phone in Catalan:** the app shows in English; decide whether to add Catalan or change the default language.
 - [ ] **Android kills the app while exploring** (e.g. opening many heavy apps): exploring resumes on its own in a new track.
+- [ ] **After moving logic to `core/` (decision 0004):** fog clears around new points while exploring and when zooming out (partial fog over coarse cells), the trail still fades, and importing the same GPX twice reports it as already imported.

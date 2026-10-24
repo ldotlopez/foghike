@@ -112,7 +112,7 @@ La pantalla principal muestra los mapas bajo una niebla que cubre toda la pantal
 - **Mapas descargados.** Cada área descargada es una capa de imagen sobre el mapa general. La versión de MapLibre del proyecto no lee MBTiles directamente, así que la app levanta un pequeño servidor HTTP local, accesible solo desde el propio teléfono (127.0.0.1), que sirve los tiles de los ficheros `.mbtiles`. El HTTP sin cifrar se permite únicamente para esa dirección. Se mantiene así en el PoC: funciona, y para una app de prueba con menos de 100 usuarios migrar a PMTiles no compensa (exigiría actualizar MapLibre y cambiar el formato de descarga). Se reconsiderará solo si el servidor da problemas en dispositivos reales.
 - **Niebla.** Se calcula solo para la ventana visible más un margen de una pantalla por cada lado, nunca para España entera, así que su coste depende del tamaño de la pantalla y no de cuánto se haya explorado. Las celdas sin revelar de cada fila se agrupan en tramos, y las filas consecutivas sin nada revelado se funden en un solo rectángulo; cada fila cuesta unos pocos rectángulos y no un polígono por celda.
 - **Nivel de detalle según el zoom.** Se usa el nivel más fino cuyas celdas miden al menos 4 px en pantalla; con la celda de 25 m a latitudes de España sale la fina a zoom 15 o más, la de ×8 entre 12 y 14, la de ×64 entre 9 y 11 y la de ×512 a 8 o menos (ver «Niveles de detalle» en «Mecánica de revelado»). Con celdas de entre 4 y 30 px y 3×3 pantallas salen a lo sumo unas 1.800 filas, y como las rutas son estrechas, unos pocos miles de rectángulos como máximo (límite: 5.000). Si aun así se supera el límite de rectángulos, se pasa al nivel más grueso siguiente en vez de no dibujar.
-- **Niebla a zoom bajo.** Ver la sección siguiente. El modo se elige con `FOG_MODE` en `ui/FogLayer.kt`.
+- **Niebla a zoom bajo.** Ver la sección siguiente. El modo se elige con `FOG_MODE` en `core/FogCells.kt`.
 - **Cuándo se recalcula.** Al pararse la cámara (`onCameraIdle`) si ha salido del margen calculado o ha cambiado de nivel de detalle, y cuando cambian las celdas. Mientras el usuario arrastra no se calcula nada: MapLibre ya tiene los rectángulos en la GPU. El cálculo va fuera del hilo principal. Con la pantalla apagada no se calcula la niebla; el servicio de seguimiento solo guarda puntos y celdas.
 - **Aspecto.** La niebla es estática para no gastar batería: una textura de ruido fractal (256 px, de gris azulado a blanco, con zonas algo más finas) generada una sola vez al cargar el estilo y repetida por MapLibre como patrón de relleno (`fill-pattern`), así que dibujarla no cuesta más que un color plano. La niebla animada queda en `docs/PLAN.md`.
 - **Rastro reciente.** Se dibujan los puntos guardados de la última hora (cualquier origen con hora), unidos por ruta, con opacidad 1 en el último punto que baja hasta 0 a la hora. Los puntos imprecisos se ignoran, como en el revelado. La duración es una constante aparte (`TRAIL_DURATION_MS`) para hacerla configurable en Ajustes. Se consulta cada 10 s mientras la pantalla está encendida, así recoge los puntos nuevos y difumina los viejos.
@@ -227,11 +227,12 @@ El proyecto es un único módulo Android con el identificador de aplicación `co
 | --- | --- | --- |
 | `geo/` | Rejilla, revelado, niveles de detalle, rectángulos de niebla, cálculo de tiles y polígonos de descarga | Sí |
 | `data/` | Entidades, DAOs y base de datos de Room | Sí |
-| raíz | `FogHikeApp` (crea la base de datos y el servidor de tiles) y `Exploration.kt` (guarda puntos y revela celdas, común a seguimiento e importación) | No |
+| `core/` | Lógica de la app que usan pantallas y servicios: guardar puntos y revelar celdas (`Exploration.kt`, común a seguimiento e importación), importar una ruta sin duplicarla, calcular la niebla de una zona (`FogCells.kt`) y los tramos del rastro (`Trail.kt`) | Sí |
+| raíz | `FogHikeApp` (crea la base de datos y el servidor de tiles) | No |
 | `tiles/` | Servidor local de tiles y descarga de áreas a MBTiles | No |
 | `gpx/` | Lector de GPX | No |
 | `tracking/` | Servicio en primer plano del seguimiento | No |
-| `ui/` | Las dos pantallas, el estilo del mapa y la capa de niebla | No |
+| `ui/` | Las dos pantallas, el estilo del mapa y el dibujo de la niebla y el rastro en MapLibre | No |
 
 Fuera de la app, `tools/build_spain_mbtiles.py` genera el mapa general de España.
 
@@ -242,6 +243,8 @@ Convenciones de desarrollo:
 - La complejidad se mantiene al nivel de los scripts y CLIs de Python bien estructurados del autor: sin arquitecturas elaboradas ni capas innecesarias, porque no tiene experiencia previa en desarrollo móvil.
 - La lógica pura (`geo/`) no depende de Android ni de ninguna librería, para poder extraerla a un módulo compartido al portar a iOS.
 - `data/` contiene solo entidades, DAOs y la base de datos de Room, escritos para que Room KMP los compile también para iOS: DAOs con `suspend` y `Flow` (sin `LiveData`, `Cursor` ni `Context`), fechas como `Long` en milisegundos (sin `java.time` ni otras APIs `java.*`). La creación de la base de datos, que necesita `Context` y una ruta, vive en un único fichero de Android; al portar se convierte en un `expect/actual`.
+- `core/` reúne la lógica que no es geometría pura pero tampoco depende de la plataforma: usa `geo/`, `data/` y corrutinas, sin Android, MapLibre ni APIs `java.*`. Hoy tiene dos excepciones anotadas en el código, que se cambian al portar: `withTransaction` (solo Android) y `System.currentTimeMillis`.
+- Pantallas, servicios y workers son pegamento con la plataforma: piden permisos, leen ficheros, dibujan en MapLibre y muestran resultados. Cualquier cálculo o decisión que también necesitaría iOS va a `core/`, `geo/` o `data/`. Así, al portar, solo se reescribe ese pegamento.
 - El servidor de tiles y la lectura de MBTiles son código de Android y no se comparten: en iOS el mapa se alimentaría de otra forma, por ejemplo con PMTiles.
 - No se crean el módulo `shared` ni interfaces de repositorio hasta que exista la versión iOS: los DAOs ya hacen de interfaz.
 
@@ -290,7 +293,7 @@ El siguiente paso lógico es generar el mapa general y probar la app en un dispo
 5. Antes de repartir el primer APK: clave de firma definitiva y paso a migraciones reales de Room.
 6. Implementar el intercambio por NFC y Nearby Connections con GPX (tabla `Track` con huella y alias, selección «Todas / Seleccionar» y resaltado activable de las celdas importadas).
 7. Añadir reintentos a la descarga.
-8. Portar a iOS: mover `geo/` y `data/` a un módulo `shared` de KMP, con Room KMP, y convertir la creación de la base de datos en `expect/actual`.
+8. Portar a iOS: mover `geo/`, `data/` y `core/` a un módulo `shared` de KMP, con Room KMP, y convertir la creación de la base de datos en `expect/actual`.
 
 **Decisiones cerradas** (24 oct 2026)
 
@@ -306,5 +309,6 @@ El siguiente paso lógico es generar el mapa general y probar la app en un dispo
 - Distribución: APK firmado directo, siempre con la misma clave.
 - Niebla por capas: cubre toda la pantalla; se calcula solo para la ventana visible con margen y con el nivel de detalle que corresponde al zoom.
 - Persistencia: Room KMP (≥ 2.7) en lugar de migrar a SQLDelight; `data/` se escribe compatible desde hoy.
+- Lógica compartible: lo que iOS también necesitaría vive en `core/`, `geo/` y `data/`, sin Android; pantallas y servicios solo hacen de pegamento con la plataforma. Sin módulo `shared` ni interfaces hasta portar.
 - Versión mínima: Android 12 (API 31).
 - Marca: la app se llama «Hike Explorer» para el usuario; FogHike se mantiene como nombre interno (paquete, `applicationId`, clases, ficheros y documentación técnica).

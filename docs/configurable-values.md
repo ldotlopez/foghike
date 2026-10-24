@@ -28,12 +28,12 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 | Constant | File | Value | Effect | Reprocess | Setting? |
 | --- | --- | --- | --- | --- | --- |
-| `FOG_MODE` | `ui/FogLayer.kt` | `DENSITY` | How coarse cells are drawn: `ANY_CELL` (clear if anything inside is revealed) or `DENSITY` (partial fog by explored share). See [0001](decisions/0001-low-zoom-fog-density.md) | No | Maybe: only if more than one mode survives testing |
+| `FOG_MODE` | `core/FogCells.kt` | `DENSITY` | How coarse cells are drawn: `ANY_CELL` (clear if anything inside is revealed) or `DENSITY` (partial fog by explored share). See [0001](decisions/0001-low-zoom-fog-density.md) | No | Maybe: only if more than one mode survives testing |
 | `fogDensity` (formula) | `geo/Fog.kt` | Logarithmic | Fog left on a coarse cell given `revealedCount` | No | No (maybe a "contrast" knob) |
 | `minPixels` of `lodLevelFor` | `geo/Grid.kt` (parameter default) | 4 px | Minimum on-screen cell size before switching to a coarser level. Fewer pixels = more faithful trace when zoomed out, more rectangles | No | Maybe ("fog detail") |
 | `LOD_FACTOR` | `geo/Grid.kt` | 8 | Each detail level is 8× the previous one | Yes (coarse cells) | No |
 | `LOD_LEVELS` | `geo/Grid.kt` | 4 | Levels: 25 m, 200 m, 1.6 km, 12.8 km | Yes (coarse cells) | No |
-| `MAX_FOG_RECTS` | `ui/FogLayer.kt` | 5,000 | Above it, a coarser level is used. Protects old phones | No | Maybe ("slow phone" mode) |
+| `MAX_FOG_RECTS` | `core/FogCells.kt` | 5,000 | Above it, a coarser level is used. Protects old phones | No | Maybe ("slow phone" mode) |
 | `FOG_TEXTURE_SIZE` | `ui/FogLayer.kt` | 256 px | Noise texture size; repetition shows at low zoom (`PLAN.md`) | No | No |
 | Texture colors and alpha | `fogTexture` in `ui/FogLayer.kt` (inline numbers) | Blue-grey to white, alpha 205–255 | Fog look | No | Maybe (fog theme, with the animated fog in `PLAN.md`) |
 | Computation margin | `Box.expanded()` in `geo/Grid.kt` | One screen per side (3×3) | How far the map can move without recomputing fog | No | No |
@@ -56,7 +56,7 @@ Inventory of the values and behaviors the user can already change, or that depen
 | `INTERVAL_MS` | `tracking/TrackingService.kt` | 5 s | How often the service requests a location. Shorter = finer trail, more battery | Maybe ("battery saver") |
 | GPS priority | `TrackingService.kt` (`PRIORITY_HIGH_ACCURACY`) | High accuracy | Without it points exceed the accuracy radius and reveal nothing | No |
 | Interval when checking location settings | `ensureLocationOn` in `ui/MainActivity.kt` (inline `5_000`) | 5 s | Only used to ask the system to turn location on; should reuse `INTERVAL_MS` | No |
-| Accuracy threshold | `isAccurate` in `Exploration.kt` | = reveal radius | Less accurate points are stored but reveal nothing | Not on its own (follows the radius) |
+| Accuracy threshold | `isAccurate` in `core/Exploration.kt` | = reveal radius | Less accurate points are stored but reveal nothing | Not on its own (follows the radius) |
 
 ### Map and camera
 

@@ -26,10 +26,8 @@ import com.cuarentaydos.foghike.data.DownloadedArea
 import com.cuarentaydos.foghike.data.Source
 import com.cuarentaydos.foghike.geo.Box
 import com.cuarentaydos.foghike.geo.CELL_SIZE_METERS
-import com.cuarentaydos.foghike.geo.LatLon
-import com.cuarentaydos.foghike.geo.trackFingerprint
 import com.cuarentaydos.foghike.gpx.parseGpx
-import com.cuarentaydos.foghike.recordPoints
+import com.cuarentaydos.foghike.core.importTrack
 import com.cuarentaydos.foghike.tracking.TrackingService
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
@@ -251,14 +249,8 @@ class MainActivity : ComponentActivity() {
                 val parsed = withContext(Dispatchers.IO) {
                     contentResolver.openInputStream(uri)?.use { parseGpx(it) }.orEmpty()
                 }
-                // Same coordinates, same id: a route already imported is skipped instead of duplicated.
-                val trackId = "gpx-" + trackFingerprint(parsed.map { LatLon(it.lat, it.lon) })
-                if (app.db.trackPointDao().exists(trackId)) {
-                    duplicates++
-                    continue
-                }
-                recordPoints(app.db, trackId, 0, parsed, Source.GPX_IMPORT)
-                points += parsed.size
+                if (importTrack(app.db, "gpx-", parsed, Source.GPX_IMPORT)) points += parsed.size
+                else duplicates++
             } catch (e: Exception) {
                 Log.w("MainActivity", "GPX import failed: $uri", e)
                 failed++

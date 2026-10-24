@@ -25,7 +25,7 @@ None of these is implemented yet: reprocessing arrives with the Settings screen 
 
 ## 2. Store new points (incremental)
 
-Everything goes through `recordPoints` (`Exploration.kt`) in one transaction:
+Everything goes through `recordPoints` (`core/Exploration.kt`) in one transaction:
 
 | Interaction | Frequency | What is computed |
 | --- | --- | --- |

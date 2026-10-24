@@ -30,11 +30,12 @@ Code lives in `app/src/main/java/com/cuarentaydos/foghike/`:
 
 - `geo/` — pure Kotlin: grid quantization, Haversine reveal, cell geometry, fog rectangles, LOD, tile math. No Android, no libraries.
 - `data/` — Room entities, DAOs, database only. LOD cells share `revealed_cell` (the id encodes the cell size).
-- Root — `FogHikeApp` (builds the database and tile server; the one Android-specific DB file) and `Exploration.kt` (`recordPoints`: the single path from GPS points to stored points and revealed cells, used by tracking and every importer).
+- `core/` — app logic used by screens and services, no Android: `Exploration.kt` (`recordPoints`: the single path from GPS points to stored points and revealed cells, used by tracking and every importer; `importTrack` for whole routes), `FogCells.kt` (fog pieces for an area), `Trail.kt` (recent trail segments).
+- Root — `FogHikeApp` (builds the database and tile server; the one Android-specific DB file).
 - `tiles/` — local tile server and IGN download to MBTiles. `gpx/` — GPX reader. `tracking/` — foreground tracking service. `ui/` — the two screens, map style JSON, fog layer.
 - `tools/build_spain_mbtiles.py` — generates the bundled `app/src/main/assets/spain.mbtiles` (zoom 5–9).
 
-`geo/` and `data/` will move to a KMP `shared` module when iOS is ported. Do not create that module, or repository interfaces, before then.
+`geo/`, `data/` and `core/` will move to a KMP `shared` module when iOS is ported. Activities, services and workers are platform glue (permissions, files, MapLibre drawing, showing results); any computation or decision iOS would also need goes in `core/`, `geo/` or `data/`, without Android, MapLibre or `java.*` (see decision 0004 for the two known exceptions). Do not create that module, or repository interfaces, before then.
 
 ## Rules
 
