@@ -43,9 +43,9 @@ General rules for every Hike Explorer screen. Read before designing or changing 
 - Icons: [Material Symbols](https://fonts.google.com/icons) (Apache 2.0; the same Google set that MUI wraps for React), Outlined style, one style for the whole app. Import only the icons used, as vector drawables in `res/drawable/` (Android Studio → New → Vector Asset, or the "Android" download on the Symbols site), and draw them with `painterResource`. Delete the `android:tint="?attr/colorControlNormal"` line from downloaded files: it needs AppCompat, which the app doesn't use, and Compose's `Icon` tints anyway. Don't add the `material-icons-extended` library: it is no longer maintained and Google recommends Material Symbols instead. Every icon button has a `contentDescription` (string resource, translated).
 - All UI text in `strings.xml` (English) and `values-es` (Spanish), as before.
 
-## Debug controls
+## Advanced controls
 
-- Debugging controls (e.g. fog opacity) live in a **Debug section of Settings**, never on the map. Their values are stored and applied as today.
+- Debugging controls (e.g. fog opacity) live in the **Advanced section of Settings**, never on the map. Their values are stored and applied as today.
 
 ## Verifying a screen
 

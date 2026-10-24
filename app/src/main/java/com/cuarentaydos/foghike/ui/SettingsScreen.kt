@@ -63,7 +63,7 @@ fun SettingsScreen(fogOpacity: Int, onFogOpacity: (Int) -> Unit, version: String
         },
     ) { padding ->
         Column(Modifier.padding(padding).verticalScroll(rememberScrollState())) {
-            SectionHeader(R.string.section_debug)
+            SectionHeader(R.string.section_advanced)
             val opacityLabel = stringResource(R.string.fog_opacity)
             ListItem(
                 // The value goes on the headline row: a trailing slot would center it on the whole item.

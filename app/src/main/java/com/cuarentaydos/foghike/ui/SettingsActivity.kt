@@ -9,7 +9,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 
 /**
- * Settings: for now only the Debug section (fog opacity) and the app version. Values are saved as
+ * Settings: for now only the Advanced section (fog opacity) and the app version. Values are saved as
  * they change; the main screen reads them again when it comes back to the foreground.
  */
 class SettingsActivity : ComponentActivity() {

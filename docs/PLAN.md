@@ -3,7 +3,7 @@
 ## Fog
 
 - **Animated fog (optional).** Setting to show real-looking moving fog, generated procedurally (e.g. scrolling/evolving noise), only while the screen is on and the map is visible; stop animating when the screen is off or the app is in the background. Default stays the current static texture to save battery.
-- **Soft fog edges.** The fog still ends in hard cell-shaped edges; a feathered border would look more natural.
+- **Soft fog edges.** The fog still ends in hard cell-shaped edges; blur (feather) the border so it looks more natural.
 - **Less visible fog pattern.** At low zoom the 256 px texture visibly repeats as a grid of blobs; use a larger texture or broader noise (lower-frequency octaves).
 
 ## Tracks
@@ -14,6 +14,13 @@
   - Rejected for now: a cell↔track link table. Deleting would be instant, but the table grows several rows per point (each point touches ~4–5 cells) and insertion gets more complex. Reconsider only if full reprocessing is too slow on a real device (cost grows with the total number of stored points; not measured yet).
   - UI: a simple list of tracks (date, source, name, point count) with a delete button and a confirmation, plus a progress indicator while cells are rebuilt.
   - Room schema change: the database is at version 2 with an auto migration; adding `Track` needs version 3 and a migration that creates a `Track` row for every existing `trackId` in `track_point`.
+- **Track and import management screen.** Design (spec in `docs/ui/screens/`) and implement the screen that lists recordings and imports and lets the user delete them; it is the UI of "Deletable tracks" above.
+- **Name a track when it ends.** When the user stops a recording, ask for a name (stored as the track's display name, see "Deletable tracks"). Prefill it with the town where the track started, when known; otherwise leave it empty or use the date.
+  - Assume no network: the town must come from an offline source. The IGN maps are raster satellite imagery with no place names, so bundle a small gazetteer instead, e.g. Spain's ~8,100 municipalities with their coordinates (IGN Nomenclátor / INE), and take the nearest one to the first point. Generate it with a script in `tools/` like `spain.mbtiles`.
+
+## Settings
+
+- **One recalculation when leaving Settings.** When several changed preferences each need a recalculation, run it once when the user leaves the Settings screen instead of after each change. Under every changed preference that needs it, show a small warning line (smaller font) such as "Will be recalculated when you close this screen".
 
 ## UI
 
