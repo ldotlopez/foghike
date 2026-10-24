@@ -16,8 +16,9 @@ Code: `ui/MainActivity.kt` (state, permissions, file picker, map) and `ui/MainSc
 │              map + fog               │
 │                 ➤                    │  user position (MapLibre location component)
 │                                      │
-│                                      │
-│      ╭───────────────────╮ ╭────╮    │
+│                               ╭──╮   │
+│                               │◎ │   │  my location (follow mode)
+│      ╭───────────────────╮ ╭──╰──╯   │
 │      │  🗺    ⇪    ⚙     │ │ 🥾 │    │  floating toolbar + Explore FAB
 │      ╰───────────────────╯ ╰────╯    │
 │ PNOA cedido por © IGN de España      │  IGN attribution (bottom left, one line)
@@ -66,6 +67,23 @@ A Material 3 `HorizontalFloatingToolbar` (Expressive, `@OptIn(ExperimentalMateri
   - The handle exists only while exploring. When exploring stops, the toolbar expands and the handle goes away.
   - The expanded/collapsed choice is not stored: it follows the exploring state each time the screen opens.
 
+### My location button
+
+A `SmallFloatingActionButton` (56 dp touch target) at the bottom right, above the toolbar. It cycles through the camera modes MapLibre's location component already has:
+
+| State | Icon | MapLibre `CameraMode` | Tap goes to |
+| --- | --- | --- | --- |
+| Free | `location_searching` | `NONE` | Follow |
+| Follow (north up) | `my_location` | `TRACKING` | Compass |
+| Compass (map rotates with the phone) | `explore` | `TRACKING_COMPASS` | Follow |
+
+- **Follow** centers the map on the user at `USER_ZOOM` and keeps it centered as they move.
+- Dragging the map leaves follow mode. MapLibre does this by itself (`OnCameraTrackingChangedListener.onCameraTrackingDismissed`), and the button goes back to Free.
+- Leaving Compass resets the bearing to north.
+- The screen opens in Free mode, centered on the user once, as today. The mode is not stored.
+- Without location permission, a tap starts the same permission request as the first launch. With no fix yet, a Snackbar says "Waiting for your location…".
+- Following moves the camera on every GPS fix, and each camera idle refreshes the fog for the viewport. That is allowed (viewport only, off the main thread), but it is a new recalculation trigger: add it to `docs/recalculations.md` when implementing it.
+
 ### Snackbar
 
 One `SnackbarHost` above the toolbar. It replaces every `Toast` on this screen:
@@ -75,6 +93,7 @@ One `SnackbarHost` above the toolbar. It replaces every `Toast` on this screen:
 | GPX import result: imported / already imported / unreadable counts, in one line | — |
 | "Exploring needs precise location." | "Settings" (opens the app's system settings) |
 | "Exploring needs location switched on." | — |
+| "Waiting for your location…" | — |
 
 ### Dialogs
 
@@ -94,6 +113,8 @@ Each state has a `@Preview` and a Roborazzi reference image. The map slot is a p
 | 5 | Snackbar | GPX import result shown above the toolbar |
 | 6 | Help | Help dialog open |
 | 7 | Dark | State 1 in the dark scheme |
+| 8 | Following | My location button shows `my_location` |
+| 9 | Compass | My location button shows `explore` |
 
 ### State 2 — Exploring, expanded
 
@@ -143,12 +164,16 @@ New or changed keys (English / Spanish). Removed: `fog_opacity` (moves to Settin
 | `action_help` | Help | Ayuda |
 | `action_show_toolbar` | Show actions | Mostrar acciones |
 | `action_hide_toolbar` | Hide actions | Ocultar acciones |
+| `action_follow` | Center on my location | Centrar en mi ubicación |
+| `action_compass` | Rotate map with compass | Girar el mapa con la brújula |
+| `action_north_up` | Keep north up | Mantener el norte arriba |
+| `waiting_location` | Waiting for your location… | Esperando tu ubicación… |
 | `chip_status` | %1$s revealed cells, %2$d offline maps | %1$s celdas reveladas, %2$d mapas sin conexión |
 | `chip_no_maps` | No offline maps | Ningún mapa descargado |
 | `help_main_title` | Hike Explorer | Hike Explorer |
 | `help_main` | (text to write with the implementation) | |
 
-The `action_*` texts are tooltips and screen-reader labels, never visible labels, so they can be full sentences.
+The my location button's description names what the next tap does: `action_follow` in Free, `action_compass` in Follow, `action_north_up` in Compass. The `action_*` texts are tooltips and screen-reader labels, never visible labels, so they can be full sentences.
 
 ## Future entries
 
@@ -169,5 +194,4 @@ With all of them the toolbar holds four icons plus the FAB: maps, tracks, exchan
 
 ## Open questions
 
-1. **"My location" button.** There is no way to re-center on the user after moving the map (only at launch). This is the usual map pattern (`my_location`, bottom right, above the toolbar). Add it now?
-2. **FAB icon.** `hiking` for start reads as "the hiking app" more than "start". The alternative is `play_arrow` / `stop`, clearer as an action but generic.
+1. **FAB icon.** `hiking` for start reads as "the hiking app" more than "start". The alternative is `play_arrow` / `stop`, clearer as an action but generic.
