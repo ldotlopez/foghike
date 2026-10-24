@@ -20,6 +20,53 @@ FogHike es el nombre interno (paquete `com.cuarentaydos.foghike`, nombres de cla
 - Android 12 (API 31) o superior, móvil ARM.
 - JDK 21 para compilar.
 
+## Instalación manual con adb
+
+La app no está en Google Play: se instala el APK a mano. Con `adb` se hace desde el ordenador.
+
+1. **Activa la depuración USB en el móvil.** En Ajustes → Información del teléfono, toca siete veces
+   «Número de compilación» para activar las opciones de desarrollador. Después, en Ajustes → Sistema →
+   Opciones de desarrollador, activa «Depuración USB». Los nombres de los menús cambian un poco según
+   el fabricante.
+2. **Instala adb en el ordenador.** Viene en las
+   [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools); en
+   Debian/Ubuntu también con `sudo apt install adb`.
+3. **Conecta el móvil por USB** y acepta en su pantalla el aviso «¿Permitir depuración USB?». Comprueba
+   que aparece como `device`:
+
+   ```sh
+   adb devices
+   ```
+
+4. **Descarga el APK** (`hike-explorer-<versión>.apk`) de la página de
+   [releases de GitHub](https://github.com/ldotlopez/foghike/releases) e instálalo:
+
+   ```sh
+   adb install -r hike-explorer-v0.1.apk
+   ```
+
+   `-r` actualiza la app si ya estaba instalada, sin perder las rutas ni los mapas descargados.
+
+   Si aún no hay ninguna release, compila el APK tú mismo (sección «Compilar») e instala
+   `app/build/outputs/apk/debug/app-debug.apk` igual, o usa directamente `./gradlew installDebug`.
+
+Sin cable (Android 11 o superior): en Opciones de desarrollador → «Depuración inalámbrica» →
+«Vincular dispositivo con código de vinculación», ejecuta `adb pair <ip>:<puerto>` con el código que
+muestra el móvil y después `adb connect <ip>:<puerto>` con el puerto de la pantalla principal de
+depuración inalámbrica. El móvil y el ordenador deben estar en la misma red.
+
+Errores frecuentes:
+
+- `INSTALL_FAILED_UPDATE_INCOMPATIBLE`: el APK está firmado con otra clave que el instalado (por
+  ejemplo, una compilación de depuración sobre una release). Hay que desinstalar primero con
+  `adb uninstall com.cuarentaydos.foghike`, **lo que borra todas las rutas y mapas** del móvil.
+- `INSTALL_FAILED_VERSION_DOWNGRADE`: el APK es más antiguo que el instalado.
+- `no devices/emulators found` o `unauthorized`: revisa que el cable transmita datos y vuelve a
+  aceptar el aviso de depuración en el móvil.
+
+Al abrir la app por primera vez pide los permisos de ubicación y notificaciones y la exención de
+batería; sin ellos, el seguimiento con la pantalla apagada puede perder puntos.
+
 ## Compilar
 
 ```sh
