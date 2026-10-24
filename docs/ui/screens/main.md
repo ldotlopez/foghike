@@ -61,7 +61,10 @@ A Material 3 `HorizontalFloatingToolbar` (Expressive, `@OptIn(ExperimentalMateri
 - Every icon button is at least 56 dp. The default Material 3 icon buttons are 48 dp, so they get an explicit size.
 - Each one has a `contentDescription` and a tooltip on long press (`TooltipBox` + `PlainTooltip`).
 - While exploring, the FAB uses the `stop` icon and the error container color so the state can be seen at a glance.
-- Collapsing: see open question 1.
+- **Collapsing.** The toolbar collapses by itself when exploring starts: only the Explore FAB (now Stop) and a handle stay visible, so the map is as free as possible while walking.
+  - The handle is a 56 dp icon button next to the FAB: `more_horiz` when collapsed (expands), `close` when expanded (collapses again). Same tooltip rules as the other buttons.
+  - The handle exists only while exploring. When exploring stops, the toolbar expands and the handle goes away.
+  - The expanded/collapsed choice is not stored: it follows the exploring state each time the screen opens.
 
 ### Snackbar
 
@@ -85,19 +88,27 @@ Each state has a `@Preview` and a Roborazzi reference image. The map slot is a p
 | # | State | Differences from the default |
 | --- | --- | --- |
 | 1 | Default | Maps present, not exploring, toolbar expanded |
-| 2 | Exploring | FAB shows `stop` in the error container color |
-| 3 | Collapsed | Toolbar collapsed (see open question 1) |
+| 2 | Exploring, expanded | Toolbar opened with the handle: FAB shows `stop` in the error container color, handle shows `close` |
+| 3 | Exploring, collapsed | Only the Stop FAB and the `more_horiz` handle |
 | 4 | No maps | Chip shows `warning` + "No offline maps" |
 | 5 | Snackbar | GPX import result shown above the toolbar |
 | 6 | Help | Help dialog open |
 | 7 | Dark | State 1 in the dark scheme |
 
-### State 2 — Exploring
+### State 2 — Exploring, expanded
 
 ```
-│      ╭───────────────────╮ ╭────╮    │
-│      │  🗺    ⇪    ⚙     │ │ ■  │    │  FAB: stop, error container color
-│      ╰───────────────────╯ ╰────╯    │
+│   ╭─────────────────────────╮ ╭────╮ │
+│   │  ✕   🗺    ⇪    ⚙       │ │ ■  │ │  handle (close) · FAB: stop, error container color
+│   ╰─────────────────────────╯ ╰────╯ │
+```
+
+### State 3 — Exploring, collapsed
+
+```
+│                       ╭────╮ ╭────╮  │
+│                       │ ⋯  │ │ ■  │  │  handle (more_horiz) · FAB: stop
+│                       ╰────╯ ╰────╯  │
 ```
 
 ### State 4 — No maps
@@ -130,6 +141,8 @@ New or changed keys (English / Spanish). Removed: `fog_opacity` (moves to Settin
 | `action_import_gpx` | Import GPX | Importar GPX |
 | `action_settings` | Settings | Ajustes |
 | `action_help` | Help | Ayuda |
+| `action_show_toolbar` | Show actions | Mostrar acciones |
+| `action_hide_toolbar` | Hide actions | Ocultar acciones |
 | `chip_status` | %1$s revealed cells, %2$d offline maps | %1$s celdas reveladas, %2$d mapas sin conexión |
 | `chip_no_maps` | No offline maps | Ningún mapa descargado |
 | `help_main_title` | Hike Explorer | Hike Explorer |
@@ -152,15 +165,9 @@ With all of them the toolbar holds four icons plus the FAB: maps, tracks, exchan
 
 ## Exceptions
 
-None yet.
+- **Toolbar handle.** Material's floating toolbar collapses on scroll, and a map has no scroll. It collapses when exploring starts instead, and a custom handle button reopens it. Considered and rejected: collapsing while the map is dragged (hides the actions too often), an always-present chevron (one more icon in a toolbar meant to be small), never collapsing (against the guidelines).
 
 ## Open questions
 
-1. **When does the toolbar collapse?** Material's floating toolbar is meant to collapse on scroll, and a map has no scroll. Options:
-   - a) Collapse while the map is being dragged and expand on camera idle (automatic, no extra control).
-   - b) Collapse automatically once exploring starts, expand with a tap on a small handle.
-   - c) An explicit chevron button at the toolbar's edge.
-
-   Recommendation: a). It frees the map exactly while the user is looking at it, and needs no extra button.
-2. **"My location" button.** There is no way to re-center on the user after moving the map (only at launch). This is the usual map pattern (`my_location`, bottom right, above the toolbar). Add it now?
-3. **FAB icon.** `hiking` for start reads as "the hiking app" more than "start". The alternative is `play_arrow` / `stop`, clearer as an action but generic.
+1. **"My location" button.** There is no way to re-center on the user after moving the map (only at launch). This is the usual map pattern (`my_location`, bottom right, above the toolbar). Add it now?
+2. **FAB icon.** `hiking` for start reads as "the hiking app" more than "start". The alternative is `play_arrow` / `stop`, clearer as an action but generic.
