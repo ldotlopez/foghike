@@ -2,6 +2,7 @@ package com.cuarentaydos.foghike.geo
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class FogTest {
@@ -37,5 +38,15 @@ class FogTest {
         val far = cellAt(LatLon(40.005, 10.0), 25)
         val rects = fogRects(box, 25, listOf(far))
         assertEquals(box.area(), rects.sumOf { it.area() }, 1e-12)
+    }
+
+    @Test
+    fun densityFollowsHowMuchOfTheCellIsExplored() {
+        assertEquals(0f, fogDensity(1, 0)) // base cells are either clear or fogged
+        assertEquals(0f, fogDensity(64 * 64, 2))
+        assertTrue(fogDensity(1, 3) > 0.9f) // a single base cell barely thins a 12.8 km cell
+        // One straight hike across a 12.8 km cell (~1,200 base cells) is clearly visible but not clear.
+        assertTrue(fogDensity(1_200, 3) in 0.3f..0.6f)
+        assertTrue(fogDensity(100, 2) > fogDensity(1_000, 2))
     }
 }

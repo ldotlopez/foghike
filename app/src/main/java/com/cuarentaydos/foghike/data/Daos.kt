@@ -8,11 +8,15 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CellDao {
+    /** Row ids in the same order as [cells]; -1 for the ones that already existed. */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIgnoringExisting(cells: List<RevealedCell>)
+    suspend fun insertIgnoringExisting(cells: List<RevealedCell>): List<Long>
+
+    @Query("UPDATE revealed_cell SET revealedCount = revealedCount + :n WHERE cellId = :cellId")
+    suspend fun addToCount(cellId: String, n: Int)
 
     @Query(
-        "SELECT gridRow, gridCol FROM revealed_cell WHERE cellSize = :size " +
+        "SELECT gridRow, gridCol, revealedCount FROM revealed_cell WHERE cellSize = :size " +
             "AND gridRow BETWEEN :firstRow AND :lastRow AND gridCol BETWEEN :firstCol AND :lastCol"
     )
     suspend fun inRange(size: Int, firstRow: Int, lastRow: Int, firstCol: Int, lastCol: Int): List<GridPosition>

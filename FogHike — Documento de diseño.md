@@ -56,7 +56,7 @@ El identificador de cada celda incluye fila, columna y el tamaño de celda con e
 
 Los dos valores se eligen de una lista cerrada, para acotar el coste de la niebla y evitar configuraciones absurdas: celda de 10, 25, 50 o 100 m, y radio de 1,2×, 2× o 3× la celda (por defecto, 25 m y 1,2×, es decir, 30 m). El reprocesamiento se lanza al pulsar Guardar en Ajustes, tras un aviso de que se recalcularán todas las áreas, y muestra su progreso; cambiar los valores sin guardar no recalcula nada. También reconstruye los niveles de detalle.
 
-**Niveles de detalle (LOD).** Para dibujar la niebla a zoom bajo sin miles de rectángulos diminutos, además de la rejilla fina se mantienen rejillas más gruesas, cada una 8 veces mayor que la anterior: con la celda por defecto, 200 m, 1,6 km y 12,8 km. Usan el mismo esquema de geometría (celda de `cellSizeMeters × 8ⁿ`), así que su identificador también basta para saber qué rectángulo cubren. Una celda gruesa está revelada si contiene el centro de alguna celda fina revelada. Se calculan al guardar cada celda fina nueva (unas pocas inserciones más, ignorando duplicadas) y se guardan con su origen en la misma tabla `revealed_cell`: como el identificador ya incluye el tamaño, no hace falta otra tabla, y el resaltado de importadas también funcionará a zoom bajo.
+**Niveles de detalle (LOD).** Para dibujar la niebla a zoom bajo sin miles de rectángulos diminutos, además de la rejilla fina se mantienen rejillas más gruesas, cada una 8 veces mayor que la anterior: con la celda por defecto, 200 m, 1,6 km y 12,8 km. Usan el mismo esquema de geometría (celda de `cellSizeMeters × 8ⁿ`), así que su identificador también basta para saber qué rectángulo cubren. Una celda gruesa está revelada si contiene el centro de alguna celda fina revelada, y guarda en `revealedCount` cuántas contiene (las finas guardan 1); cómo se dibuja según ese número se explica en «Niebla a zoom bajo». Se calculan al guardar cada celda fina nueva (unas pocas inserciones y actualizaciones más; solo las finas nuevas suman al contador) y se guardan con su origen en la misma tabla `revealed_cell`: como el identificador ya incluye el tamaño, no hace falta otra tabla, y el resaltado de importadas también funcionará a zoom bajo.
 
 ## Modelo de datos
 
@@ -64,7 +64,7 @@ La base de datos local guarda tres tablas implementadas; otras dos están diseñ
 
 | Tabla | Clave | Campos | Para qué sirve | Estado |
 | --- | --- | --- | --- | --- |
-| `revealed_cell` | `cellId` (`tamaño:fila:columna`) | `cellSize`, `gridRow`, `gridCol`, `firstRevealedAt`, `source` (`live`, `gpx_import`, `gmaps_import`); índice por tamaño, fila y columna | Celdas reveladas, de la rejilla base y de los niveles de detalle, y su origen | Implementada |
+| `revealed_cell` | `cellId` (`tamaño:fila:columna`) | `cellSize`, `gridRow`, `gridCol`, `firstRevealedAt`, `source` (`live`, `gpx_import`, `gmaps_import`), `revealedCount`; índice por tamaño, fila y columna | Celdas reveladas, de la rejilla base y de los niveles de detalle, y su origen | Implementada |
 | `track_point` | `trackId` + `sequenceIndex` | `lat`, `lon`, `timestamp` (opcional), `accuracy` (metros, opcional), `source` | Puntos GPS crudos, necesarios para reprocesar (el origen permite procesar primero los propios). El `trackId` de un GPX es su huella de coordenadas | Implementada |
 | `downloaded_area` | `id` autogenerado | nombre, límites (lat/lon mínimas y máximas), zoom mínimo y máximo, nombre del fichero `.mbtiles`, fecha de descarga | Registro de las áreas de mapa descargadas | Implementada |
 | `AppSettings` | — | `revealRadiusMeters`, `cellSizeMeters`, `userAlias` | Ajustes configurables por el usuario; el alias se envía con las rutas compartidas | Solo diseñada |
@@ -110,6 +110,7 @@ La pantalla principal muestra los mapas bajo una niebla que cubre toda la pantal
 - **Mapas descargados.** Cada área descargada es una capa de imagen sobre el mapa general. La versión de MapLibre del proyecto no lee MBTiles directamente, así que la app levanta un pequeño servidor HTTP local, accesible solo desde el propio teléfono (127.0.0.1), que sirve los tiles de los ficheros `.mbtiles`. El HTTP sin cifrar se permite únicamente para esa dirección. Se mantiene así en el PoC: funciona, y para una app de prueba con menos de 100 usuarios migrar a PMTiles no compensa (exigiría actualizar MapLibre y cambiar el formato de descarga). Se reconsiderará solo si el servidor da problemas en dispositivos reales.
 - **Niebla.** Se calcula solo para la ventana visible más un margen de una pantalla por cada lado, nunca para España entera, así que su coste depende del tamaño de la pantalla y no de cuánto se haya explorado. Las celdas sin revelar de cada fila se agrupan en tramos, y las filas consecutivas sin nada revelado se funden en un solo rectángulo; cada fila cuesta unos pocos rectángulos y no un polígono por celda.
 - **Nivel de detalle según el zoom.** Se usa el nivel más fino cuyas celdas miden al menos 4 px en pantalla; con la celda de 25 m a latitudes de España sale la fina a zoom 15 o más, la de ×8 entre 12 y 14, la de ×64 entre 9 y 11 y la de ×512 a 8 o menos (ver «Niveles de detalle» en «Mecánica de revelado»). Con celdas de entre 4 y 30 px y 3×3 pantallas salen a lo sumo unas 1.800 filas, y como las rutas son estrechas, unos pocos miles de rectángulos como máximo (límite: 5.000). Si aun así se supera el límite de rectángulos, se pasa al nivel más grueso siguiente en vez de no dibujar.
+- **Niebla a zoom bajo.** Ver la sección siguiente. El modo se elige con `FOG_MODE` en `ui/FogLayer.kt`.
 - **Cuándo se recalcula.** Al pararse la cámara (`onCameraIdle`) si ha salido del margen calculado o ha cambiado de nivel de detalle, y cuando cambian las celdas. Mientras el usuario arrastra no se calcula nada: MapLibre ya tiene los rectángulos en la GPU. El cálculo va fuera del hilo principal. Con la pantalla apagada no se calcula la niebla; el servicio de seguimiento solo guarda puntos y celdas.
 - **Aspecto.** La niebla es estática para no gastar batería: una textura de ruido fractal (256 px, de gris azulado a blanco, con zonas algo más finas) generada una sola vez al cargar el estilo y repetida por MapLibre como patrón de relleno (`fill-pattern`), así que dibujarla no cuesta más que un color plano. La niebla animada queda en `PLAN.md`.
 - **Opacidad ajustable.** Un deslizador de 0 % a 100 % (70 % por defecto) controla la niebla: con 0 % se ven los mapas completos y con 100 % quedan tapados. El valor se recuerda entre sesiones.
@@ -117,6 +118,26 @@ La pantalla principal muestra los mapas bajo una niebla que cubre toda la pantal
 - **Posición inicial.** Al abrir la app el mapa se centra en el usuario a zoom 14: primero en la última posición conocida, que es instantánea, y luego en una nueva. El permiso de ubicación se pide una vez en el primer arranque; sin él, el mapa se encuadra en el área más reciente o en España.
 - **Zoom mínimo 5.** Por debajo no hay mapa general que dibujar, así que no se permite alejarse más.
 - **Estado visible.** El texto superior indica las celdas reveladas (propias y total, cuando haya importadas) y los mapas offline cargados, y avisa si no hay mapas descargados.
+
+### Niebla a zoom bajo
+
+Al alejar el zoom, la niebla pasa a celdas gruesas, y con la regla «revelada si contiene alguna celda fina» una ruta de 60 m de ancho despeja franjas de 200 m, 1,6 km o 12,8 km. En pantalla el exceso es como mucho una celda (≤ 30 px), pero enseña terreno sin explorar. Las rejillas gruesas no encajan columna a columna con las finas (el ancho depende de la latitud de cada fila), así que el contador se calcula por el centro de cada celda fina y no con un `GROUP BY` en SQL.
+
+Una ruta recta que cruza una celda gruesa cubre, aproximadamente: ~30 % de una de 200 m (19 de 64 celdas finas), ~4 % de una de 1,6 km (150 de 4.096) y ~0,5 % de una de 12,8 km (1.200 de 262.144). Por eso un umbral único de porcentaje deja la vista de España entera bajo niebla.
+
+Estrategias, para probarlas en el dispositivo. Las que dependen de `revealedCount` se intercambian con `FogMode` sin tocar los datos:
+
+| Estrategia | Idea | Coste | Estado |
+| --- | --- | --- | --- |
+| `ANY_CELL` | Celda gruesa despejada si contiene alguna fina revelada | — | Implementada (comportamiento original) |
+| `DENSITY` | Celda gruesa revelada con niebla parcial: `1 − ln(1+n)/ln(1+capacidad)`; escala logarítmica para que una ruta en una celda de 12,8 km se vea (~0,45) | Contador + una propiedad por elemento y `fill-opacity` por expresión | **Implementada, activa** |
+| Umbral | Despejada solo si `revealedCount ≥ X` (X por nivel; un X único en porcentaje deja España con niebla) | Un filtro más sobre el mismo contador | Pendiente |
+| Umbral + densidad | Por encima del umbral, despejada; por debajo, niebla parcial | Combinar las dos anteriores | Pendiente |
+| Menos píxeles por celda | Bajar el mínimo de 4 px de `lodLevelFor` a 1–2 px: el nivel fino aguanta un tramo más de zoom y el exceso se reduce a la mitad o menos | Una constante; más rectángulos, así que el límite de 5.000 saltará antes de nivel | Pendiente; independiente del modo |
+| Trazo a zoom bajo | Niebla gruesa sin despejar y una línea simplificada de las rutas (grosor mínimo 2 px) encima | Capa de líneas nueva y simplificación por zoom | Pendiente; deja de ser «niebla que se despeja» |
+| Umbral en cascada | Despejada si lo están al menos k de sus hijas del nivel anterior | Contar hijas | Descartada: las columnas no encajan y el resultado depende de si la ruta va recta o en diagonal |
+
+Las celdas gruesas guardadas antes de la versión 2 de la base de datos empiezan con `revealedCount = 1` (migración automática), así que en `DENSITY` se ven casi cubiertas hasta que se reprocese (paso 4 de la hoja de ruta) o se vuelva a pasar por ellas.
 
 ## Importación de rutas
 
@@ -261,7 +282,7 @@ El siguiente paso lógico es generar el mapa general y probar la app en un dispo
 1. Generar `spain.mbtiles` con `tools/build_spain_mbtiles.py` y comprobar su tamaño.
 2. Primera sincronización y compilación, pasar las pruebas de JVM y probar la niebla, los mapas offline, la importación y el seguimiento en un dispositivo con Android 12.
 3. Conseguir una muestra del export de Cronología del móvil y escribir su parser.
-4. Crear la pantalla de ajustes (tabla `AppSettings`: valores de lista, alias) y el reprocesamiento al guardar.
+4. Crear la pantalla de ajustes (tabla `AppSettings`: valores de lista, alias) y el reprocesamiento al guardar, que también recalcula `revealedCount`. Si tras probarlos se conserva más de un modo de niebla a zoom bajo, el selector va aquí.
 5. Antes de repartir el primer APK: clave de firma definitiva y paso a migraciones reales de Room.
 6. Implementar el intercambio por NFC y Nearby Connections con GPX (tabla `Track` con huella y alias, selección «Todas / Seleccionar» y resaltado activable de las celdas importadas).
 7. Añadir reintentos a la descarga.

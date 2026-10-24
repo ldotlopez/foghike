@@ -1,5 +1,6 @@
 package com.cuarentaydos.foghike.geo
 
+import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.min
 
@@ -41,4 +42,15 @@ fun fogRects(box: Box, size: Int, revealed: Collection<Cell>): List<Box> {
     }
     emptySince?.let { rects += Box(it, box.west, box.north, box.east) }
     return rects
+}
+
+/**
+ * Fog left over a revealed cell of LOD [level] holding [revealedCount] revealed base cells: 0 when
+ * all of it is explored, close to 1 when barely touched. Log scale, so a single hike across a 12.8 km
+ * cell (~0.5 % of it) still shows as a clear patch.
+ */
+fun fogDensity(revealedCount: Int, level: Int): Float {
+    val perSide = lodSize(1, level).toDouble()
+    val explored = ln(1.0 + revealedCount) / ln(1.0 + perSide * perSide)
+    return (1.0 - explored).coerceIn(0.0, 1.0).toFloat()
 }
