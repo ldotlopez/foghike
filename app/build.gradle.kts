@@ -40,6 +40,11 @@ android {
     }
 
     buildTypes {
+        // Own application id, so a debug build installs next to a release one (signed with another key)
+        // instead of failing with a signature mismatch. Its name comes from src/debug/res.
+        debug {
+            applicationIdSuffix = ".debug"
+        }
         release {
             if (System.getenv("SIGNING_STORE_FILE") != null) signingConfig = signingConfigs.getByName("release")
             // Only ARM phones are targeted; drops MapLibre's x86 native libraries from the APK.
