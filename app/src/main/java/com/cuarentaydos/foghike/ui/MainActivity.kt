@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,21 +31,16 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.cuarentaydos.foghike.FogHikeApp
 import com.cuarentaydos.foghike.R
 import com.cuarentaydos.foghike.data.DownloadedArea
-import com.cuarentaydos.foghike.data.Source
 import com.cuarentaydos.foghike.geo.Box
 import com.cuarentaydos.foghike.geo.CELL_SIZE_METERS
-import com.cuarentaydos.foghike.gpx.parseGpx
-import com.cuarentaydos.foghike.core.importTrack
 import com.cuarentaydos.foghike.tracking.TrackingService
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLngBounds
@@ -130,10 +124,6 @@ class MainActivity : ComponentActivity() {
         showUserLocation()
     }
 
-    private val pickGpx = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
-        if (uris.isNotEmpty()) importGpx(uris)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -163,10 +153,7 @@ class MainActivity : ComponentActivity() {
                         if (tracking) stopService(Intent(this, TrackingService::class.java)) else requestTracking()
                     },
                     onMaps = { startActivity(Intent(this, DownloadActivity::class.java)) },
-                    // Many file providers don't know the GPX type, so generic XML/binary types are accepted too.
-                    onImportGpx = {
-                        pickGpx.launch(arrayOf("application/gpx+xml", "application/xml", "text/xml", "application/octet-stream"))
-                    },
+                    onTracks = { startActivity(Intent(this, TracksActivity::class.java)) },
                     onSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
                     onLocation = ::nextLocationMode,
                 )
@@ -283,31 +270,6 @@ class MainActivity : ComponentActivity() {
         val box = Box(area.minLat, area.minLon, area.maxLat, area.maxLon)
         m.moveCamera(CameraUpdateFactory.newLatLngBounds(box.toLatLngBounds(), 40))
         if (m.cameraPosition.zoom < area.minZoom) m.moveCamera(CameraUpdateFactory.zoomTo(area.minZoom.toDouble()))
-    }
-
-    private fun importGpx(uris: List<Uri>) = lifecycleScope.launch {
-        var points = 0
-        var failed = 0
-        var duplicates = 0
-        for (uri in uris) {
-            try {
-                val parsed = withContext(Dispatchers.IO) {
-                    contentResolver.openInputStream(uri)?.use { parseGpx(it) }.orEmpty()
-                }
-                if (importTrack(app.db, "gpx-", parsed, Source.GPX_IMPORT)) points += parsed.size
-                else duplicates++
-            } catch (e: Exception) {
-                Log.w("MainActivity", "GPX import failed: $uri", e)
-                failed++
-            }
-        }
-        val imported = uris.size - failed - duplicates
-        val message = listOfNotNull(
-            getString(R.string.gpx_imported, points, imported).takeIf { imported > 0 },
-            getString(R.string.gpx_duplicates, duplicates).takeIf { duplicates > 0 },
-            getString(R.string.gpx_failed, failed).takeIf { failed > 0 },
-        ).joinToString(" ")
-        showMessage(message)
     }
 
     /** Rebuilds the style when the list of downloaded areas changed (e.g. back from the download screen). */

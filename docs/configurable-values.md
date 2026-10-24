@@ -90,6 +90,7 @@ Inventory of the values and behaviors the user can already change, or that depen
 | Fingerprint rounding (1e-6°) | `geo/Fingerprint.kt` | Must match on every phone to detect duplicates in the exchange |
 | `BASE_MAP_NAME`, notification and channel ids | `tiles/`, `tracking/` | Internal identifiers |
 | Sources (`Source.LIVE`, `GPX_IMPORT`, `GMAPS_IMPORT`) | `data/Entities.kt` | Values stored in the database |
+| `MAX_GPX_NAME` | `gpx/GpxParser.kt` | 100 characters: cap on track names taken from GPX files or file names (untrusted input) |
 | `MIN_ZOOM`, `MAX_ZOOM`, `AREAS` | `tools/build_spain_mbtiles.py` | Build the base map bundled in the APK |
 
 ## Still to define

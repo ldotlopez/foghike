@@ -2,7 +2,7 @@
 
 The map with the fog, the user's position and the recent trail. From here the user starts and stops exploring and opens every other screen. Follows `docs/ui/guidelines.md`; exceptions are listed under "Exceptions".
 
-Code: `ui/MainActivity.kt` (state, permissions, file picker, map) and `ui/MainScreen.kt` (stateless layout).
+Code: `ui/MainActivity.kt` (state, permissions, map) and `ui/MainScreen.kt` (stateless layout).
 
 ## Layout
 
@@ -19,7 +19,7 @@ Code: `ui/MainActivity.kt` (state, permissions, file picker, map) and `ui/MainSc
 │                                      │
 │                                      │
 │   ╭────╮ ╭───────────────────────╮   │
-│   │ ●  │ │  🗺    ⇪    ⚙    ◎    │   │  Explore FAB + toolbar (◎ = my location)
+│   │ ●  │ │  🗺    ⫝    ⚙    ◎    │   │  Explore FAB + toolbar (◎ = my location)
 │   ╰────╯ ╰───────────────────────╯   │
 │ PNOA cedido por © IGN de España      │  IGN attribution (bottom left, one line)
 │ (navigation bar)                     │
@@ -57,7 +57,7 @@ A Material 3 `AssistChip` at the top left, below the status bar.
 | --- | --- | --- | --- |
 | FAB | `fiber_manual_record` / `stop` | Start / stop exploring | Permission flow on first start (unchanged) |
 | 1 | `map` | Offline maps | Download screen |
-| 2 | `upload_file` | Import GPX | System file picker (multiple files) |
+| 2 | `route` | My tracks | Tracks screen (list, import GPX, delete; `docs/ui/screens/tracks.md`) |
 | 3 | `settings` | Settings | Settings screen (Advanced section only for now) |
 | 4 (pinned) | see "My location button" | Center / follow / compass | — |
 
@@ -93,7 +93,6 @@ One `SnackbarHost` above the toolbar. It replaces every `Toast` on this screen:
 
 | Message | Action |
 | --- | --- |
-| GPX import result: imported / already imported / unreadable counts, in one line | — |
 | "Exploring needs precise location." | "Settings" (opens the app's system settings) |
 | "Exploring needs location switched on." | — |
 | "Waiting for your location…" | — |
@@ -113,7 +112,7 @@ Each state has a Roborazzi reference image (`ui/MainScreenScreenshotTest.kt`) an
 | 2 | Exploring, expanded | Toolbar opened with the handle: FAB shows `stop` in the error container color, handle shows `close` |
 | 3 | Exploring, collapsed | Only the Stop FAB, the `more_horiz` handle and my location |
 | 4 | No maps | Chip shows `warning` + "No offline maps" |
-| 5 | Snackbar | GPX import result shown above the toolbar |
+| 5 | Snackbar | "Waiting for your location…" shown above the toolbar |
 | 6 | Help | Help dialog open |
 | 7 | Dark | State 1 in the dark scheme |
 | 8 | Following | My location button shows `my_location` |
@@ -124,7 +123,7 @@ Each state has a Roborazzi reference image (`ui/MainScreenScreenshotTest.kt`) an
 
 ```
 │ ╭────╮ ╭───────────────────────────╮ │
-│ │ ■  │ │  ✕   🗺    ⇪    ⚙    ◎    │ │  FAB: stop, error container color · handle (close)
+│ │ ■  │ │  ✕   🗺    ⫝    ⚙    ◎    │ │  FAB: stop, error container color · handle (close)
 │ ╰────╯ ╰───────────────────────────╯ │
 ```
 
@@ -148,10 +147,10 @@ Each state has a Roborazzi reference image (`ui/MainScreenScreenshotTest.kt`) an
 
 ```
 │ ┌──────────────────────────────────┐ │
-│ │ Imported 3 412 points, 2 files.  │ │
+│ │ Waiting for your location…       │ │
 │ └──────────────────────────────────┘ │
 │   ╭────╮ ╭───────────────────────╮   │
-│   │ ●  │ │  🗺    ⇪    ⚙    ◎    │   │
+│   │ ●  │ │  🗺    ⫝    ⚙    ◎    │   │
 ```
 
 ## Strings
@@ -163,7 +162,7 @@ New or changed keys (English / Spanish). Removed: `fog_opacity` (moves to Settin
 | `action_explore` | Start exploring | Empezar a explorar |
 | `action_stop` | Stop exploring | Dejar de explorar |
 | `action_maps` | Offline maps | Mapas sin conexión |
-| `action_import_gpx` | Import GPX | Importar GPX |
+| `action_tracks` | My tracks | Mis rutas |
 | `action_settings` | Settings | Ajustes |
 | `action_help` | Help | Ayuda |
 | `action_show_toolbar` | Show actions | Mostrar acciones |
@@ -186,12 +185,11 @@ Not built now; listed so the toolbar layout leaves room for them.
 
 | Entry | Planned for | Where |
 | --- | --- | --- |
-| Tracks list | `docs/PLAN.md` | Toolbar slot. Import GPX moves into that screen, so the toolbar keeps three icons |
 | Exchange (NFC / Nearby) | Roadmap step 6 | Toolbar slot (`share` or `nfc`) |
 | Highlight imported cells | Roadmap step 6 | Toggle icon button under the help button, top right |
 | Google Maps Timeline import | Roadmap step 3 | Inside the tracks list screen, next to Import GPX |
 
-With all of them the pill would hold maps, tracks, exchange, settings and my location, plus the handle: too wide for a 360 dp phone at 56 dp each. Before adding the fourth entry, decide what moves out (e.g. settings into an overflow menu, or exchange into the tracks screen).
+The tracks list is built (slot 2, decision 0010). With the rest the pill would hold maps, tracks, exchange, settings and my location, plus the handle: too wide for a 360 dp phone at 56 dp each. Before adding the fourth entry, decide what moves out (e.g. settings into an overflow menu, or exchange into the tracks screen).
 
 ## Exceptions
 

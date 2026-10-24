@@ -37,7 +37,7 @@
     <string name="chip_status">%1$s celdas reveladas, %2$d mapas sin conexión</string>
     <string name="chip_cells">%1$s celdas reveladas</string>
     <string name="chip_no_maps">Ningún mapa descargado</string>
-    <string name="help_main">El mapa empieza cubierto de niebla. Pulsa el botón rojo de grabar para empezar a explorar: la niebla se despeja alrededor de los sitios por los que caminas, también con la pantalla apagada. Pulsa parar al terminar.\n\nEl icono del mapa descarga mapas de satélite para usarlos sin conexión, y el del fichero importa rutas que ya hiciste (ficheros GPX).\n\nLa etiqueta de arriba muestra las cuadrículas que has revelado y los mapas sin conexión que tienes.\n\nEl botón encima de la barra centra el mapa en ti y te sigue; púlsalo otra vez para girar el mapa con la brújula.</string>
+    <string name="help_main">El mapa empieza cubierto de niebla. Pulsa el botón rojo de grabar para empezar a explorar: la niebla se despeja alrededor de los sitios por los que caminas, también con la pantalla apagada. Pulsa parar al terminar.\n\nEl icono del mapa descarga mapas de satélite para usarlos sin conexión, y el de la ruta abre tus rutas, donde puedes importar las que ya hiciste (ficheros GPX) y borrarlas.\n\nLa etiqueta de arriba muestra las cuadrículas que has revelado y los mapas sin conexión que tienes.\n\nEl botón encima de la barra centra el mapa en ti y te sigue; púlsalo otra vez para girar el mapa con la brújula.</string>
     <string name="section_advanced">Avanzado</string>
     <string name="section_about">Acerca de</string>
     <string name="version">Versión</string>
@@ -60,5 +60,31 @@
     <plurals name="chip_waiting">
         <item quantity="one">Queda %1$d área · sin conexión</item>
         <item quantity="other">Quedan %1$d áreas · sin conexión</item>
+    </plurals>
+    <string name="action_tracks">Mis rutas</string>
+    <string name="action_select">Seleccionar</string>
+    <string name="action_select_all">Seleccionar todas</string>
+    <string name="action_cancel_selection">Cancelar selección</string>
+    <string name="action_delete_track">Borrar ruta</string>
+    <string name="action_delete_selected">Borrar seleccionadas</string>
+    <string name="delete">Borrar</string>
+    <string name="delete_tracks_text">La niebla vuelve allí donde solo la despejaron estas rutas. No se puede deshacer.</string>
+    <string name="track_live_name">Exploración %1$s</string>
+    <string name="track_unnamed">Ruta importada</string>
+    <string name="source_own">Propia</string>
+    <string name="source_imported">Importada</string>
+    <string name="track_recording">Grabando</string>
+    <string name="tracks_empty">Aún no hay rutas. Empieza a explorar o importa ficheros GPX con el botón de arriba.</string>
+    <plurals name="tracks_selected">
+        <item quantity="one">%1$d seleccionada</item>
+        <item quantity="other">%1$d seleccionadas</item>
+    </plurals>
+    <plurals name="delete_tracks_title">
+        <item quantity="one">¿Borrar esta ruta?</item>
+        <item quantity="other">¿Borrar %1$d rutas?</item>
+    </plurals>
+    <plurals name="tracks_deleted">
+        <item quantity="one">Ruta borrada.</item>
+        <item quantity="other">%1$d rutas borradas.</item>
     </plurals>
 </resources>

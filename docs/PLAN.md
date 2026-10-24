@@ -8,14 +8,7 @@
 
 ## Tracks
 
-- **Deletable tracks (recordings and imports).** Store every recording and every import as a track with an id and a date, list them, and allow deleting one, so transfer and import can be tested and undone. Deleting a track fogs again every cell that no remaining track reveals.
-  - Current state: own and imported data share the same tables, told apart by `source`. `track_point` already has a `trackId` (`live-<epoch millis>` per "Start exploring" session in `TrackingService`, `gpx-<coordinate fingerprint>` per GPX in `MainActivity`), but GPX imports keep no import date. `revealed_cell` has no `trackId`: a cell is stored once, with the source of the first track that revealed it, so it can't be deleted with its track.
-  - Plan: create the `Track` table already designed in the design doc (`trackId`, `source`, `createdAt`, `fingerprint`, `senderAlias`; add a display name, e.g. the GPX file name). Delete = delete the track row and its points, then rebuild all cells (and the coarse cells' `revealedCount`) from the remaining points: own tracks first, then imported, so own sources win. This is the same reprocessing roadmap step 4 needs for Settings, so write it once.
-  - Rejected for now: a cell↔track link table. Deleting would be instant, but the table grows several rows per point (each point touches ~4–5 cells) and insertion gets more complex. Reconsider only if full reprocessing is too slow on a real device (cost grows with the total number of stored points; not measured yet).
-  - UI: a simple list of tracks (date, source, name, point count) with a delete button and a confirmation, plus a progress indicator while cells are rebuilt.
-  - Room schema change: the database is at version 2 with an auto migration; adding `Track` needs version 3 and a migration that creates a `Track` row for every existing `trackId` in `track_point`.
-- **Track and import management screen.** Design (spec in `docs/ui/screens/`) and implement the screen that lists recordings and imports and lets the user delete them; it is the UI of "Deletable tracks" above.
-- **Name a track when it ends.** When the user stops a recording, ask for a name (stored as the track's display name, see "Deletable tracks"). Prefill it with the town where the track started, when known; otherwise leave it empty or use the date.
+- **Name a track when it ends.** When the user stops a recording, ask for a name (stored in `track.name`, decision 0010; today recordings show "Exploration HH:MM"). Prefill it with the town where the track started, when known; otherwise leave it empty or use the date.
   - Assume no network: the town must come from an offline source. The IGN maps are raster satellite imagery with no place names, so bundle a small gazetteer instead, e.g. Spain's ~8,100 municipalities with their coordinates (IGN Nomenclátor / INE), and take the nearest one to the first point. Generate it with a script in `tools/` like `spain.mbtiles`.
 
 ## Settings

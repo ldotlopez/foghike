@@ -21,6 +21,9 @@ interface CellDao {
     )
     suspend fun inRange(size: Int, firstRow: Int, lastRow: Int, firstCol: Int, lastCol: Int): List<GridPosition>
 
+    @Query("DELETE FROM revealed_cell")
+    suspend fun deleteAll()
+
     /** Emits again whenever the table changes; drives the counter and the fog refresh. */
     @Query("SELECT COUNT(*) FROM revealed_cell WHERE cellSize = :size")
     fun count(size: Int): Flow<Int>
@@ -37,6 +40,29 @@ interface TrackPointDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM track_point WHERE trackId = :trackId)")
     suspend fun exists(trackId: String): Boolean
+
+    @Query("SELECT * FROM track_point WHERE trackId = :trackId ORDER BY sequenceIndex")
+    suspend fun ofTrack(trackId: String): List<TrackPoint>
+
+    @Query("DELETE FROM track_point WHERE trackId IN (:trackIds)")
+    suspend fun delete(trackIds: List<String>)
+}
+
+@Dao
+interface TrackDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIgnoringExisting(track: Track)
+
+    /** Newest first, as the tracks screen lists them. */
+    @Query("SELECT * FROM track ORDER BY createdAt DESC")
+    fun all(): Flow<List<Track>>
+
+    /** Own recordings first, so their source wins when cells are rebuilt. */
+    @Query("SELECT * FROM track ORDER BY source != 'live', createdAt")
+    suspend fun ownFirst(): List<Track>
+
+    @Query("DELETE FROM track WHERE trackId IN (:trackIds)")
+    suspend fun delete(trackIds: List<String>)
 }
 
 @Dao

@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.room.Room
 import com.cuarentaydos.foghike.data.AppDatabase
+import com.cuarentaydos.foghike.data.MIGRATION_2_3
 import com.cuarentaydos.foghike.tiles.BASE_MAP_NAME
 import com.cuarentaydos.foghike.tiles.TileServer
 import java.io.File
@@ -23,7 +24,8 @@ class FogHikeApp : Application() {
         super.onCreate()
         // The only Android-specific piece of the database; becomes expect/actual when porting to KMP.
         db = Room.databaseBuilder(this, AppDatabase::class.java, "foghike.db")
-            // shortcut: wipes data on schema change, switch to real migrations before handing out the first APK.
+            .addMigrations(MIGRATION_2_3)
+            // shortcut: wipes data on a schema change without a migration; drop it before handing out the first APK.
             .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
         mapsDir.mkdirs()
