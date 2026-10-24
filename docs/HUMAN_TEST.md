@@ -25,6 +25,11 @@ What can't be checked with adb or JVM tests: it needs walking, turning the phone
 - [ ] **Background download:** the progress notification shows with Cancel (Android 14+ requires the download's service type).
 - [ ] **Import GPX** from other apps (Drive, Files, an email attachment).
 
+## Releases
+
+- [ ] **F-Droid repo.** In the F-Droid app add the repo from the README link: Hike Explorer shows up with its texts and screenshots and installs.
+- [ ] **Update from F-Droid.** After the next release, F-Droid offers the update and it installs over the previous one keeping the data.
+
 ## Other
 
 - [ ] **Phone in Catalan:** the app shows in English; decide whether to add Catalan or change the default language.

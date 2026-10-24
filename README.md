@@ -20,6 +20,17 @@ FogHike es el nombre interno (paquete `com.cuarentaydos.foghike`, nombres de cla
 - Android 12 (API 31) o superior, móvil ARM.
 - JDK 21 para compilar.
 
+## Instalación
+
+La app no está en Google Play. Hay tres formas de instalarla, todas con el mismo APK firmado:
+
+- **F-Droid (recomendado, se actualiza sola).** En la app F-Droid, Ajustes → Repositorios → «+», añade
+  `https://ldotlopez.github.io/foghike/repo?fingerprint=D9BD474B59521305CF0E0A462818989C60D0D21BDDD797523941D5184F6E5178`
+  (o abre [la página del repositorio](https://ldotlopez.github.io/foghike/repo/) y escanea el QR).
+- **Descarga manual** del APK desde [GitHub Releases](https://github.com/ldotlopez/foghike/releases).
+  [Obtainium](https://github.com/ImranR98/Obtainium) puede seguir esas releases y avisar de nuevas versiones.
+- **Con `adb`** desde el ordenador, como se explica abajo.
+
 ## Instalación manual con adb
 
 La app no está en Google Play: se instala el APK a mano. Con `adb` se hace desde el ordenador.
@@ -83,7 +94,12 @@ Para regenerarlo, ejecuta `python3 tools/build_spain_mbtiles.py` desde la raíz 
 Al subir una etiqueta (tag) se compila un APK de release ARM firmado y se publica como release de
 GitHub (`.github/workflows/release.yml`). La clave de firma nunca está en el repositorio; se pasa
 con las variables de entorno `SIGNING_STORE_FILE`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` y
-`SIGNING_KEY_PASSWORD`. Todas las releases deben usar la misma clave.
+`SIGNING_KEY_PASSWORD`. Todas las releases deben usar la misma clave. La versión sale del tag
+(`v0.2` → `0.2`) y el `versionCode` del número de ejecución, así que no hay que subirlos a mano.
+
+Después, `.github/workflows/fdroid-repo.yml` rehace el repositorio F-Droid en GitHub Pages con las tres
+últimas releases (configuración y textos en `fdroid/`). Se puede relanzar a mano desde Actions para
+publicar cambios en los textos o capturas.
 
 ## Documentación
 

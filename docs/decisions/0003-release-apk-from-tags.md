@@ -16,4 +16,4 @@ Repository secrets: `SIGNING_KEYSTORE_BASE64` (the keystore, `base64 -w0`), `SIG
 - One APK per ABI (splits): smaller downloads, but testers would have to pick the right file.
 
 ## Consequences
-`versionCode`/`versionName` are not derived from the tag; bump them in `app/build.gradle.kts` before tagging, or Android refuses the update. x86 emulators can't run the release APK (debug builds still include every ABI).
+`versionCode` comes from the workflow run number and `versionName` from the tag (decision 0016), so no manual bump before tagging. x86 emulators can't run the release APK (debug builds still include every ABI).
