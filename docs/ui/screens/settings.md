@@ -1,6 +1,6 @@
 # Settings screen
 
-User preferences and debugging controls. For now it holds only the Debug section with the fog opacity. Reveal radius, cell size and alias come with roadmap step 4, and the layout leaves room for them. Follows `docs/ui/guidelines.md`. It is the one screen without a map, so the map-screen rules (floating toolbar, chips, attribution) don't apply, and text labels are allowed ("Icons over text" excludes Settings).
+User preferences and debugging controls. For now it holds only the Advanced section with the fog opacity. Reveal radius, cell size and alias come with roadmap step 4, and the layout leaves room for them. Follows `docs/ui/guidelines.md`. It is the one screen without a map, so the map-screen rules (floating toolbar, chips, attribution) don't apply, and text labels are allowed ("Icons over text" excludes Settings).
 
 Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsScreen.kt` (stateless layout). Opened from the `settings` icon of the main screen's toolbar; the system back button returns.
 
@@ -11,7 +11,7 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 │ (status bar)                         │
 │ ←  Settings                          │  TopAppBar: back arrow + title
 │                                      │
-│ Debug                                │  section header (primary color, labelLarge)
+│ Advanced                             │  section header (primary color, labelLarge)
 │ ┌──────────────────────────────────┐ │
 │ │ Fog opacity                 70 % │ │  ListItem: headline row with the value at the end
 │ │ ●━━━━━━━━━━━━━━━━━━━━━○───────── │ │  Slider 0–100, step 5
@@ -36,12 +36,12 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 
 | Section | Setting | Control | Storage | Default |
 | --- | --- | --- | --- | --- |
-| Debug | Fog opacity | `Slider` 0–100 %, steps of 5, value at the end of the headline row (a trailing slot would center it on the whole item, preview included) | `SharedPreferences` `ui` → `fogOpacity` (unchanged) | 70 % |
+| Advanced | Fog opacity | `Slider` 0–100 %, steps of 5, value at the end of the headline row (a trailing slot would center it on the whole item, preview included) | `SharedPreferences` `ui` → `fogOpacity` (unchanged) | 70 % |
 | About | Version | Read-only `ListItem` with `versionName (versionCode)` from `packageManager.getPackageInfo` (`BuildConfig` is off in this project) | — | — |
 
 - Changes are saved as the slider moves, with no "Save" button. Android settings screens apply changes immediately.
 - The main screen reads `fogOpacity` again when it comes back to the foreground (`onResume`) and sets it on the fog layer. It is only a layer property: nothing is recalculated. Update the trigger row in `docs/recalculations.md` and the "where" column in `docs/configurable-values.md` when implementing it.
-- The Debug section is always visible: every user is a tester for now (< 100 testers installing the APK by hand). Hide it when the app reaches regular users.
+- The Advanced section is always visible: every user is a tester for now (< 100 testers installing the APK by hand). Hide it when the app reaches regular users.
 - The version row lets testers say which APK they run when reporting a problem.
 
 ### Fog preview
@@ -56,7 +56,7 @@ Settings covers the map, so a small card under the opacity slider shows the effe
 
 ### Planned (roadmap step 4)
 
-Not built now. They go in a "Exploration" section above Debug:
+Not built now. They go in a "Exploration" section above Advanced:
 
 | Setting | Control |
 | --- | --- |
@@ -82,7 +82,7 @@ New keys. `fog_opacity` is kept (now the setting's headline), and the title reus
 
 | Key | English | Spanish |
 | --- | --- | --- |
-| `section_debug` | Debug | Depuración |
+| `section_advanced` | Advanced | Avanzado |
 | `section_about` | About | Acerca de |
 | `version` | Version | Versión |
 | `percent` | %1$d %% | %1$d %% |

@@ -6,7 +6,7 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 | Value | Where | Default | Persisted | Notes |
 | --- | --- | --- | --- | --- |
-| Fog opacity | Settings → Debug slider (0–100 %, steps of 5); `SharedPreferences` `ui` → `fogOpacity` | 70 % | Yes, across sessions | Scales all fog, including `DENSITY`'s partial fog. Recalculates nothing |
+| Fog opacity | Settings → Advanced slider (0–100 %, steps of 5); `SharedPreferences` `ui` → `fogOpacity` | 70 % | Yes, across sessions | Scales all fog, including `DENSITY`'s partial fog. Recalculates nothing |
 | Download zoom range | Range slider in the download screen's zoom sheet (`ui/DownloadScreen.kt`) | 13–16 | No, per download | Between 0 and `IGN_MAX_ZOOM`; the slider can't hold an invalid range |
 | Areas to download | Drawn freehand | — | In `downloaded_area` | — |
 

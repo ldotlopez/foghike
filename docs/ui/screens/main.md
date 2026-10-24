@@ -57,7 +57,7 @@ A Material 3 `AssistChip` at the top left, below the status bar.
 | FAB | `fiber_manual_record` / `stop` | Start / stop exploring | Permission flow on first start (unchanged) |
 | 1 | `map` | Offline maps | Download screen |
 | 2 | `upload_file` | Import GPX | System file picker (multiple files) |
-| 3 | `settings` | Settings | Settings screen (Debug section only for now) |
+| 3 | `settings` | Settings | Settings screen (Advanced section only for now) |
 
 - Every icon button is at least 56 dp. The default Material 3 icon buttons are 48 dp, so they get an explicit size.
 - Each one has a `contentDescription` and a tooltip on long press (`TooltipBox` + `PlainTooltip`).

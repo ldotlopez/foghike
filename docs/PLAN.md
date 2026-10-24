@@ -18,7 +18,6 @@
 
 ## Settings
 
-- **Rename the Debug section to Advanced.** Section header and strings (`section_debug`), `docs/ui/screens/settings.md` and the main screen spec.
 - **One recalculation when leaving Settings.** When several changed preferences each need a recalculation, run it once when the user leaves the Settings screen instead of after each change. Under every changed preference that needs it, show a small warning line (smaller font) such as "Will be recalculated when you close this screen".
 
 ## Docs
