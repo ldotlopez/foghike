@@ -38,7 +38,7 @@
     <string name="chip_cells">%1$s celdas reveladas</string>
     <string name="chip_no_maps">Ningún mapa descargado</string>
     <string name="help_main">El mapa empieza cubierto de niebla. Pulsa el botón rojo de grabar para empezar a explorar: la niebla se despeja alrededor de los sitios por los que caminas, también con la pantalla apagada. Pulsa parar al terminar.\n\nEl icono del mapa descarga mapas de satélite para usarlos sin conexión, y el del fichero importa rutas que ya hiciste (ficheros GPX).\n\nLa etiqueta de arriba muestra las cuadrículas que has revelado y los mapas sin conexión que tienes.\n\nEl botón encima de la barra centra el mapa en ti y te sigue; púlsalo otra vez para girar el mapa con la brújula.</string>
-    <string name="section_debug">Depuración</string>
+    <string name="section_advanced">Avanzado</string>
     <string name="section_about">Acerca de</string>
     <string name="version">Versión</string>
     <string name="percent">%1$d %%</string>
