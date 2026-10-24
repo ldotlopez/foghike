@@ -30,3 +30,5 @@ What can't be checked with adb or JVM tests: it needs walking, turning the phone
 - [ ] **Phone in Catalan:** the app shows in English; decide whether to add Catalan or change the default language.
 - [ ] **Android kills the app while exploring** (e.g. opening many heavy apps): exploring resumes on its own in a new track.
 - [ ] **After moving logic to `core/` (decision 0004):** fog clears around new points while exploring and when zooming out (partial fog over coarse cells), the trail still fades, and importing the same GPX twice reports it as already imported.
+- [ ] **Compose UI (decision 0005), on Android 12 and on the S24:** panels clear the status and navigation bars; light and dark mode follow the phone; the Spanish button labels fit (text shrinks, not cut); the opacity slider still changes the fog and is remembered after restart.
+- [ ] **Download screen under Compose:** one finger draws an area, two fingers move and zoom (the drawn stroke is dropped), the keyboard doesn't cover the zoom fields, and typed zooms survive rotating the phone.

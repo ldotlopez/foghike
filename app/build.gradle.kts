@@ -2,6 +2,7 @@
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -14,6 +15,10 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1"
+    }
+
+    buildFeatures {
+        compose = true
     }
 
     // The release key never lives in the repo: CI (and local release builds) pass it via env vars.
@@ -41,7 +46,10 @@ ksp {
 }
 
 dependencies {
-    implementation("androidx.activity:activity-ktx:1.10.1")
+    implementation("androidx.activity:activity-compose:1.10.1")
+    // The BOM picks matching versions for every Compose library below.
+    implementation(platform("androidx.compose:compose-bom:2026.06.01"))
+    implementation("androidx.compose.material3:material3")
     // Not used directly; pins the version that older transitive copies would otherwise give lint (release build fails).
     implementation("androidx.fragment:fragment:1.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.2")

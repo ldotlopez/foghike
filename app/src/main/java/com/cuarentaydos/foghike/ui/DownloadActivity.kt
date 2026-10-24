@@ -4,10 +4,12 @@ import android.annotation.SuppressLint
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.MotionEvent
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -52,7 +54,7 @@ private const val AREA_PICK_ZOOM = 11.0 // a hiking area of a few km fills the s
 class DownloadActivity : ComponentActivity() {
     private val app get() = application as FogHikeApp
     private lateinit var mapView: MapView
-    private lateinit var progress: TextView
+    private var message by mutableStateOf("") // validation error or download progress
     private var map: MapLibreMap? = null
     private val areas = mutableListOf<List<LatLon>>()
     private var stroke: MutableList<LatLon>? = null
@@ -62,10 +64,9 @@ class DownloadActivity : ComponentActivity() {
     @SuppressLint("ClickableViewAccessibility") // drawing is a gesture, there is no click to perform
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         MapLibre.getInstance(this)
-        setContentView(R.layout.activity_download)
-        progress = findViewById(R.id.progress)
-        mapView = findViewById(R.id.map)
+        mapView = MapView(this) // driven by the activity lifecycle, placed on screen by Compose
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync { m ->
             map = m
@@ -81,33 +82,10 @@ class DownloadActivity : ComponentActivity() {
 
         mapView.setOnTouchListener { _, e -> onMapTouch(e) }
 
-        val minZoom = findViewById<EditText>(R.id.min_zoom)
-        val maxZoom = findViewById<EditText>(R.id.max_zoom)
-        val download = findViewById<Button>(R.id.download)
-        findViewById<Button>(R.id.clear).setOnClickListener {
-            areas.clear()
-            stroke = null
-            drawAreas()
-        }
-        download.setOnClickListener {
-            val from = minZoom.text.toString().toIntOrNull()
-            val to = maxZoom.text.toString().toIntOrNull()
-            if (from == null || to == null || from < 0 || to > IGN_MAX_ZOOM || from > to) {
-                progress.setText(R.string.invalid_zoom)
-                return@setOnClickListener
+        setContent {
+            FogHikeTheme {
+                DownloadScreen(mapView, message, onClear = ::clearAreas, onDownload = ::download)
             }
-            if (areas.isEmpty()) {
-                progress.setText(R.string.no_areas)
-                return@setOnClickListener
-            }
-            val total = areas.sumOf { tilesFor(it, from, to).count() }
-            if (total > MAX_TILES_PER_DOWNLOAD) {
-                progress.text = getString(R.string.too_many_tiles, total, MAX_TILES_PER_DOWNLOAD)
-                return@setOnClickListener
-            }
-            areas.forEach { DownloadWorker.enqueue(this, it, from, to) }
-            areas.clear()
-            drawAreas()
         }
 
         lifecycleScope.launch {
@@ -119,11 +97,39 @@ class DownloadActivity : ComponentActivity() {
         }
     }
 
+    private fun clearAreas() {
+        areas.clear()
+        stroke = null
+        drawAreas()
+    }
+
+    /** [minZoom] and [maxZoom] come as typed by the user. */
+    private fun download(minZoom: String, maxZoom: String) {
+        val from = minZoom.toIntOrNull()
+        val to = maxZoom.toIntOrNull()
+        if (from == null || to == null || from < 0 || to > IGN_MAX_ZOOM || from > to) {
+            message = getString(R.string.invalid_zoom)
+            return
+        }
+        if (areas.isEmpty()) {
+            message = getString(R.string.no_areas)
+            return
+        }
+        val total = areas.sumOf { tilesFor(it, from, to).count() }
+        if (total > MAX_TILES_PER_DOWNLOAD) {
+            message = getString(R.string.too_many_tiles, total, MAX_TILES_PER_DOWNLOAD)
+            return
+        }
+        areas.forEach { DownloadWorker.enqueue(this, it, from, to) }
+        areas.clear()
+        drawAreas()
+    }
+
     private fun showProgress(works: List<WorkInfo>) {
         if (works.isEmpty()) return
         val left = works.count { !it.state.isFinished }
         val running = works.firstOrNull { it.state == WorkInfo.State.RUNNING }
-        progress.text = when {
+        message = when {
             running != null -> getString(
                 R.string.download_progress, left,
                 running.progress.getInt(DownloadWorker.KEY_DONE, 0), running.progress.getInt(DownloadWorker.KEY_TOTAL, 0),

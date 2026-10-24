@@ -10,13 +10,17 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
-import android.widget.Button
-import android.widget.SeekBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -59,12 +63,14 @@ class MainActivity : ComponentActivity() {
     private val prefs by lazy { getSharedPreferences("ui", MODE_PRIVATE) }
 
     private lateinit var mapView: MapView
-    private lateinit var status: TextView
     private var map: MapLibreMap? = null
     private var fog: FogLayer? = null
     private var trail: TrailLayer? = null
-    private var areas: List<DownloadedArea>? = null
-    private var cellCount = 0
+
+    // Compose state: changing these redraws the parts of the screen that show them.
+    private var areas by mutableStateOf<List<DownloadedArea>?>(null)
+    private var cellCount by mutableIntStateOf(0)
+    private var fogOpacity by mutableIntStateOf(70)
 
     // Starting exploration is a chain of steps, each one may open a system screen and continues in
     // its result callback: permissions -> background location -> battery -> location switched on.
@@ -108,10 +114,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         MapLibre.getInstance(this)
-        setContentView(R.layout.activity_main)
-        status = findViewById(R.id.status)
-        mapView = findViewById(R.id.map)
+        // The map stays a classic Android view, created and driven by the activity (onStart, onStop...);
+        // Compose only places it on screen, under the panels.
+        mapView = MapView(this)
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync { m ->
             map = m
@@ -119,43 +126,34 @@ class MainActivity : ComponentActivity() {
             m.addOnCameraIdleListener { fog?.refresh(m) }
             lifecycleScope.launch { reloadMaps() }
         }
+        fogOpacity = prefs.getInt("fogOpacity", 70)
 
-        val opacity = findViewById<SeekBar>(R.id.fog_opacity)
-        opacity.progress = prefs.getInt("fogOpacity", 70)
-        opacity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(bar: SeekBar, value: Int, fromUser: Boolean) {
-                fog?.setOpacity(value / 100f)
-                prefs.edit().putInt("fogOpacity", value).apply()
-            }
-            override fun onStartTrackingTouch(bar: SeekBar) {}
-            override fun onStopTrackingTouch(bar: SeekBar) {}
-        })
-
-        val track = findViewById<Button>(R.id.track)
-        track.setOnClickListener {
-            if (TrackingService.running.value) stopService(Intent(this, TrackingService::class.java))
-            else requestTracking()
-        }
-        findViewById<Button>(R.id.maps).setOnClickListener {
-            startActivity(Intent(this, DownloadActivity::class.java))
-        }
-        findViewById<Button>(R.id.import_gpx).setOnClickListener {
-            // Many file providers don't know the GPX type, so generic XML/binary types are accepted too.
-            pickGpx.launch(arrayOf("application/gpx+xml", "application/xml", "text/xml", "application/octet-stream"))
-        }
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                TrackingService.running.collect {
-                    track.setText(if (it) R.string.stop_exploring else R.string.start_exploring)
-                }
+        setContent {
+            FogHikeTheme {
+                val tracking by TrackingService.running.collectAsState()
+                MainScreen(
+                    mapView = mapView,
+                    cellCount = cellCount,
+                    mapCount = areas?.size ?: 0,
+                    tracking = tracking,
+                    fogOpacity = fogOpacity,
+                    onFogOpacity = ::changeFogOpacity,
+                    onTrack = {
+                        if (tracking) stopService(Intent(this, TrackingService::class.java)) else requestTracking()
+                    },
+                    onMaps = { startActivity(Intent(this, DownloadActivity::class.java)) },
+                    // Many file providers don't know the GPX type, so generic XML/binary types are accepted too.
+                    onImportGpx = {
+                        pickGpx.launch(arrayOf("application/gpx+xml", "application/xml", "text/xml", "application/octet-stream"))
+                    },
+                )
             }
         }
+
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 app.db.cellDao().count(CELL_SIZE_METERS).collect { count ->
                     cellCount = count
-                    updateStatus()
                     map?.let { fog?.refresh(it, force = true) }
                 }
             }
@@ -174,6 +172,12 @@ class MainActivity : ComponentActivity() {
             prefs.edit().putBoolean("askedStartup", true).apply()
             startupPermissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
         }
+    }
+
+    private fun changeFogOpacity(value: Int) {
+        fogOpacity = value
+        fog?.setOpacity(value / 100f)
+        prefs.edit().putInt("fogOpacity", value).apply()
     }
 
     private fun hasPermission(permission: String) = checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
@@ -272,8 +276,7 @@ class MainActivity : ComponentActivity() {
         if (list == areas) return
         val firstLoad = areas == null
         areas = list
-        updateStatus()
-        val opacity = prefs.getInt("fogOpacity", 70) / 100f
+        val opacity = fogOpacity / 100f
         fog = null // its source dies with the old style
         trail = null
         m.setStyle(Style.Builder().fromJson(mapStyleJson(app.tileServer, list, onlineIgn = false))) { style ->
@@ -312,12 +315,6 @@ class MainActivity : ComponentActivity() {
             cameraMode = CameraMode.NONE
             renderMode = RenderMode.COMPASS
         }
-    }
-
-    private fun updateStatus() {
-        val maps = areas?.size ?: 0
-        status.text = getString(R.string.status, cellCount, maps) +
-            if (maps == 0) "\n" + getString(R.string.no_maps) else ""
     }
 
     override fun onStart() { super.onStart(); mapView.onStart() }
