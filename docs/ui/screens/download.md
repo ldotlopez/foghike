@@ -60,7 +60,7 @@ It **opens by itself the first time** the screen is entered, because the drawing
 
 ### Floating toolbar
 
-A `HorizontalFloatingToolbar`, like the main screen, with Download as its floating action button.
+A `MapToolbar` (hand-made, decision 0007), like the main screen, with Download as its floating action button.
 
 | Slot | Icon | Action |
 | --- | --- | --- |

@@ -1,7 +1,16 @@
 package com.cuarentaydos.foghike.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -36,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -102,6 +112,47 @@ fun HelpButton(title: String, text: String, modifier: Modifier = Modifier, openF
 }
 
 /**
+ * Floating toolbar over the map: a pill of icon buttons with [fab] beside it. When [expanded] is false
+ * only [fab] stays. With [onExpandedChange], a handle button opens (`more_horiz`) and closes (`close`) it.
+ * shortcut: hand-made because Material's HorizontalFloatingToolbar needs material3 1.5 (not stable yet);
+ * swap it in when it is (docs/PLAN.md).
+ */
+@Composable
+fun MapToolbar(
+    expanded: Boolean,
+    fab: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    onExpandedChange: ((Boolean) -> Unit)? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        AnimatedVisibility(
+            expanded,
+            enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
+            exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut(),
+        ) {
+            ToolbarPill {
+                if (onExpandedChange != null) {
+                    MapIconButton(R.drawable.ic_close, stringResource(R.string.action_hide_toolbar), { onExpandedChange(false) })
+                }
+                content()
+            }
+        }
+        if (!expanded && onExpandedChange != null) {
+            ToolbarPill { MapIconButton(R.drawable.ic_more_horiz, stringResource(R.string.action_show_toolbar), { onExpandedChange(true) }) }
+        }
+        fab()
+    }
+}
+
+@Composable
+private fun ToolbarPill(content: @Composable RowScope.() -> Unit) {
+    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainer, shadowElevation = 3.dp) {
+        Row(Modifier.padding(horizontal = 4.dp), content = content)
+    }
+}
+
+/**
  * Translucent panel over the map. The app draws behind the system bars (edge to edge), so the panel
  * pads itself away from them on [sides]: top for the status bar, bottom for navigation and keyboard.
  */
@@ -131,12 +182,13 @@ fun ActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
     else FilledTonalButton(onClick, modifier.height(64.dp), contentPadding = padding) { label() }
 }
 
-/** Required wherever IGN imagery is shown. */
+/** Required wherever IGN imagery is shown. One line: the text shrinks on narrow phones instead of wrapping. */
 @Composable
 fun IgnAttribution() {
-    Text(
+    BasicText(
         stringResource(R.string.ign_attribution),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        autoSize = TextAutoSize.StepBased(minFontSize = 7.sp, maxFontSize = MaterialTheme.typography.labelSmall.fontSize),
+        style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
     )
 }

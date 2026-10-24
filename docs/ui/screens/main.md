@@ -28,7 +28,7 @@ Code: `ui/MainActivity.kt` (state, permissions, file picker, map) and `ui/MainSc
 
 - The map fills the whole screen, edge to edge, behind the system bars.
 - Floating elements pad themselves from the system bars and block map gestures only on their own surface.
-- The attribution is plain `labelSmall` text, no panel. It sits above the navigation bar, below the toolbar.
+- The attribution is one line of `labelSmall` text that shrinks on narrow phones, on a tight translucent background so it stays readable over bright imagery. It sits above the navigation bar, below the toolbar.
 
 ## Components
 
@@ -50,14 +50,14 @@ A Material 3 `AssistChip` at the top left, below the status bar.
 
 ### Floating toolbar
 
-A Material 3 `HorizontalFloatingToolbar` (Expressive, `@OptIn(ExperimentalMaterial3ExpressiveApi::class)`), centered at the bottom, with Explore as its floating action button.
+`MapToolbar` (`ui/Theme.kt`), centered at the bottom: a pill of icon buttons with the Explore floating action button beside it. Hand-made with stable components because Material's `HorizontalFloatingToolbar` needs material3 1.5, not stable yet (see Exceptions and `docs/PLAN.md`).
 
 | Slot | Icon | Action | Opens |
 | --- | --- | --- | --- |
 | FAB | `fiber_manual_record` / `stop` | Start / stop exploring | Permission flow on first start (unchanged) |
 | 1 | `map` | Offline maps | Download screen |
 | 2 | `upload_file` | Import GPX | System file picker (multiple files) |
-| 3 | `settings` | Settings | Settings screen (Debug section only for now) |
+| 3 | `settings` | Settings | Settings screen (Debug section only for now). Added with the Settings screen |
 
 - Every icon button is at least 56 dp. The default Material 3 icon buttons are 48 dp, so they get an explicit size.
 - Each one has a `contentDescription` and a tooltip on long press (`TooltipBox` + `PlainTooltip`).
@@ -69,7 +69,7 @@ A Material 3 `HorizontalFloatingToolbar` (Expressive, `@OptIn(ExperimentalMateri
 
 ### My location button
 
-A `SmallFloatingActionButton` (56 dp touch target) at the bottom right, above the toolbar. It cycles through the camera modes MapLibre's location component already has:
+A 56 dp `FloatingActionButton` in the surface container color, at the bottom right, above the toolbar (a `SmallFloatingActionButton` is 40 dp, below the guidelines' 56 dp). It cycles through the camera modes MapLibre's location component already has:
 
 | State | Icon | MapLibre `CameraMode` | Tap goes to |
 | --- | --- | --- | --- |
@@ -102,7 +102,7 @@ One `SnackbarHost` above the toolbar. It replaces every `Toast` on this screen:
 
 ## States
 
-Each state has a `@Preview` and a Roborazzi reference image. The map slot is a plain colored box.
+Each state has a Roborazzi reference image (`ui/MainScreenScreenshotTest.kt`) and, except 2 and 6, a `@Preview` in `MainScreen.kt`. States 2 and 6 are reached by tapping (the handle, the help button), so the test taps instead of adding preview-only parameters. The map slot is a plain colored box.
 
 | # | State | Differences from the default |
 | --- | --- | --- |
@@ -170,6 +170,7 @@ New or changed keys (English / Spanish). Removed: `fog_opacity` (moves to Settin
 | `waiting_location` | Waiting for your location… | Esperando tu ubicación… |
 | `chip_status` | %1$s revealed cells, %2$d offline maps | %1$s celdas reveladas, %2$d mapas sin conexión |
 | `chip_no_maps` | No offline maps | Ningún mapa descargado |
+| `chip_cells` | %1$s revealed cells | %1$s celdas reveladas |
 | `help_main_title` | Hike Explorer | Hike Explorer |
 | `help_main` | (text to write with the implementation) | |
 
@@ -190,6 +191,7 @@ With all of them the toolbar holds four icons plus the FAB: maps, tracks, exchan
 
 ## Exceptions
 
+- **Hand-made toolbar.** Material 3 stable (1.4) has no floating toolbar; `MapToolbar` imitates it (decision 0007) until material3 1.5 is stable (`docs/PLAN.md`).
 - **Toolbar handle.** Material's floating toolbar collapses on scroll, and a map has no scroll. It collapses when exploring starts instead, and a custom handle button reopens it. Considered and rejected: collapsing while the map is dragged (hides the actions too often), an always-present chevron (one more icon in a toolbar meant to be small), never collapsing (against the guidelines).
 
 ## Open questions

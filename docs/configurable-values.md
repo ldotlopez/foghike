@@ -6,7 +6,7 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 | Value | Where | Default | Persisted | Notes |
 | --- | --- | --- | --- | --- |
-| Fog opacity | Slider on the main screen; `SharedPreferences` `ui` → `fogOpacity` | 70 % | Yes, across sessions | Scales all fog, including `DENSITY`'s partial fog. Recalculates nothing |
+| Fog opacity | Settings → Debug (screen pending: until then the stored value is used); `SharedPreferences` `ui` → `fogOpacity` | 70 % | Yes, across sessions | Scales all fog, including `DENSITY`'s partial fog. Recalculates nothing |
 | Download min zoom | Field on the download screen (`ui/DownloadScreen.kt`) | 13 | No, per download | Validated between 0 and `IGN_MAX_ZOOM` |
 | Download max zoom | Field on the download screen | 16 | No, per download | Must be ≥ min zoom |
 | Areas to download | Drawn freehand | — | In `downloaded_area` | — |
@@ -62,7 +62,8 @@ Inventory of the values and behaviors the user can already change, or that depen
 
 | Constant | File | Value | Effect | Setting? |
 | --- | --- | --- | --- | --- |
-| `USER_ZOOM` | `ui/MainActivity.kt` | 14 | Zoom when centering on the user at startup | Maybe |
+| `USER_ZOOM` | `ui/MainActivity.kt` | 14 | Zoom when centering on the user at startup and when the my location button starts following | Maybe |
+| `CAMERA_TRANSITION_MS` | `ui/MainActivity.kt` | 750 ms | Camera animation when the my location button changes mode | No |
 | `BASE_MAP_MIN_ZOOM` | `ui/MapStyle.kt` | 5 | Minimum zoom; there is no base map below | No |
 | `BASE_MAP_MAX_ZOOM` | `ui/MapStyle.kt` | 9 | Highest zoom of the bundled base map; overzoomed above. Must match `tools/build_spain_mbtiles.py` | No |
 | `SPAIN_BOUNDS` | `ui/MapStyle.kt` | Mainland and Balearic Islands | Framing with no areas or location | No |

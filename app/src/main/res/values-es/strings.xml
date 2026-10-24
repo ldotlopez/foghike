@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="start_exploring">Iniciar exploración</string>
-    <string name="stop_exploring">Parar exploración</string>
-    <string name="maps">Mapas</string>
-    <string name="import_gpx">Importar GPX</string>
     <string name="fog_opacity">Opacidad de la niebla</string>
-    <string name="status">Celdas reveladas: %1$d · Mapas offline: %2$d</string>
-    <string name="no_maps">Aún no hay mapas offline: descarga uno desde Mapas.</string>
     <string name="precise_location_required">Explorar necesita la ubicación precisa.</string>
     <string name="gpx_imported">Importados %1$d puntos de %2$d ficheros.</string>
     <string name="gpx_failed">%1$d ficheros no se pudieron leer.</string>
@@ -37,4 +31,19 @@
     <string name="not_now">Ahora no</string>
     <string name="action_help">Ayuda</string>
     <string name="close">Cerrar</string>
+    <string name="action_explore">Empezar a explorar</string>
+    <string name="action_stop">Dejar de explorar</string>
+    <string name="action_maps">Mapas sin conexión</string>
+    <string name="action_import_gpx">Importar GPX</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="action_show_toolbar">Mostrar acciones</string>
+    <string name="action_hide_toolbar">Ocultar acciones</string>
+    <string name="action_follow">Centrar en mi ubicación</string>
+    <string name="action_compass">Girar el mapa con la brújula</string>
+    <string name="action_north_up">Mantener el norte arriba</string>
+    <string name="waiting_location">Esperando tu ubicación…</string>
+    <string name="chip_status">%1$s celdas reveladas, %2$d mapas sin conexión</string>
+    <string name="chip_cells">%1$s celdas reveladas</string>
+    <string name="chip_no_maps">Ningún mapa descargado</string>
+    <string name="help_main">El mapa empieza cubierto de niebla. Pulsa el botón rojo de grabar para empezar a explorar: la niebla se despeja alrededor de los sitios por los que caminas, también con la pantalla apagada. Pulsa parar al terminar.\n\nEl icono del mapa descarga mapas de satélite para usarlos sin conexión, y el del fichero importa rutas que ya hiciste (ficheros GPX).\n\nLa etiqueta de arriba muestra las cuadrículas que has revelado y los mapas sin conexión que tienes.\n\nEl botón encima de la barra centra el mapa en ti y te sigue; púlsalo otra vez para girar el mapa con la brújula.</string>
 </resources>

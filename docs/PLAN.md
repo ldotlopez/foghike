@@ -17,5 +17,8 @@
 
 ## UI
 
-- **Shorter texts.** Button labels that wrap to two lines push the button row up (e.g. Spanish "Mover mapa" in the download screen). Shorten them: "Start exploring" → "Explore" (es: "Iniciar exploración" → "Explorar"), and review the rest.
-- **Polish phase (later).** Replace text buttons with icons and add visual cues.
+- **Material 3 floating toolbar (when material3 1.5 is stable).** The map toolbars are hand-made (`MapToolbar` in `ui/Theme.kt`, decision 0007) because `HorizontalFloatingToolbar` only exists from material3 1.5, which is still beta (1.5.0-beta02 in Oct 2026). Material3 1.5 requires `compileSdk 37`, AGP ≥ 9.1, and a Compose BOM of 2026.08 or later (2026.08+ already needs `compileSdk 37`, decision 0005).
+  - Steps: install SDK 37 and set `compileSdk = 37` (targetSdk can stay); update the Compose BOM; replace the body of `MapToolbar` with `HorizontalFloatingToolbar(expanded, floatingActionButton = …)`, keeping its signature so the screens don't change; move the collapsed handle into the toolbar if the component supports it, or keep it outside; re-record the Roborazzi references and compare.
+  - Then remove the "Toolbar" exception from `docs/ui/screens/main.md` and `download.md`, and mark decision 0007 superseded.
+  - Same check for other Expressive components the specs could use then (e.g. `FloatingToolbarDefaults.VibrantFloatingActionButton` for Explore).
+- **Settings icon on the main toolbar.** Comes with the Settings screen (next redesign step); until then the fog opacity can't be changed and the stored value is used.
