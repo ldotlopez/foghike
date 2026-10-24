@@ -43,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.ShaderBrush
@@ -158,17 +159,14 @@ fun SettingsScreen(
             SwitchItem(stringResource(R.string.slow_phone), stringResource(R.string.slow_phone_detail), s.slowPhone) {
                 onSettings(s.copy(slowPhone = it))
             }
-            // Slow phone and battery saver set these themselves, so they only show while those are off.
-            if (!s.slowPhone) {
-                ChoiceItem(stringResource(R.string.fog_detail), s.fogDetail, FOG_DETAILS, {
-                    stringResource(when (it) { 2 -> R.string.detail_high; 4 -> R.string.detail_medium; else -> R.string.detail_low })
-                }) { onSettings(s.copy(fogDetail = it)) }
-            }
-            if (!s.batterySaver) {
-                ChoiceItem(stringResource(R.string.gps_interval), s.gpsIntervalSeconds, GPS_INTERVALS, { stringResource(R.string.seconds, it) }) {
-                    onSettings(s.copy(gpsIntervalSeconds = it))
-                }
-            }
+            // While a preset is on, the rows it sets show its value, disabled; turning it off brings back the user's own.
+            ChoiceItem(stringResource(R.string.fog_detail), s.effectiveFogDetail, FOG_DETAILS, {
+                stringResource(when (it) { 2 -> R.string.detail_high; 4 -> R.string.detail_medium; else -> R.string.detail_low })
+            }, setByPreset = R.string.slow_phone.takeIf { s.slowPhone }) { onSettings(s.copy(fogDetail = it)) }
+            ChoiceItem(
+                stringResource(R.string.gps_interval), s.effectiveGpsIntervalSeconds, GPS_INTERVALS, { stringResource(R.string.seconds, it) },
+                setByPreset = R.string.battery_saver.takeIf { s.batterySaver },
+            ) { onSettings(s.copy(gpsIntervalSeconds = it)) }
             ChoiceItem(stringResource(R.string.user_zoom), s.userZoom, USER_ZOOMS, { "$it" }) { onSettings(s.copy(userZoom = it)) }
             SwitchItem(stringResource(R.string.show_trail), stringResource(R.string.show_trail_detail), s.showTrail) {
                 onSettings(s.copy(showTrail = it))
@@ -198,6 +196,7 @@ private val TRAIL_COLOR_NAMES = listOf(R.string.color_orange, R.string.color_yel
 /**
  * A setting picked from a closed list: the row shows the current value (and [note], smaller, if
  * any); tapping it opens a single-choice dialog. [swatch] adds a color dot to the row and each option.
+ * With [setByPreset] (the preset's name) the row is disabled and says which preset sets it.
  */
 @Composable
 private fun <T> ChoiceItem(
@@ -207,21 +206,25 @@ private fun <T> ChoiceItem(
     name: @Composable (T) -> String,
     note: String? = null,
     swatch: ((T) -> Color)? = null,
+    setByPreset: Int? = null,
     onSelect: (T) -> Unit,
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
+    val enabled = setByPreset == null
+    val shownNote = setByPreset?.let { stringResource(R.string.set_by_preset, stringResource(it)) } ?: note
     ListItem(
         headlineContent = { Text(label) },
         supportingContent = {
             Column {
                 Text(name(value))
-                if (note != null) Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+                if (shownNote != null) Text(shownNote, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
             }
         },
         leadingContent = swatch?.let { { Swatch(it(value)) } },
-        modifier = Modifier.clickable { open = true },
+        // Material's disabled look: 38 % opacity.
+        modifier = Modifier.clickable(enabled) { open = true }.alpha(if (enabled) 1f else 0.38f),
     )
-    if (!open) return
+    if (!open || !enabled) return
     AlertDialog(
         onDismissRequest = { open = false },
         confirmButton = { TextButton({ open = false }) { Text(stringResource(R.string.cancel)) } },

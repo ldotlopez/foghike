@@ -9,12 +9,12 @@ Settings values live in `AppSettings` (`core/Settings.kt`: defaults, closed opti
 | Value | Where | Options | Default | Reprocess | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Open the map in | Settings → Map; `startMode` | Free, Follow, Compass | Free | No | Applied after the first style load if location is available. The my location button still cycles; a long press picks a mode |
-| Battery saver | Settings → Map; `batterySaver` | On/off | Off | No | GPS every 15 s and trail refresh 30 s. While on, the GPS interval row is hidden |
+| Battery saver | Settings → Map; `batterySaver` | On/off | Off | No | Preset: GPS every 15 s and trail refresh 30 s. While on, the GPS interval row shows 15 s, disabled ("Set by Battery saver"); the user's own value is kept for when it is turned off |
 | Fog opacity | Settings → Advanced slider (0–100 %, steps of 5); `fogOpacity` | — | 70 % | No | Scales all fog, including `DENSITY`'s partial fog |
 | Cell size | Settings → Advanced; `cellSize` | 10, 25, 50, 100 m | 25 m | Yes, when leaving Settings | Part of `RevealGrid` (`geo/Grid.kt`) |
 | Reveal radius | Settings → Advanced; `radiusFactor` | 1.2×, 2×, 3× the cell | 1.2× (30 m) | Yes, when leaving Settings | Also the GPS accuracy threshold of `isAccurate` |
 | Fog mode | Settings → Advanced; `fogMode` | `DENSITY` (thinner the more explored), `ANY_CELL` | `DENSITY` | No | See [0001](decisions/0001-low-zoom-fog-density.md) |
-| Slow phone | Settings → Advanced; `slowPhone` | On/off | Off | No | Fog detail 8 px, at most 1,500 fog pieces, trail refresh 30 s. While on, the fog detail row is hidden |
+| Old device | Settings → Advanced; `slowPhone` | On/off | Off | No | Preset: fog detail 8 px (Low), at most 1,500 fog pieces, trail refresh 30 s. While on, the fog detail row shows Low, disabled ("Set by Old device"); the user's own value is kept |
 | Fog detail | Settings → Advanced; `fogDetail` | High 2 px, Medium 4 px, Low 8 px | 4 px | No | `minPixels` of `lodLevelFor`: minimum on-screen cell size before a coarser level |
 | GPS interval | Settings → Advanced; `gpsInterval` | 2, 5, 10, 30 s | 5 s | No | Read when exploring starts |
 | Zoom when opening the map | Settings → Advanced; `userZoom` | 12–17 | 14 | No | Only at startup, when centering on the user. The my location button keeps the current zoom |
@@ -46,7 +46,7 @@ Not exposed, decided on 2026-10-24: the tile limit per download (`MAX_TILES_PER_
 
 | Constant | File | Value | Effect | Setting? |
 | --- | --- | --- | --- | --- |
-| `trailRefreshMs` | `core/Settings.kt` | 10 s, 30 s with slow phone or battery saver | How often the trail is redrawn with the screen on | Only through the two switches |
+| `trailRefreshMs` | `core/Settings.kt` | 10 s, 30 s with Old device or Battery saver | How often the trail is redrawn with the screen on | Only through the two presets |
 | Position marker | `showUserLocation` in `ui/MainActivity.kt` (`RenderMode.COMPASS`) | Red compass needle (`location_needle`) towards where the phone points, white pivot (`location_pivot`, gray without a recent fix) | — | No |
 
 ### GPS tracking

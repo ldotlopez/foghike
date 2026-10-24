@@ -15,9 +15,10 @@ val GPS_INTERVALS = listOf(2, 5, 10, 30) // seconds
 val USER_ZOOMS = (12..17).toList()
 
 /**
- * The user's preferences. [slowPhone] and [batterySaver] each override several values at once;
- * read the effective ones ([minCellPixels], [maxFogRects], [trailRefreshMs], [gpsIntervalMs]),
- * never the overridden fields directly. Plain data: the Android side stores it.
+ * The user's preferences. The presets [slowPhone] ("Old device") and [batterySaver] each override
+ * several values at once; read the effective ones ([minCellPixels], [maxFogRects], [trailRefreshMs],
+ * [gpsIntervalMs], or [effectiveFogDetail] / [effectiveGpsIntervalSeconds] to show them), never the
+ * overridden fields directly. Plain data: the Android side stores it.
  */
 data class AppSettings(
     val startMode: LocationMode = LocationMode.FREE,
@@ -35,10 +36,12 @@ data class AppSettings(
     val trailWidth: Int = 4,
 ) {
     val grid get() = RevealGrid(cellSize, cellSize * radiusFactor)
-    val minCellPixels get() = (if (slowPhone) 8 else fogDetail).toDouble()
+    val effectiveFogDetail get() = if (slowPhone) 8 else fogDetail
+    val effectiveGpsIntervalSeconds get() = if (batterySaver) 15 else gpsIntervalSeconds
+    val minCellPixels get() = effectiveFogDetail.toDouble()
     val maxFogRects get() = if (slowPhone) 1_500 else 5_000
     val trailRefreshMs get() = if (slowPhone || batterySaver) 30_000L else 10_000L
-    val gpsIntervalMs get() = (if (batterySaver) 15 else gpsIntervalSeconds) * 1_000L
+    val gpsIntervalMs get() = effectiveGpsIntervalSeconds * 1_000L
     val trailDurationMs get() = trailMinutes * 60_000L
 }
 

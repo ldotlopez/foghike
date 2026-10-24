@@ -107,8 +107,9 @@
     <string name="fog_mode">Fog when zoomed out</string>
     <string name="fog_mode_density">Thinner the more you explored</string>
     <string name="fog_mode_any_cell">Clear if anything inside is explored</string>
-    <string name="slow_phone">Slow phone</string>
-    <string name="slow_phone_detail">Coarser, simpler fog and trail redrawn every 30 s</string>
+    <string name="slow_phone">Old device</string>
+    <string name="slow_phone_detail">Low fog detail, simpler fog and trail redrawn every 30 s</string>
+    <string name="set_by_preset">Set by %1$s</string>
     <string name="fog_detail">Fog detail when zoomed out</string>
     <string name="detail_high">High</string>
     <string name="detail_medium">Medium</string>

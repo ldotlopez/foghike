@@ -29,5 +29,16 @@ class SettingsTest {
     }
 
     @Test
+    fun presetsShowTheirValueAndKeepTheUsersOwn() {
+        val on = AppSettings(slowPhone = true, fogDetail = 2, batterySaver = true, gpsIntervalSeconds = 2)
+        assertEquals(8, on.effectiveFogDetail)
+        assertEquals(15, on.effectiveGpsIntervalSeconds)
+        // Turning the presets off brings back the stored choices.
+        val off = on.copy(slowPhone = false, batterySaver = false)
+        assertEquals(2, off.effectiveFogDetail)
+        assertEquals(2, off.effectiveGpsIntervalSeconds)
+    }
+
+    @Test
     fun radiusIsAFactorOfTheCell() = assertEquals(150.0, AppSettings(cellSize = 50, radiusFactor = 3.0).grid.radius, 1e-9)
 }

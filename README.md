@@ -15,6 +15,20 @@ FogHike es el nombre interno (paquete `com.cuarentaydos.foghike`, nombres de cla
 - Niebla dibujada por vista con niveles de detalle; opacidad ajustable en Ajustes → Avanzado.
 - Interfaz en inglés y español.
 
+## Preajustes
+
+En Ajustes hay dos interruptores que fijan varios ajustes a la vez. Mientras uno está activo, los
+ajustes que controla se ven desactivados con el valor fijado y el texto «Fijado por …»; al apagarlo
+vuelven los valores que hubieras elegido.
+
+| Preajuste | Dónde | Qué fija |
+| --- | --- | --- |
+| Ahorro de batería | Ajustes → Mapa | Intervalo del GPS a 15 s; el rastro se redibuja cada 30 s |
+| Dispositivo antiguo | Ajustes → Avanzado | Detalle de la niebla con el mapa alejado en «Bajo»; como mucho 1.500 piezas de niebla; el rastro se redibuja cada 30 s |
+
+El límite de piezas de niebla y el refresco del rastro no aparecen como ajustes propios: solo los
+cambian estos preajustes.
+
 ## Requisitos
 
 - Android 12 (API 31) o superior, móvil ARM.

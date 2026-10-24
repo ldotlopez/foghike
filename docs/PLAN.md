@@ -22,7 +22,6 @@
 
 - **Export / import data and settings (idea).** Let the user save the database (tracks, points, revealed cells) and the settings to a file and restore them, e.g. to move to another phone or keep a backup. An imported file is untrusted: limit its size and validate it as for exchange files.
 - **Cycling profile (idea).** A set of settings tuned for riding a bike (e.g. GPS interval, reveal radius, trail), chosen when starting a track (walking or cycling).
-- **Setting presets: "Battery saver" and "Old device".** Two switches that each set a group of the existing settings to fixed values; while a preset is on, the settings it controls are shown disabled in the UI. Pick which settings each preset covers (e.g. GPS interval, fog texture/animation, LOD detail). Document the behaviour and the affected settings in the user manual (`README.md`).
 
 ## Release
 
