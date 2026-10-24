@@ -4,7 +4,6 @@
 
 - **Animated fog (optional).** Setting to show real-looking moving fog, generated procedurally (e.g. scrolling/evolving noise), only while the screen is on and the map is visible; stop animating when the screen is off or the app is in the background. Default stays the current static texture to save battery.
 - **Soft fog edges.** The fog still ends in hard cell-shaped edges; blur (feather) the border so it looks more natural.
-- **100 % opacity is not fully opaque.** At 100 % the map still shows through the fog. Likely cause: `fogTexture` (`ui/FogLayer.kt`) gives each pixel an alpha of 205–255 ("thinner patches let a hint of the map through"), and the layer opacity only multiplies it. Make 100 % mean fully covered (e.g. scale the texture alpha towards 255 as the opacity approaches 100 %, or keep the texture opaque and let the opacity do the thinning); the Settings preview must match.
 - **Less visible fog pattern.** At low zoom the 256 px texture visibly repeats as a grid of blobs; use a larger texture or broader noise (lower-frequency octaves).
 
 ## Tracks
