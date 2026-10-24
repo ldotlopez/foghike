@@ -47,7 +47,7 @@ Not exposed, decided on 2026-10-24: the tile limit per download (`MAX_TILES_PER_
 | Constant | File | Value | Effect | Setting? |
 | --- | --- | --- | --- | --- |
 | `trailRefreshMs` | `core/Settings.kt` | 10 s, 30 s with slow phone or battery saver | How often the trail is redrawn with the screen on | Only through the two switches |
-| Position marker | `showUserLocation` in `ui/MainActivity.kt` (`RenderMode.COMPASS`) | Dot with an arrow towards where the phone points | — | No (a red arrow is planned in `PLAN.md`) |
+| Position marker | `showUserLocation` in `ui/MainActivity.kt` (`RenderMode.COMPASS`) | Red compass needle (`location_needle`) towards where the phone points, white pivot (`location_pivot`, gray without a recent fix) | — | No |
 
 ### GPS tracking
 
