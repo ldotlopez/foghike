@@ -19,7 +19,7 @@ The design document is the source of truth: `FogHike — Documento de diseño.md
 ## Stack
 
 - Kotlin, single Android module `app`, application id `com.cuarentaydos.foghike`.
-- UI: Jetpack Compose + Material 3 (dynamic color). One Activity per screen calling `setContent`; no Navigation, ViewModel or DI libraries. The MapLibre `MapView` is created and lifecycle-driven by its Activity and shown with `AndroidView`. Screen layouts (`ui/*Screen.kt`) take values and callbacks and hold no app state.
+- UI: Jetpack Compose + Material 3 with a fixed brand palette (`ui/Color.kt`, decision 0006). Follow `docs/ui/guidelines.md` and the screen specs in `docs/ui/screens/`. One Activity per screen calling `setContent`; no Navigation, ViewModel or DI libraries. The MapLibre `MapView` is created and lifecycle-driven by its Activity and shown with `AndroidView`. Screen layouts (`ui/*Screen.kt`) take values and callbacks and hold no app state.
 - MapLibre Native (Android) for the map; local HTTP server on 127.0.0.1 serves tiles from `.mbtiles` files (cleartext allowed only for that address).
 - Room ≥ 2.7 with KSP; Fused Location Provider (Play Services); coroutines/Flow.
 - `minSdk = 31` (Android 12) — old phones are used as hiking GPS units. `targetSdk`/`compileSdk` = latest stable.
@@ -33,7 +33,7 @@ Code lives in `app/src/main/java/com/cuarentaydos/foghike/`:
 - `data/` — Room entities, DAOs, database only. LOD cells share `revealed_cell` (the id encodes the cell size).
 - `core/` — app logic used by screens and services, no Android: `Exploration.kt` (`recordPoints`: the single path from GPS points to stored points and revealed cells, used by tracking and every importer; `importTrack` for whole routes), `FogCells.kt` (fog pieces for an area), `Trail.kt` (recent trail segments).
 - Root — `FogHikeApp` (builds the database and tile server; the one Android-specific DB file).
-- `tiles/` — local tile server and IGN download to MBTiles. `gpx/` — GPX reader. `tracking/` — foreground tracking service. `ui/` — the two screens (Activity + `*Screen.kt` Compose layout), `Theme.kt` (Material 3 theme, shared panels and buttons), map style JSON, fog and trail layers.
+- `tiles/` — local tile server and IGN download to MBTiles. `gpx/` — GPX reader. `tracking/` — foreground tracking service. `ui/` — the two screens (Activity + `*Screen.kt` Compose layout), `Color.kt` (generated palette and map layer colors), `Theme.kt` (Material 3 theme, shared buttons, help and tooltips), map style JSON, fog and trail layers.
 - `tools/build_spain_mbtiles.py` — generates the bundled `app/src/main/assets/spain.mbtiles` (zoom 5–9).
 
 `geo/`, `data/` and `core/` will move to a KMP `shared` module when iOS is ported. Activities, services and workers are platform glue (permissions, files, MapLibre drawing, showing results); any computation or decision iOS would also need goes in `core/`, `geo/` or `data/`, without Android, MapLibre or `java.*` (see decision 0004 for the two known exceptions). Do not create that module, or repository interfaces, before then.
@@ -56,6 +56,7 @@ Code lives in `app/src/main/java/com/cuarentaydos/foghike/`:
 
 - `./gradlew assembleDebug` — build.
 - `./gradlew test` — JVM unit tests (grid and fog geometry live here; add tests for new `geo/` logic).
+- `./gradlew recordRoborazziDebug` / `verifyRoborazziDebug` — write / compare the UI reference screenshots in `app/src/test/screenshots/`.
 - `./gradlew installDebug` — install on a connected device.
 
 The project has never been built on a device yet; expect to adjust Gradle/Kotlin/library versions on first sync.

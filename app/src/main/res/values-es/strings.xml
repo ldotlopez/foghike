@@ -35,4 +35,6 @@
     <string name="background_location_why">Para no perder puntos GPS si Android detiene la app mientras exploras, elige \"Permitir todo el tiempo\" en la siguiente pantalla.</string>
     <string name="continue_button">Continuar</string>
     <string name="not_now">Ahora no</string>
+    <string name="action_help">Ayuda</string>
+    <string name="close">Cerrar</string>
 </resources>

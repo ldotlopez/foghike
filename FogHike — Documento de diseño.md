@@ -33,7 +33,7 @@ El stack elegido es Kotlin Multiplatform con MapLibre nativo, priorizando tener 
 
 - **Multiplataforma:** hoy el código es Kotlin para Android, organizado para pasar a Kotlin Multiplatform sin reescribirlo. Se pensó el stack con una futura versión iOS en mente y se compararon Kotlin Multiplatform, Flutter y React Native. Flutter y React Native se descartaron por peor rendimiento en overlays personalizados sobre el mapa.
 - **Mapa:** MapLibre, que tiene SDK nativo en Android e iOS.
-- **Interfaz:** Jetpack Compose con Material 3 y color dinámico (los colores salen del fondo de pantalla del teléfono, disponible desde Android 12). El mapa sigue siendo la vista nativa de MapLibre, que Compose coloca bajo los paneles con `AndroidView`; cada pantalla es una Activity sin librería de navegación ni ViewModel. Al portar a iOS se puede pasar a Compose Multiplatform y compartir las pantallas, o hacerlas en SwiftUI.
+- **Interfaz:** Jetpack Compose con Material 3 y una paleta fija de marca generada a partir del verde del icono (`#3DDC84`), en claro y oscuro. Las reglas de diseño de cada pantalla están en `docs/ui/`. El mapa sigue siendo la vista nativa de MapLibre, que Compose coloca bajo los paneles con `AndroidView`; cada pantalla es una Activity sin librería de navegación ni ViewModel. Al portar a iOS se puede pasar a Compose Multiplatform y compartir las pantallas, o hacerlas en SwiftUI.
 - **Un solo módulo:** hoy existe únicamente el módulo Android `app`. La lógica pura (`geo/` y `data/`) se extraerá a un módulo `shared` de KMP cuando haga falta portar a iOS, no antes.
 - **Persistencia:** Room (2.7 o superior, con KSP). Desde la 2.7 Room también funciona en iOS dentro de Kotlin Multiplatform con su driver SQLite incluido, así que al portar no hace falta cambiar a SQLDelight: basta con que `data/` se escriba desde hoy de forma compatible (ver «Estructura y convenciones»).
 - **Versiones de Android:** mínimo Android 12 (API 31), porque algunos usuarios usan móviles antiguos como GPS de senderismo; `targetSdk` y `compileSdk` en la última versión estable. Ver «Compatibilidad con Android 12».
@@ -310,7 +310,7 @@ El siguiente paso lógico es generar el mapa general y probar la app en un dispo
 - Distribución: APK firmado directo, siempre con la misma clave.
 - Niebla por capas: cubre toda la pantalla; se calcula solo para la ventana visible con margen y con el nivel de detalle que corresponde al zoom.
 - Persistencia: Room KMP (≥ 2.7) en lugar de migrar a SQLDelight; `data/` se escribe compatible desde hoy.
-- Interfaz: Jetpack Compose con Material 3; el mapa sigue como vista nativa dentro de `AndroidView`. Compose Multiplatform o SwiftUI se decide al portar a iOS.
+- Interfaz: Jetpack Compose con Material 3 y paleta fija de marca (no color dinámico); el mapa sigue como vista nativa dentro de `AndroidView`. Solo vertical. Barras flotantes con iconos en las pantallas de mapa, ayuda en un `(?)` y capturas de referencia con Roborazzi. Compose Multiplatform o SwiftUI se decide al portar a iOS.
 - Lógica compartible: lo que iOS también necesitaría vive en `core/`, `geo/` y `data/`, sin Android; pantallas y servicios solo hacen de pegamento con la plataforma. Sin módulo `shared` ni interfaces hasta portar.
 - Versión mínima: Android 12 (API 31).
 - Marca: la app se llama «Hike Explorer» para el usuario; FogHike se mantiene como nombre interno (paquete, `applicationId`, clases, ficheros y documentación técnica).

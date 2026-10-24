@@ -15,9 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.cuarentaydos.foghike.R
-import org.maplibre.android.maps.MapView
 import kotlin.math.roundToInt
 
 /**
@@ -26,7 +24,7 @@ import kotlin.math.roundToInt
  */
 @Composable
 fun MainScreen(
-    mapView: MapView,
+    map: @Composable () -> Unit,
     cellCount: Int,
     mapCount: Int,
     tracking: Boolean,
@@ -37,7 +35,7 @@ fun MainScreen(
     onImportGpx: () -> Unit,
 ) {
     Box(Modifier.fillMaxSize().background(MAP_BACKGROUND_COLOR)) {
-        AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
+        map()
 
         MapPanel(WindowInsetsSides.Top, Modifier.align(Alignment.TopCenter)) {
             Text(stringResource(R.string.status, cellCount, mapCount))

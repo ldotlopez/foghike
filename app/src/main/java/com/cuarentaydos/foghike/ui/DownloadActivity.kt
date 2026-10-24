@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.view.MotionEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,8 +76,8 @@ class DownloadActivity : ComponentActivity() {
             m.setUpCommon()
             m.setStyle(Style.Builder().fromJson(mapStyleJson(app.tileServer, emptyList(), onlineIgn = true))) { style ->
                 style.addSource(areaSource)
-                style.addLayer(FillLayer("areas-fill", "areas").withProperties(fillColor("#ffcc00"), fillOpacity(0.25f)))
-                style.addLayer(LineLayer("areas-line", "areas").withProperties(lineColor("#ffcc00"), lineWidth(3f)))
+                style.addLayer(FillLayer("areas-fill", "areas").withProperties(fillColor(AREA_COLOR), fillOpacity(0.25f)))
+                style.addLayer(LineLayer("areas-line", "areas").withProperties(lineColor(AREA_COLOR), lineWidth(3f)))
                 m.moveCamera(CameraUpdateFactory.newLatLngBounds(SPAIN_BOUNDS.toLatLngBounds(), 20))
                 m.centerOnUser(this, AREA_PICK_ZOOM)
             }
@@ -84,7 +87,7 @@ class DownloadActivity : ComponentActivity() {
 
         setContent {
             FogHikeTheme {
-                DownloadScreen(mapView, message, onClear = ::clearAreas, onDownload = ::download)
+                DownloadScreen({ AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize()) }, message, onClear = ::clearAreas, onDownload = ::download)
             }
         }
 

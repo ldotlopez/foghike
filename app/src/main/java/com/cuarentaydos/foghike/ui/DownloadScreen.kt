@@ -19,9 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.cuarentaydos.foghike.R
-import org.maplibre.android.maps.MapView
 
 /**
  * Download screen layout: the map (where areas are drawn) fills the screen, with the help on top and
@@ -29,7 +27,7 @@ import org.maplibre.android.maps.MapView
  */
 @Composable
 fun DownloadScreen(
-    mapView: MapView,
+    map: @Composable () -> Unit,
     message: String,
     onClear: () -> Unit,
     onDownload: (minZoom: String, maxZoom: String) -> Unit,
@@ -39,7 +37,7 @@ fun DownloadScreen(
     var maxZoom by rememberSaveable { mutableStateOf("16") }
 
     Box(Modifier.fillMaxSize().background(MAP_BACKGROUND_COLOR)) {
-        AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
+        map()
 
         MapPanel(WindowInsetsSides.Top, Modifier.align(Alignment.TopCenter)) {
             Text(stringResource(R.string.download_help))

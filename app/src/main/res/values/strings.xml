@@ -38,4 +38,6 @@
     <string name="background_location_why">So no GPS points are lost if Android stops the app while you explore, choose \"Allow all the time\" on the next screen.</string>
     <string name="continue_button">Continue</string>
     <string name="not_now">Not now</string>
+    <string name="action_help">Help</string>
+    <string name="close">Close</string>
 </resources>
