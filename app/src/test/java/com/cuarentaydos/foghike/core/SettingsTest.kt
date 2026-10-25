@@ -21,6 +21,8 @@ class SettingsTest {
         val slow = AppSettings(slowPhone = true, fogDetail = 2)
         assertEquals(8.0, slow.minCellPixels, 0.0)
         assertEquals(1_500, slow.maxFogRects)
+        assertEquals(0, slow.effectiveFogEdge)
+        assertEquals(3, AppSettings().effectiveFogEdge)
         assertEquals(30_000L, slow.trailRefreshMs)
 
         val saver = AppSettings(batterySaver = true, gpsIntervalSeconds = 2)

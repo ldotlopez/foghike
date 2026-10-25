@@ -49,4 +49,32 @@ class FogTest {
         assertTrue(fogDensity(1_200, 3) in 0.3f..0.6f)
         assertTrue(fogDensity(100, 2) > fogDensity(1_000, 2))
     }
+
+    private fun List<Pair<Box, Float>>.densityAt(p: LatLon) = filter { it.first.has(p) }.map { it.second }
+
+    @Test
+    fun softFogWithNothingRevealedIsOneRectangle() {
+        assertEquals(listOf(box to 1f), softFogRects(box, 25, emptyList(), 3))
+    }
+
+    @Test
+    fun softFogFadesAcrossTheEdgeWithoutOverlaps() {
+        val c = cellAt(LatLon(40.005, -3.995), 25)
+        val block = (-2..2).flatMap { dr -> (-2..2).map { dc -> Cell(25, c.row + dr, c.col + dc) } }
+        val pieces = softFogRects(box, 25, block, 3)
+        assertTrue(pieces.all { it.second > 0f && it.second <= 1f })
+        // Pieces never overlap: their area is the box minus what is left fully clear.
+        val clearArea = box.area() - pieces.sumOf { it.first.area() }
+        assertTrue(clearArea > 0 && clearArea < block.sumOf { it.bounds().area() })
+        // Clear in the middle, partial fog on both sides of the edge, full fog far away.
+        assertEquals(emptyList<Float>(), pieces.densityAt(c.center()))
+        val edgeIn = Cell(25, c.row, c.col + 2).bounds()
+        val edgeOut = Cell(25, c.row, c.col + 3).bounds()
+        val y = (edgeIn.south + edgeIn.north) / 2
+        val inside = pieces.densityAt(LatLon(y, edgeIn.east - (edgeIn.east - edgeIn.west) / 6)).single()
+        val outside = pieces.densityAt(LatLon(y, edgeOut.west + (edgeOut.east - edgeOut.west) / 6)).single()
+        assertTrue(inside in 0.3f..0.5f)
+        assertTrue(outside in 0.5f..0.7f)
+        assertEquals(listOf(1f), pieces.densityAt(LatLon(40.0001, -3.9999)))
+    }
 }

@@ -125,12 +125,16 @@
     <string name="fog_mode_density">Thinner the more you explored</string>
     <string name="fog_mode_any_cell">Clear if anything inside is explored</string>
     <string name="slow_phone">Old device</string>
-    <string name="slow_phone_detail">Low fog detail, simpler fog and trail redrawn every 30 s</string>
+    <string name="slow_phone_detail">Low fog detail, hard fog edges, simpler fog and trail redrawn every 30 s</string>
     <string name="set_by_preset">Set by %1$s</string>
     <string name="fog_detail">Fog detail when zoomed out</string>
     <string name="detail_high">High</string>
     <string name="detail_medium">Medium</string>
     <string name="detail_low">Low</string>
+    <string name="fog_edge">Soft fog edges</string>
+    <string name="fog_edge_off">Off</string>
+    <string name="fog_edge_low">Low</string>
+    <string name="fog_edge_high">High</string>
     <string name="gps_interval">GPS interval</string>
     <string name="seconds">%1$d s</string>
     <string name="user_zoom">Zoom when opening the map</string>

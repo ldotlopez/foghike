@@ -30,7 +30,8 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 │   50 m                               │
 │   Will be recalculated when you …    │  note (bodySmall, tertiary) while changed
 │   Reveal radius · Fog when zoomed out│
-│   Old device (switch) · Fog detail   │  fog detail disabled while Old device is on
+│   Old device (switch) · Fog detail   │  fog detail and soft edges disabled while Old device is on
+│   Soft fog edges                     │
 │   GPS interval · Zoom when opening   │  GPS interval disabled while Battery saver is on
 │   Recent trail (switch)              │  when on: duration, color (swatch), width
 │ Offline maps                         │  section header
@@ -59,8 +60,9 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 | Advanced | Cell size | Choice: 10 / 25 / 50 / 100 m. Recalculation note while changed | `cellSize` | 25 m |
 | Advanced | Reveal radius | Choice: 1.2× / 2× / 3× the cell, with the meters for the current cell size. Recalculation note while changed | `radiusFactor` | 1.2× |
 | Advanced | Fog when zoomed out | Choice: thinner the more explored (`DENSITY`) / clear if anything inside is explored (`ANY_CELL`) | `fogMode` | `DENSITY` |
-| Advanced | Old device | Switch (preset). Fog detail Low (8 px), at most 1,500 fog pieces, trail redrawn every 30 s. Shows fog detail disabled at Low with "Set by Old device" | `slowPhone` | Off |
+| Advanced | Old device | Switch (preset). Fog detail Low (8 px), soft fog edges off, at most 1,500 fog pieces, trail redrawn every 30 s. Shows fog detail disabled at Low and soft fog edges at Off, with "Set by Old device" | `slowPhone` | Off |
 | Advanced | Fog detail when zoomed out | Choice: High / Medium / Low (2 / 4 / 8 px). Disabled, showing Low, while Old device is on | `fogDetail` | Medium |
+| Advanced | Soft fog edges | Choice: Off / Low / High (0 / 3 / 5 pieces per cell side). Disabled, showing Off, while Old device is on | `fogEdge` | Low |
 | Advanced | GPS interval | Choice: 2 / 5 / 10 / 30 s. Disabled, showing 15 s, while Battery saver is on | `gpsInterval` | 5 s |
 | Advanced | Zoom when opening the map | Choice: 12–17. Only at startup; the my location button keeps the current zoom | `userZoom` | 14 |
 | Advanced | Recent trail | Switch. When on, shows the three rows below | `showTrail` | On |

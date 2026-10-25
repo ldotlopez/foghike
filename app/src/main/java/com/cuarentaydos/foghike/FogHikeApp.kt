@@ -7,6 +7,7 @@ import androidx.room.Room
 import com.cuarentaydos.foghike.core.AppSettings
 import com.cuarentaydos.foghike.core.CELL_SIZES
 import com.cuarentaydos.foghike.core.FOG_DETAILS
+import com.cuarentaydos.foghike.core.FOG_EDGES
 import com.cuarentaydos.foghike.core.FogMode
 import com.cuarentaydos.foghike.core.GPS_INTERVALS
 import com.cuarentaydos.foghike.core.LocationMode
@@ -126,6 +127,7 @@ private fun SharedPreferences.readSettings(): AppSettings {
         fogMode = FogMode.entries.firstOrNull { it.name == getString("fogMode", null) } ?: d.fogMode,
         slowPhone = getBoolean("slowPhone", d.slowPhone),
         fogDetail = int("fogDetail", FOG_DETAILS, d.fogDetail),
+        fogEdge = int("fogEdge", FOG_EDGES, d.fogEdge),
         gpsIntervalSeconds = int("gpsInterval", GPS_INTERVALS, d.gpsIntervalSeconds),
         userZoom = int("userZoom", USER_ZOOMS, d.userZoom),
         showTrail = getBoolean("showTrail", d.showTrail),
@@ -143,6 +145,7 @@ private fun SharedPreferences.Editor.putSettings(s: AppSettings) = this
     .putString("fogMode", s.fogMode.name)
     .putBoolean("slowPhone", s.slowPhone)
     .putInt("fogDetail", s.fogDetail)
+    .putInt("fogEdge", s.fogEdge)
     .putInt("gpsInterval", s.gpsIntervalSeconds)
     .putInt("userZoom", s.userZoom)
     .putBoolean("showTrail", s.showTrail)

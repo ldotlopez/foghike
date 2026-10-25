@@ -64,6 +64,7 @@ import com.cuarentaydos.foghike.R
 import com.cuarentaydos.foghike.core.AppSettings
 import com.cuarentaydos.foghike.core.CELL_SIZES
 import com.cuarentaydos.foghike.core.FOG_DETAILS
+import com.cuarentaydos.foghike.core.FOG_EDGES
 import com.cuarentaydos.foghike.core.FogMode
 import com.cuarentaydos.foghike.core.GPS_INTERVALS
 import com.cuarentaydos.foghike.core.LocationMode
@@ -170,6 +171,9 @@ fun SettingsScreen(
             ChoiceItem(stringResource(R.string.fog_detail), s.effectiveFogDetail, FOG_DETAILS, {
                 stringResource(when (it) { 2 -> R.string.detail_high; 4 -> R.string.detail_medium; else -> R.string.detail_low })
             }, setByPreset = R.string.slow_phone.takeIf { s.slowPhone }) { onSettings(s.copy(fogDetail = it)) }
+            ChoiceItem(stringResource(R.string.fog_edge), s.effectiveFogEdge, FOG_EDGES, {
+                stringResource(when (it) { 0 -> R.string.fog_edge_off; 3 -> R.string.fog_edge_low; else -> R.string.fog_edge_high })
+            }, setByPreset = R.string.slow_phone.takeIf { s.slowPhone }) { onSettings(s.copy(fogEdge = it)) }
             ChoiceItem(
                 stringResource(R.string.gps_interval), s.effectiveGpsIntervalSeconds, GPS_INTERVALS, { stringResource(R.string.seconds, it) },
                 setByPreset = R.string.battery_saver.takeIf { s.batterySaver },

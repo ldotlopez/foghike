@@ -11,13 +11,14 @@ val RADIUS_FACTORS = listOf(1.2, 2.0, 3.0)
 val TRAIL_MINUTES = listOf(15, 30, 60, 120)
 val TRAIL_WIDTHS = listOf(2, 4, 6)
 val FOG_DETAILS = listOf(2, 4, 8) // minimum on-screen cell size in px: high, medium, low detail
+val FOG_EDGES = listOf(0, 3, 5) // soft fog edge steps per cell side: off, low, high
 val GPS_INTERVALS = listOf(2, 5, 10, 30) // seconds
 val USER_ZOOMS = (12..17).toList()
 
 /**
  * The user's preferences. The presets [slowPhone] ("Old device") and [batterySaver] each override
  * several values at once; read the effective ones ([minCellPixels], [maxFogRects], [trailRefreshMs],
- * [gpsIntervalMs], or [effectiveFogDetail] / [effectiveGpsIntervalSeconds] to show them), never the
+ * [gpsIntervalMs], or [effectiveFogDetail] / [effectiveFogEdge] / [effectiveGpsIntervalSeconds] to show them), never the
  * overridden fields directly. Plain data: the Android side stores it.
  */
 data class AppSettings(
@@ -28,6 +29,7 @@ data class AppSettings(
     val fogMode: FogMode = FogMode.DENSITY,
     val slowPhone: Boolean = false,
     val fogDetail: Int = 4,
+    val fogEdge: Int = 3,
     val gpsIntervalSeconds: Int = 5,
     val userZoom: Int = 14,
     val showTrail: Boolean = true,
@@ -37,6 +39,7 @@ data class AppSettings(
 ) {
     val grid get() = RevealGrid(cellSize, cellSize * radiusFactor)
     val effectiveFogDetail get() = if (slowPhone) 8 else fogDetail
+    val effectiveFogEdge get() = if (slowPhone) 0 else fogEdge
     val effectiveGpsIntervalSeconds get() = if (batterySaver) 15 else gpsIntervalSeconds
     val minCellPixels get() = effectiveFogDetail.toDouble()
     val maxFogRects get() = if (slowPhone) 1_500 else 5_000

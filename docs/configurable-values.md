@@ -14,8 +14,9 @@ Settings values live in `AppSettings` (`core/Settings.kt`: defaults, closed opti
 | Cell size | Settings → Advanced; `cellSize` | 10, 25, 50, 100 m | 25 m | Yes, when leaving Settings | Part of `RevealGrid` (`geo/Grid.kt`) |
 | Reveal radius | Settings → Advanced; `radiusFactor` | 1.2×, 2×, 3× the cell | 1.2× (30 m) | Yes, when leaving Settings | Also the GPS accuracy threshold of `isAccurate` |
 | Fog mode | Settings → Advanced; `fogMode` | `DENSITY` (thinner the more explored), `ANY_CELL` | `DENSITY` | No | See [0001](decisions/0001-low-zoom-fog-density.md) |
-| Old device | Settings → Advanced; `slowPhone` | On/off | Off | No | Preset: fog detail 8 px (Low), at most 1,500 fog pieces, trail refresh 30 s. While on, the fog detail row shows Low, disabled ("Set by Old device"); the user's own value is kept |
+| Old device | Settings → Advanced; `slowPhone` | On/off | Off | No | Preset: fog detail 8 px (Low), soft fog edges off, at most 1,500 fog pieces, trail refresh 30 s. While on, the fog detail and soft fog edges rows show Low and Off, disabled ("Set by Old device"); the user's own value is kept |
 | Fog detail | Settings → Advanced; `fogDetail` | High 2 px, Medium 4 px, Low 8 px | 4 px | No | `minPixels` of `lodLevelFor`: minimum on-screen cell size before a coarser level |
+| Soft fog edges | Settings → Advanced; `fogEdge` | Off 0, Low 3, High 5 | Low (3) | No | Pieces per cell side in the fade across each fog edge (`softFogRects`, fine level only); the fade always spans one cell on each side. `effectiveFogEdge` is 0 with Old device |
 | GPS interval | Settings → Advanced; `gpsInterval` | 2, 5, 10, 30 s | 5 s | No | Read when exploring starts |
 | Zoom when opening the map | Settings → Advanced; `userZoom` | 12–17 | 14 | No | Only at startup, when centering on the user. The my location button keeps the current zoom |
 | Recent trail | Settings → Advanced; `showTrail` | On/off | On | No | When on, shows the three rows below |

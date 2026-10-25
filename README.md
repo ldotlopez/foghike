@@ -24,7 +24,7 @@ vuelven los valores que hubieras elegido.
 | Preajuste | Dónde | Qué fija |
 | --- | --- | --- |
 | Ahorro de batería | Ajustes → Mapa | Intervalo del GPS a 15 s; el rastro se redibuja cada 30 s |
-| Dispositivo antiguo | Ajustes → Avanzado | Detalle de la niebla con el mapa alejado en «Bajo»; como mucho 1.500 piezas de niebla; el rastro se redibuja cada 30 s |
+| Dispositivo antiguo | Ajustes → Avanzado | Detalle de la niebla con el mapa alejado en «Bajo»; bordes suaves de la niebla desactivados; como mucho 1.500 piezas de niebla; el rastro se redibuja cada 30 s |
 
 El límite de piezas de niebla y el refresco del rastro no aparecen como ajustes propios: solo los
 cambian estos preajustes.

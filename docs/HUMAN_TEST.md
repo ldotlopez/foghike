@@ -10,6 +10,7 @@ What can't be checked with adb or JVM tests: it needs walking, turning the phone
 - [ ] **Turn location off mid-hike.** The notification warns; once it is back on, recording continues in the same track.
 - [ ] **Partial fog at low zoom.** Zooming out, the walked area looks lighter than the rest but not fully clear; zooming in, the path is clean.
 - [ ] **Battery.** Note the percentage at the start and the end, with the screen off most of the time. Repeat for a while with the screen on (GPS and the arrow's compass) to compare.
+- [ ] **Soft fog edges (decision 0017):** at zoom 16–18 the fog fades across about two cells around the walked area instead of ending in square steps, with no darker seams between pieces and the noise texture continuous across the fade; High looks smoother than Low; Off and Old device bring back the hard edges (and show the row disabled at Off). Zoom out until the coarse fog takes over: no stutter when panning. Note how it looks at fog opacity 100 % and 70 %.
 
 ## Offline maps
 
