@@ -25,6 +25,9 @@
   - Steps: install SDK 37 and set `compileSdk = 37` (targetSdk can stay); update the Compose BOM; replace the body of `MapToolbar` with `HorizontalFloatingToolbar(expanded, floatingActionButton = …)`, keeping its signature so the screens don't change; move the collapsed handle into the toolbar if the component supports it, or keep it outside; re-record the Roborazzi references and compare.
   - Then remove the "Toolbar" exception from `docs/ui/screens/main.md` and `download.md`, and mark decision 0007 superseded.
   - Same check for other Expressive components the specs could use then (e.g. `FloatingToolbarDefaults.VibrantFloatingActionButton` for Explore).
+- **Real progress for long tasks.** While recalculating cells and downloading maps, show the percentage and the item count, e.g. "10% · item 4/45", and drive the progress bar with that fraction instead of the indeterminate (oscillating) one.
+  - Today the bars are indeterminate: `LinearProgressIndicator(Modifier.fillMaxWidth())` in `ui/SettingsScreen.kt`, `ui/TracksScreen.kt` and `ui/OfflineMaps.kt`. `DownloadWorker` already reports `KEY_DONE`/`KEY_TOTAL` via `setProgress`, so downloads only need the UI to read them; recalculations (e.g. `deleteTracks` rebuilding cells) need to report done/total.
+  - Use the determinate `LinearProgressIndicator(progress = { done / total.toFloat() })`; strings in both `strings.xml` files.
 
 ## Settings
 
