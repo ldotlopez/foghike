@@ -49,13 +49,14 @@ cambian estos preajustes.
 
 ## Instalación
 
-La app no está en Google Play. La [página web](https://ldotlopez.github.io/foghike/) lo explica paso a
+La app no está en Google Play. La [página web](https://ldotlopez.github.io/hike-explorer/) lo explica paso a
 paso. Hay tres formas de instalarla, todas con el mismo APK firmado:
 
 - **F-Droid (recomendado, se actualiza sola).** En la app F-Droid, Ajustes → Repositorios → «+», añade
-  `https://ldotlopez.github.io/foghike/repo?fingerprint=D9BD474B59521305CF0E0A462818989C60D0D21BDDD797523941D5184F6E5178`
-  (o abre [la página del repositorio](https://ldotlopez.github.io/foghike/repo/) y escanea el QR).
-- **Descarga manual** del APK desde [GitHub Releases](https://github.com/ldotlopez/foghike/releases).
+  `https://ldotlopez.github.io/hike-explorer/repo?fingerprint=D9BD474B59521305CF0E0A462818989C60D0D21BDDD797523941D5184F6E5178`
+  (o abre [la página del repositorio](https://ldotlopez.github.io/hike-explorer/repo/) y escanea el QR).
+  Si lo añadiste antes con la dirección antigua (`…github.io/foghike/repo`), quítalo y añade esta.
+- **Descarga manual** del APK desde [GitHub Releases](https://github.com/ldotlopez/hike-explorer/releases).
   [Obtainium](https://github.com/ImranR98/Obtainium) puede seguir esas releases y avisar de nuevas versiones.
 - **Con `adb`** desde el ordenador, como se explica abajo.
 
@@ -78,7 +79,7 @@ La app no está en Google Play: se instala el APK a mano. Con `adb` se hace desd
    ```
 
 4. **Descarga el APK** (`hike-explorer-<versión>.apk`) de la página de
-   [releases de GitHub](https://github.com/ldotlopez/foghike/releases) e instálalo:
+   [releases de GitHub](https://github.com/ldotlopez/hike-explorer/releases) e instálalo:
 
    ```sh
    adb install -r hike-explorer-v0.1.apk
