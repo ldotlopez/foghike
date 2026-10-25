@@ -109,6 +109,7 @@ class DownloadActivity : ComponentActivity() {
         val minZoom = prefs.getInt("downloadMinZoom", DOWNLOAD_ZOOMS.first).coerceIn(0, IGN_MAX_ZOOM)
         zoom = minZoom..prefs.getInt("downloadMaxZoom", DOWNLOAD_ZOOMS.last).coerceIn(minZoom, IGN_MAX_ZOOM)
         MapLibre.getInstance(this)
+        MapLibre.setConnected(true) // the general map comes from 127.0.0.1 and must show offline too
         mapView = MapView(this) // driven by the activity lifecycle, placed on screen by Compose
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync { m ->

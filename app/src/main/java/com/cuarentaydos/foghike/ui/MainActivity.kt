@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
@@ -132,6 +133,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         MapLibre.getInstance(this)
+        // Tiles come from 127.0.0.1: without this, MapLibre stops loading them when the phone has no network.
+        MapLibre.setConnected(true)
         // The map stays a classic Android view, created and driven by the activity (onStart, onStop...);
         // Compose only places it on screen, under the panels.
         mapView = MapView(this)
@@ -306,7 +309,9 @@ class MainActivity : ComponentActivity() {
             .checkLocationSettings(LocationSettingsRequest.Builder().addLocationRequest(request).build())
             .addOnSuccessListener { startTracking() }
             .addOnFailureListener { e ->
-                if (e is ResolvableApiException) enableLocation.launch(IntentSenderRequest.Builder(e.resolution).build())
+                // Airplane mode or Google Location Accuracy off fail this check, yet GPS alone is enough.
+                if (getSystemService(LocationManager::class.java).isLocationEnabled) startTracking()
+                else if (e is ResolvableApiException) enableLocation.launch(IntentSenderRequest.Builder(e.resolution).build())
                 else showMessage(getString(R.string.location_required))
             }
     }

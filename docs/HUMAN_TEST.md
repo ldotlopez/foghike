@@ -7,6 +7,7 @@ What can't be checked with adb or JVM tests: it needs walking, turning the phone
 - [ ] **Screen off for the whole hike.** Back home, the track has no gaps except indoors or where the sky is blocked. The 15 min gap on 24 Oct was lost satellites, not the app.
 - [ ] **Heading arrow.** Turning on the spot, the red arrow points where you face, without lag or jumps. If it drifts, calibrate the compass (figure eight in the air) and repeat. The arrow is easy to see over bright and dark imagery and over red or brown terrain, and its pivot turns gray after 30 s without a fix (e.g. indoors).
 - [ ] **Trail.** It appears behind you while walking (up to 10 s late) and the stretch from an hour ago has almost faded out.
+- [ ] **Airplane mode on the hike,** with Google Location Accuracy off too: the downloaded imagery shows, exploring starts and the track records real GPS points.
 - [ ] **Turn location off mid-hike.** The notification warns; once it is back on, recording continues in the same track.
 - [ ] **Partial fog at low zoom.** Zooming out, the walked area looks lighter than the rest but not fully clear; zooming in, the path is clean.
 - [ ] **Battery.** Note the percentage at the start and the end, with the screen off most of the time. Repeat for a while with the screen on (GPS and the arrow's compass) to compare.
