@@ -43,6 +43,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.maplibre.android.MapLibre
@@ -58,6 +59,7 @@ import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 
 private const val CAMERA_TRANSITION_MS = 750L
+private const val RESUME_FOLLOWING_MS = 5_000L
 
 /**
  * Main screen: offline maps under the fog, the recent trail and the user's position arrow, the cell
@@ -79,16 +81,13 @@ class MainActivity : ComponentActivity() {
     private var locationMode by mutableStateOf(LocationMode.FREE)
     private val snackbar = SnackbarHostState()
 
-    // MapLibre is the source of truth for the camera mode: dragging the map leaves follow mode by itself.
+    // A map gesture makes MapLibre drop tracking; locationMode keeps the user's choice and comes back
+    // RESUME_FOLLOWING_MS after the camera stops (a new gesture restarts the wait).
+    private var followingPaused = false
+    private var resumeFollowing: Job? = null
     private val cameraTracking = object : OnCameraTrackingChangedListener {
-        override fun onCameraTrackingDismissed() {}
-        override fun onCameraTrackingChanged(mode: Int) {
-            locationMode = when (mode) {
-                CameraMode.TRACKING -> LocationMode.FOLLOW
-                CameraMode.TRACKING_COMPASS -> LocationMode.COMPASS
-                else -> LocationMode.FREE
-            }
-        }
+        override fun onCameraTrackingDismissed() { if (locationMode != LocationMode.FREE) followingPaused = true }
+        override fun onCameraTrackingChanged(mode: Int) {}
     }
 
     // Starting exploration is a chain of steps, each one may open a system screen and continues in
@@ -149,7 +148,16 @@ class MainActivity : ComponentActivity() {
                 insets
             }
             ViewCompat.requestApplyInsets(mapView)
-            m.addOnCameraIdleListener { fog?.refresh(m) }
+            m.addOnCameraMoveStartedListener { reason ->
+                if (reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) resumeFollowing?.cancel()
+            }
+            m.addOnCameraIdleListener {
+                fog?.refresh(m)
+                if (followingPaused) {
+                    resumeFollowing?.cancel()
+                    resumeFollowing = lifecycleScope.launch { delay(RESUME_FOLLOWING_MS); setLocationMode(m, locationMode) }
+                }
+            }
             lifecycleScope.launch { reloadMaps() }
         }
 
@@ -234,12 +242,16 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Puts the camera in [mode] at the current zoom; [cameraTracking] then updates [locationMode].
+     * Puts the camera in [mode] at the current zoom and ends any pause left by a gesture.
      * Leaving Compass turns north up.
      */
     private fun setLocationMode(m: MapLibreMap, mode: LocationMode) {
         val location = m.locationComponent
         if (!location.isLocationComponentActivated) return
+        // Before the camera calls: dropping tracking for Free must not count as a gesture pause.
+        followingPaused = false
+        resumeFollowing?.cancel()
+        locationMode = mode
         when (mode) {
             LocationMode.FREE -> {
                 location.cameraMode = CameraMode.NONE
@@ -367,6 +379,10 @@ class MainActivity : ComponentActivity() {
                 LocationComponentActivationOptions.builder(this@MainActivity, style).locationComponentOptions(icons).build()
             )
             isLocationComponentEnabled = true
+            // A style reload frames the new area, so it leaves following instead of pausing it.
+            followingPaused = false
+            resumeFollowing?.cancel()
+            locationMode = LocationMode.FREE
             cameraMode = CameraMode.NONE
             renderMode = RenderMode.COMPASS
             removeOnCameraTrackingChangedListener(cameraTracking) // activated again on every style reload
