@@ -356,7 +356,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * MapLibre's location component, drawn as a red compass needle pointing where the phone faces.
+     * MapLibre's location component, drawn as a red arrow pointing where the phone faces.
      * It follows the activity lifecycle, so GPS and compass stop with the screen off. Needs the
      * current style, so it is turned on again after every style reload.
      */
@@ -367,7 +367,7 @@ class MainActivity : ComponentActivity() {
         if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) return
         // In COMPASS render mode only the bearing icon rotates; foreground and background stay as its pivot.
         val icons = LocationComponentOptions.builder(this)
-            .bearingDrawable(R.drawable.location_needle)
+            .bearingDrawable(R.drawable.location_arrow)
             .foregroundDrawable(R.drawable.location_pivot)
             .backgroundDrawable(R.drawable.location_pivot)
             .foregroundDrawableStale(R.drawable.location_pivot)

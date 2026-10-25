@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pivot of location_needle, drawn over its center (MapLibre's foreground and background icons). -->
+<!-- Pivot of location_arrow, drawn over its center (MapLibre's foreground and background icons). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="8dp"
     android:height="8dp"

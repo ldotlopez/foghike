@@ -1,6 +1,6 @@
 # 0012. Red compass needle for the user's position
 
-- Status: Accepted
+- Status: Superseded by 0018
 - Date: 2026-10-24
 
 ## Context
