@@ -87,6 +87,7 @@ The first button of the toolbar pill (a `MapIconButton`, pinned: visible also wh
 - **Follow** centers the map on the user, keeping the current zoom, and keeps it centered as they move. Changing mode never zooms; only opening the map uses the "Zoom when opening the map" setting.
 - Dragging the map leaves follow mode. MapLibre does this by itself (`OnCameraTrackingChangedListener.onCameraTrackingDismissed`), and the button goes back to Free.
 - Leaving Compass resets the bearing to north.
+- MapLibre's own compass (shown only while the map is rotated; tapping it turns north up) sits at the top left, below the status chip: `compassGravity` TOP|START, margins 8 dp from the left and 72 dp below the status bar (8 dp padding + 56 dp chip row + 8 dp). It stays there when the chip is hidden while loading.
 - The screen opens in Free mode, centered on the user once, as today. The mode is not stored.
 - Without location permission, a tap starts the same permission request as the first launch. With no fix yet, a Snackbar says "Waiting for your location…".
 - **Long press** opens a `DropdownMenu` to pick any of the three modes directly (icon, name, radio button on the current one); the same permission and fix checks apply to Follow and Compass. Because the long press is taken, this button has no tooltip: the menu names the modes. Screen readers get the long-press action as "Choose location mode". The mode the map opens in is a setting (`docs/ui/screens/settings.md`).

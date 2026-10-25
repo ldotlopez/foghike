@@ -9,11 +9,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.view.Gravity
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -137,6 +140,15 @@ class MainActivity : ComponentActivity() {
         mapView.getMapAsync { m ->
             map = m
             m.setUpCommon()
+            // MapLibre's compass goes below the status chip: 8 dp padding + 56 dp row + 8 dp, past the system bars.
+            m.uiSettings.compassGravity = Gravity.TOP or Gravity.START
+            ViewCompat.setOnApplyWindowInsetsListener(mapView) { _, insets ->
+                val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+                val dp = resources.displayMetrics.density
+                m.uiSettings.setCompassMargins(bars.left + (8 * dp).toInt(), bars.top + (72 * dp).toInt(), 0, 0)
+                insets
+            }
+            ViewCompat.requestApplyInsets(mapView)
             m.addOnCameraIdleListener { fog?.refresh(m) }
             lifecycleScope.launch { reloadMaps() }
         }
