@@ -196,11 +196,12 @@ class MainActivity : ComponentActivity() {
         if (snackbar.showSnackbar(text, action, duration = SnackbarDuration.Long) == SnackbarResult.ActionPerformed) onAction()
     }
 
-    /** My location button tap: Free → Follow → Compass → Follow. */
+    /** My location button tap: Free → Follow → Compass → Free. */
     private fun nextLocationMode() = chooseLocationMode(
         when (locationMode) {
-            LocationMode.FREE, LocationMode.COMPASS -> LocationMode.FOLLOW
+            LocationMode.FREE -> LocationMode.FOLLOW
             LocationMode.FOLLOW -> LocationMode.COMPASS
+            LocationMode.COMPASS -> LocationMode.FREE
         }
     )
 

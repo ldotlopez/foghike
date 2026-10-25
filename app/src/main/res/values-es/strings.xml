@@ -32,7 +32,7 @@
     <string name="action_hide_toolbar">Ocultar acciones</string>
     <string name="action_follow">Centrar en mi ubicación</string>
     <string name="action_compass">Girar el mapa con la brújula</string>
-    <string name="action_north_up">Mantener el norte arriba</string>
+    <string name="action_north_up">Dejar de seguir, con el norte arriba</string>
     <string name="waiting_location">Esperando tu ubicación…</string>
     <string name="chip_status">%1$s celdas reveladas, %2$d mapas sin conexión</string>
     <string name="chip_cells">%1$s celdas reveladas</string>

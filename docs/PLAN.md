@@ -26,9 +26,6 @@
   - The 5 s timer restarts on every new gesture; picking a mode with the button during the pause cancels it.
   - Keep the zoom the user chose when restoring (only re-center, and re-apply the bearing in Compass).
   - Add the 5 s delay to `docs/configurable-values.md` and a walking check to `docs/HUMAN_TEST.md`.
-- **My location button cycles through only two modes.** A tap goes Free → Follow → Compass → Follow (`nextLocationMode` in `MainActivity`), so after the first tap it only toggles Follow ↔ Compass; Free is reached by dragging the map or the long-press menu. This matches the spec (`docs/ui/screens/main.md`, "My location button"), so fixing it is a spec change. Once the item above stops dragging from leaving Follow, Free would only be reachable through the long press.
-  - Cycle through all three: Free → Follow → Compass → Free (leaving Compass still turns north up).
-  - Update the spec table and the button descriptions (in Compass the next tap is Free, not `action_north_up` to Follow), re-record the Roborazzi references if they change.
 - **Map compass in an odd place.** MapLibre's compass (the north indicator shown when the map is rotated) uses its default position, top right, next to the help button; the code never sets it (`MapStyle.kt` only turns off logo and attribution). Move it with `uiSettings.compassGravity` / `setCompassMargins` to one of:
   - Below the status chip, top left (preferred: a fixed spot that doesn't depend on the toolbar).
   - Right of the bottom floating toolbar; its width changes when it collapses while exploring, so the compass would need to move with it.

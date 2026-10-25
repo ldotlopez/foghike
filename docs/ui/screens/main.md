@@ -82,7 +82,7 @@ The first button of the toolbar pill (a `MapIconButton`, pinned: visible also wh
 | --- | --- | --- | --- |
 | Free | `location_searching` | `NONE` | Follow |
 | Follow (north up) | `my_location` | `TRACKING` | Compass |
-| Compass (map rotates with the phone) | `explore` | `TRACKING_COMPASS` | Follow |
+| Compass (map rotates with the phone) | `explore` | `TRACKING_COMPASS` | Free |
 
 - **Follow** centers the map on the user, keeping the current zoom, and keeps it centered as they move. Changing mode never zooms; only opening the map uses the "Zoom when opening the map" setting.
 - Dragging the map leaves follow mode. MapLibre does this by itself (`OnCameraTrackingChangedListener.onCameraTrackingDismissed`), and the button goes back to Free.
@@ -174,7 +174,7 @@ New or changed keys (English / Spanish). Removed: `fog_opacity` (moves to Settin
 | `action_hide_toolbar` | Hide actions | Ocultar acciones |
 | `action_follow` | Center on my location | Centrar en mi ubicación |
 | `action_compass` | Rotate map with compass | Girar el mapa con la brújula |
-| `action_north_up` | Keep north up | Mantener el norte arriba |
+| `action_north_up` | Stop following, north up | Dejar de seguir, con el norte arriba |
 | `waiting_location` | Waiting for your location… | Esperando tu ubicación… |
 | `chip_status` | %1$s revealed cells, %2$d offline maps | %1$s celdas reveladas, %2$d mapas sin conexión |
 | `chip_no_maps` | No offline maps | Ningún mapa descargado |
