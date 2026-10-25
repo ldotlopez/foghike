@@ -15,6 +15,19 @@ FogHike es el nombre interno (paquete `com.cuarentaydos.foghike`, nombres de cla
 - Niebla dibujada por vista con niveles de detalle; opacidad ajustable en Ajustes → Avanzado.
 - Interfaz en inglés y español.
 
+## Capturas
+
+<p>
+<img src="fdroid/metadata/com.cuarentaydos.foghike/es/images/phoneScreenshots/1.png" width="30%" alt="Una senda de Picos de Europa despejada en la niebla">
+<img src="fdroid/metadata/com.cuarentaydos.foghike/es/images/phoneScreenshots/2.png" width="30%" alt="Montserrat con muchas rutas exploradas">
+<img src="fdroid/metadata/com.cuarentaydos.foghike/es/images/phoneScreenshots/3.png" width="30%" alt="Explorando, con el rastro naranja y la flecha de posición">
+<img src="fdroid/metadata/com.cuarentaydos.foghike/es/images/phoneScreenshots/4.png" width="30%" alt="Descarga de mapas: áreas dibujadas a mano y rango de zoom">
+<img src="fdroid/metadata/com.cuarentaydos.foghike/es/images/phoneScreenshots/5.png" width="30%" alt="Lista de rutas">
+<img src="fdroid/metadata/com.cuarentaydos.foghike/es/images/phoneScreenshots/6.png" width="30%" alt="Ajustes">
+</p>
+
+Rutas de ejemplo de OpenStreetMap (© colaboradores de OpenStreetMap, ODbL); ortofotos PNOA cedido por © Instituto Geográfico Nacional de España.
+
 ## Preajustes
 
 En Ajustes hay dos interruptores que fijan varios ajustes a la vez. Mientras uno está activo, los
