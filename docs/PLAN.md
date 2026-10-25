@@ -22,6 +22,22 @@
 
 ## UI
 
+- **Bug: moving the map drops Follow / Compass mode.** In Follow or Compass mode, dragging or zooming the map to look around switches the location mode to Free (MapLibre leaves `CameraMode.TRACKING*` on any gesture and `MainActivity` mirrors it). The mode should survive the gesture: pause following while the user moves the map, then restore the previous mode about 5 s after the last gesture. Invisible to the user: the my location button keeps showing the previous mode the whole time.
+  - The 5 s timer restarts on every new gesture; picking a mode with the button during the pause cancels it.
+  - Keep the zoom the user chose when restoring (only re-center, and re-apply the bearing in Compass).
+  - Add the 5 s delay to `docs/configurable-values.md` and a walking check to `docs/HUMAN_TEST.md`.
+- **My location button cycles through only two modes.** A tap goes Free → Follow → Compass → Follow (`nextLocationMode` in `MainActivity`), so after the first tap it only toggles Follow ↔ Compass; Free is reached by dragging the map or the long-press menu. This matches the spec (`docs/ui/screens/main.md`, "My location button"), so fixing it is a spec change. Once the item above stops dragging from leaving Follow, Free would only be reachable through the long press.
+  - Cycle through all three: Free → Follow → Compass → Free (leaving Compass still turns north up).
+  - Update the spec table and the button descriptions (in Compass the next tap is Free, not `action_north_up` to Follow), re-record the Roborazzi references if they change.
+- **Map compass in an odd place.** MapLibre's compass (the north indicator shown when the map is rotated) uses its default position, top right, next to the help button; the code never sets it (`MapStyle.kt` only turns off logo and attribution). Move it with `uiSettings.compassGravity` / `setCompassMargins` to one of:
+  - Below the status chip, top left (preferred: a fixed spot that doesn't depend on the toolbar).
+  - Right of the bottom floating toolbar; its width changes when it collapses while exploring, so the compass would need to move with it.
+  - Margins must account for the status bar and the chip height (the chip is hidden while loading). Add the position to `docs/ui/screens/main.md` and re-check the Roborazzi references.
+- **One-way red arrow for the user's position.** Today it is a two-ended compass needle (`location_needle`, decision 0012: red half towards the heading, white half behind). The author's original idea was the classic red navigation arrow seen in this kind of app: a single arrowhead pointing where the phone faces.
+  - Decision 0012 rejected "a filled red arrow only" because the white tail kept the axis readable over red or brown terrain; keep that with a white border plus the existing dark outline instead of a tail.
+  - Only the drawable changes: same 44 dp canvas, rotating around the position (the pivot at the arrow's center or dropped into it), `RenderMode.COMPASS`, gray stale variant kept.
+  - New decision superseding 0012; update the position text in `docs/design.md` and `docs/ui/screens/main.md`, and the "Heading arrow" check in `docs/HUMAN_TEST.md`.
+
 - **Material 3 floating toolbar (when material3 1.5 is stable).** The map toolbars are hand-made (`MapToolbar` in `ui/Theme.kt`, decision 0007) because `HorizontalFloatingToolbar` only exists from material3 1.5, which is still beta (1.5.0-beta02 in Oct 2026). Material3 1.5 requires `compileSdk 37`, AGP ≥ 9.1, and a Compose BOM of 2026.08 or later (2026.08+ already needs `compileSdk 37`, decision 0005).
   - Steps: install SDK 37 and set `compileSdk = 37` (targetSdk can stay); update the Compose BOM; replace the body of `MapToolbar` with `HorizontalFloatingToolbar(expanded, floatingActionButton = …)`, keeping its signature so the screens don't change; move the collapsed handle into the toolbar if the component supports it, or keep it outside; re-record the Roborazzi references and compare.
   - Then remove the "Toolbar" exception from `docs/ui/screens/main.md` and `download.md`, and mark decision 0007 superseded.
