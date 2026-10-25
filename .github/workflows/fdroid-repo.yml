@@ -1,5 +1,6 @@
-# Rebuilds the F-Droid repo (fdroid/) from the last 3 GitHub releases and deploys it to GitHub Pages,
-# after every successful Release run or by hand (Actions tab) to republish.
+# Rebuilds the F-Droid repo (fdroid/) from the last 3 GitHub releases and deploys it to GitHub Pages
+# with the web page (web/) at the site root, after every successful Release run, on pushes to main that
+# change web/ or fdroid/, or by hand (Actions tab) to republish.
 # workflow_run always runs from main, the only ref the github-pages environment deploys from.
 name: F-Droid repo
 
@@ -7,7 +8,15 @@ on:
   workflow_run:
     workflows: [Release]
     types: [completed]
+  push:
+    branches: [main]
+    paths: ["web/**", "fdroid/**"]
   workflow_dispatch:
+
+# Every deploy replaces the whole site, so runs must not overlap.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -16,11 +25,11 @@ permissions:
 
 jobs:
   fdroid:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}repo/
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,6 +61,11 @@ jobs:
           chmod 600 config.yml # fdroid refuses a config others can read
           fdroid update
           mkdir -p ../site && mv repo ../site/
+
+      - name: Add the web page
+        run: |
+          cp -r web/. site/
+          cp -r fdroid/metadata/com.cuarentaydos.foghike/en-US/images/phoneScreenshots site/screenshots
 
       - uses: actions/upload-pages-artifact@v3
         with:

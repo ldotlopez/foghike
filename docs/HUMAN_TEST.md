@@ -30,6 +30,7 @@ What can't be checked with adb or JVM tests: it needs walking, turning the phone
 ## Releases
 
 - [ ] **F-Droid repo.** In the F-Droid app add the repo from the README link: Hike Explorer shows up with its texts and screenshots and installs.
+- [ ] **Web page.** On a phone, open https://ldotlopez.github.io/foghike/: the "Añadir a F-Droid" button opens F-Droid with the repo, the QR scanned from another phone adds it too, screenshots load, and the layout fits without sideways scrolling.
 - [ ] **Update from F-Droid.** After the next release, F-Droid offers the update and it installs over the previous one keeping the data.
 
 ## Other

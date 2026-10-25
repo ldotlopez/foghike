@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hike Explorer</title>
+<meta name="description" content="App de senderismo para Android: el mapa empieza cubierto de niebla y se despeja por donde has caminado.">
+<link rel="icon" href="img/favicon.png">
+<style>
+  :root {
+    --primary: #2E6A44;
+    --on-primary: #FFFFFF;
+    --primary-container: #B1F1C1;
+    --bg: #F6FBF3;
+    --surface: #FFFFFF;
+    --text: #181D18;
+    --muted: #414942;
+    --border: #DDE5DB;
+    --coffee: #FFDD00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #96D5A6;
+      --on-primary: #00391D;
+      --primary-container: #12512E;
+      --bg: #101510;
+      --surface: #1C211C;
+      --text: #DFE4DC;
+      --muted: #C1C9BF;
+      --border: #414942;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 0 16px 48px; }
+  a { color: var(--primary); }
+  img { max-width: 100%; display: block; }
+
+  .hero { position: relative; max-width: 1100px; margin: 0 auto; }
+  .hero img { width: 100%; aspect-ratio: 1408 / 768; object-fit: cover; }
+  .brand { display: flex; align-items: center; gap: 16px; margin: 24px 0 8px; }
+  .brand img { width: 72px; height: 72px; border-radius: 18px; }
+  h1 { margin: 0; font-size: 2.2rem; line-height: 1.1; }
+  .tagline { margin: 4px 0 0; color: var(--muted); }
+  h2 { margin: 40px 0 12px; font-size: 1.4rem; }
+
+  .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+  .btn {
+    display: inline-block; padding: 12px 20px; border-radius: 999px;
+    font-weight: 600; text-decoration: none;
+    background: var(--primary); color: var(--on-primary);
+  }
+  .btn.outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+  .btn.coffee { background: var(--coffee); color: #000; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+  ol.steps { padding-left: 1.3em; }
+  ol.steps > li { margin-bottom: 14px; }
+  .note { color: var(--muted); font-size: 0.93rem; }
+  .repo { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+  .repo .qr { width: 180px; background: #fff; border-radius: 8px; padding: 6px; }
+  .repo .text { flex: 1 1 260px; min-width: 0; }
+  code.url {
+    display: block; padding: 10px; border-radius: 8px; background: var(--bg);
+    border: 1px solid var(--border); font-size: 0.8rem; overflow-wrap: anywhere;
+  }
+
+  .shots { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+  .shots img { width: 200px; flex: none; border-radius: 12px; border: 1px solid var(--border); scroll-snap-align: start; }
+
+  footer { margin-top: 48px; color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <img src="img/hero.webp" alt="Un excursionista en lo alto de una roca mira un valle con un río; la mitad derecha del paisaje está cubierta de niebla.">
+</header>
+
+<main>
+  <div class="brand">
+    <img src="img/icon-192.png" alt="">
+    <div>
+      <h1>Hike Explorer</h1>
+      <p class="tagline">Tu mapa empieza en blanco. Sal a descubrirlo.</p>
+    </div>
+  </div>
+
+  <p>Como en los juegos de estrategia, el mundo empieza oculto bajo la niebla. Cada paso que das la
+    despeja: senderos, valles y cumbres van apareciendo a tu alrededor, y el mapa se convierte en el
+    diario de todo lo que has recorrido.</p>
+  <p>¿Qué hay detrás de esa loma? ¿Adónde lleva aquel camino? Mira cuánto te queda por explorar en tu
+    la niebla que rodea tu pueblo, elige una mancha y ve a por ella. Activa el GPS al salir de ruta, o importa tus
+    rutas GPX antiguas y mira cómo se despejan de golpe los lugares donde ya estuviste.</p>
+  <p>Los mapas son ortofotos del IGN de toda España y se guardan en el móvil, así que la aventura sigue
+    aunque te quedes sin cobertura en mitad del monte.</p>
+
+  <div class="buttons">
+    <a class="btn" href="#instalar">Instalar</a>
+    <a class="btn coffee" href="https://buymeacoffee.com/zepolson">☕ Invítame a un café</a>
+  </div>
+
+  <p class="note">Necesita Android 12 o superior y Google Play Services (para la ubicación). No está en Google Play.</p>
+
+  <h2>Capturas</h2>
+  <div class="shots">
+    <img src="screenshots/1.png" alt="Captura 1 de la app" loading="lazy">
+    <img src="screenshots/2.png" alt="Captura 2 de la app" loading="lazy">
+    <img src="screenshots/3.png" alt="Captura 3 de la app" loading="lazy">
+    <img src="screenshots/4.png" alt="Captura 4 de la app" loading="lazy">
+    <img src="screenshots/5.png" alt="Captura 5 de la app" loading="lazy">
+  </div>
+
+  <h2 id="instalar">Instalar con F-Droid (recomendado)</h2>
+  <p>F-Droid es una tienda de apps alternativa a Google Play. Con ella Hike Explorer se instala y se
+    actualiza sola cuando sale una versión nueva.</p>
+
+  <div class="card">
+    <ol class="steps">
+      <li><strong>Instala F-Droid.</strong> Desde el móvil, entra en
+        <a href="https://f-droid.org/">f-droid.org</a> y pulsa «Descargar F-Droid». Abre el archivo
+        descargado. Si Android avisa de que el navegador no puede instalar apps, pulsa «Ajustes», activa
+        «Permitir de esta fuente» y vuelve atrás para instalar.</li>
+      <li><strong>Abre F-Droid una vez</strong> y espera a que termine de actualizar su lista de apps.</li>
+      <li><strong>Añade nuestro repositorio.</strong> Desde el móvil, pulsa este botón y confirma en
+        F-Droid:
+        <div class="buttons"><a class="btn" href="fdroidrepos://ldotlopez.github.io/foghike/repo?fingerprint=D9BD474B59521305CF0E0A462818989C60D0D21BDDD797523941D5184F6E5178">Añadir a F-Droid</a></div>
+        <div class="repo">
+          <img class="qr" src="img/repo-qr.svg" alt="Código QR con la dirección del repositorio">
+          <div class="text">
+            <p class="note">¿Estás viendo esta página en el ordenador? Escanea el código QR con la cámara
+              del móvil. Si no funciona ninguna de las dos cosas: en F-Droid, Ajustes → Repositorios → «+»,
+              y pega esta dirección:</p>
+            <code class="url">https://ldotlopez.github.io/foghike/repo?fingerprint=D9BD474B59521305CF0E0A462818989C60D0D21BDDD797523941D5184F6E5178</code>
+          </div>
+        </div>
+      </li>
+      <li><strong>Instala Hike Explorer.</strong> Busca «Hike Explorer» en F-Droid y pulsa «Instalar».
+        <p class="note">F-Droid la marca con «Dependencias no libres» porque usa Google Play Services para
+          la ubicación. Es normal.</p></li>
+    </ol>
+  </div>
+
+  <h2>Otras formas de instalarla</h2>
+  <ul>
+    <li><strong>Obtainium.</strong> <a href="https://github.com/ImranR98/Obtainium">Obtainium</a> instala y
+      actualiza apps directamente desde GitHub. Añade una app con la dirección
+      <code>https://github.com/ldotlopez/foghike</code>.</li>
+    <li><strong>A mano.</strong> Descarga el último APK desde
+      <a href="https://github.com/ldotlopez/foghike/releases/latest">GitHub Releases</a> y ábrelo en el móvil.
+      Las actualizaciones las tendrás que instalar tú de la misma forma.</li>
+  </ul>
+  <p class="note">Todas las vías instalan el mismo APK firmado, así que puedes cambiar de una a otra sin
+    perder tus datos.</p>
+
+  <h2>¿Te gusta?</h2>
+  <p>Hike Explorer es gratis y sin anuncios. Si te resulta útil, puedes invitarme a un café.</p>
+  <div class="buttons">
+    <a class="btn coffee" href="https://buymeacoffee.com/zepolson">☕ Invítame a un café</a>
+    <a class="btn outline" href="https://github.com/ldotlopez/foghike/issues">Avisar de un fallo</a>
+  </div>
+
+  <footer>
+    <p>Ortofotos: PNOA cedido por © Instituto Geográfico Nacional de España.</p>
+    <p><a href="https://github.com/ldotlopez/foghike">Código fuente en GitHub</a> ·
+      <a href="repo/">Repositorio F-Droid</a></p>
+  </footer>
+</main>
+
+</body>
+</html>

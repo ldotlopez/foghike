@@ -49,7 +49,8 @@ cambian estos preajustes.
 
 ## Instalación
 
-La app no está en Google Play. Hay tres formas de instalarla, todas con el mismo APK firmado:
+La app no está en Google Play. La [página web](https://ldotlopez.github.io/foghike/) lo explica paso a
+paso. Hay tres formas de instalarla, todas con el mismo APK firmado:
 
 - **F-Droid (recomendado, se actualiza sola).** En la app F-Droid, Ajustes → Repositorios → «+», añade
   `https://ldotlopez.github.io/foghike/repo?fingerprint=D9BD474B59521305CF0E0A462818989C60D0D21BDDD797523941D5184F6E5178`
@@ -127,8 +128,9 @@ con las variables de entorno `SIGNING_STORE_FILE`, `SIGNING_STORE_PASSWORD`, `SI
 (`v0.2` → `0.2`) y el `versionCode` del número de ejecución, así que no hay que subirlos a mano.
 
 Después, `.github/workflows/fdroid-repo.yml` rehace el repositorio F-Droid en GitHub Pages con las tres
-últimas releases (configuración y textos en `fdroid/`). Se puede relanzar a mano desde Actions para
-publicar cambios en los textos o capturas.
+últimas releases (configuración y textos en `fdroid/`) y publica junto a él la página web de `web/`.
+También se lanza al subir a `main` cambios en `web/` o `fdroid/`, y se puede relanzar a mano desde
+Actions.
 
 ## Documentación
 
