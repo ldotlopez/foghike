@@ -53,6 +53,7 @@ Code lives in `app/src/main/java/com/cuarentaydos/foghike/`:
 - Files received from other users (exchange) are untrusted: limit size and validate coordinates before importing.
 - Show the IGN attribution ("PNOA cedido por © Instituto Geográfico Nacional de España") wherever IGN imagery is displayed.
 - Room uses destructive migration until the first APK is handed to testers; after that every schema change needs a real migration.
+- Git: prefer rebase over merge. Bring a branch into `main` by rebasing it onto `main` and fast-forwarding (`git rebase main`, then on `main` `git merge --ff-only <branch>`), so history stays linear with no merge commits.
 
 ## Build and test
 
