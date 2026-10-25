@@ -119,7 +119,7 @@ publicar cambios en los textos o capturas.
 
 ## Documentación
 
-- [`FogHike — Documento de diseño.md`](FogHike%20—%20Documento%20de%20diseño.md) — documento de diseño, fuente de verdad de las decisiones de producto.
+- [`docs/design.md`](docs/design.md) — documento de diseño (en inglés), fuente de verdad de las decisiones de producto.
 - [`docs/`](docs/) — documentación técnica (en inglés): disparadores de recálculo, valores
   configurables, registro de decisiones, trabajo planificado y pruebas manuales en dispositivo.
 
