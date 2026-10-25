@@ -166,7 +166,7 @@ private fun ExploreButton(tracking: Boolean, onTrack: () -> Unit) {
 }
 
 /**
- * Tap cycles Free → Follow → Compass → Follow; its label says what the next tap does. A long press
+ * Tap cycles Free → Follow → Compass → Free; its label says what the next tap does. A long press
  * opens a menu to pick any mode, so this button has no tooltip: the menu names the modes.
  */
 @Composable

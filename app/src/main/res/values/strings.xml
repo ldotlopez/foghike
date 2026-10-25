@@ -37,7 +37,7 @@
     <string name="action_hide_toolbar">Hide actions</string>
     <string name="action_follow">Center on my location</string>
     <string name="action_compass">Rotate map with compass</string>
-    <string name="action_north_up">Keep north up</string>
+    <string name="action_north_up">Stop following, north up</string>
     <string name="waiting_location">Waiting for your location…</string>
     <string name="chip_status">%1$s revealed cells, %2$d offline maps</string>
     <string name="chip_cells">%1$s revealed cells</string>
