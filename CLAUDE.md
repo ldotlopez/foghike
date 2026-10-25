@@ -56,6 +56,8 @@ Code lives in `app/src/main/java/com/cuarentaydos/foghike/`:
 
 ## Build and test
 
+Ask the user before running any build, test or install command (the Gradle tasks below, or anything that compiles or runs the app). If the session is non-interactive and you can't ask, don't run them; tell the user which command to run instead.
+
 - `./gradlew assembleDebug` — build.
 - `./gradlew test` — JVM unit tests (grid and fog geometry live here; add tests for new `geo/` logic).
 - `./gradlew recordRoborazziDebug` / `verifyRoborazziDebug` — write / compare the UI reference screenshots in `app/src/test/screenshots/`.
