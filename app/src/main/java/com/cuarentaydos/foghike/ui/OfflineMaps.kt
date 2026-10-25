@@ -39,7 +39,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import com.cuarentaydos.foghike.FogHikeApp
 import com.cuarentaydos.foghike.R
-import com.cuarentaydos.foghike.core.CELL_DOWNLOAD_ZOOMS
+import com.cuarentaydos.foghike.core.DOWNLOAD_ZOOMS
 import com.cuarentaydos.foghike.geo.Tile
 import com.cuarentaydos.foghike.tiles.IGN_MAX_ZOOM
 import com.cuarentaydos.foghike.tiles.MAX_TILES_PER_DOWNLOAD
@@ -133,8 +133,8 @@ class TileOfferState(
     private var countJob: Job? = null
 
     fun open() {
-        val min = prefs.getInt("${prefsKey}MinZoom", CELL_DOWNLOAD_ZOOMS.first).coerceIn(0, IGN_MAX_ZOOM)
-        setZoom(min..prefs.getInt("${prefsKey}MaxZoom", CELL_DOWNLOAD_ZOOMS.last).coerceIn(min, IGN_MAX_ZOOM))
+        val min = prefs.getInt("${prefsKey}MinZoom", DOWNLOAD_ZOOMS.first).coerceIn(0, IGN_MAX_ZOOM)
+        setZoom(min..prefs.getInt("${prefsKey}MaxZoom", DOWNLOAD_ZOOMS.last).coerceIn(min, IGN_MAX_ZOOM))
     }
 
     fun setZoom(range: IntRange) {

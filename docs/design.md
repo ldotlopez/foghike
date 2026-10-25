@@ -94,7 +94,7 @@ With opaque fog, the imagery outside the revealed cells is not visible, so the t
 - **When importing routes**, the result notice offers "Download map" for the newly imported routes.
 - **In Settings > Offline maps**, "Download maps of the explored area" downloads the tiles of all revealed cells.
 - **In Settings > Offline maps**, "Delete maps outside the explored area" deletes the tiles that touch no revealed cell. By default it keeps the hand-drawn downloaded areas (checkbox "Keep hand-drawn downloaded areas"), shows how much space it frees and asks for confirmation; it cannot be undone. It does not run while a download is in progress.
-- Downloads use a sheet with the zoom range (13–17 the first time; each type of download remembers its own), the new tiles against the limit of 20,000 and the estimated size.
+- Downloads use a sheet with the zoom range (13–18 the first time, the same for every type of download; each then remembers its own), the new tiles against the limit of 20,000 and the estimated size.
 - Downloads made from cells are not drawn as boxes on the download screen.
 - Areas downloaded earlier, each in its own file, are merged into the single store at startup.
 

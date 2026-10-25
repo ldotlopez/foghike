@@ -27,6 +27,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.cuarentaydos.foghike.FogHikeApp
 import com.cuarentaydos.foghike.R
+import com.cuarentaydos.foghike.core.DOWNLOAD_ZOOMS
 import com.cuarentaydos.foghike.geo.LatLon
 import com.cuarentaydos.foghike.geo.tilesFor
 import com.cuarentaydos.foghike.tiles.DownloadWorker
@@ -89,7 +90,7 @@ class DownloadActivity : ComponentActivity() {
 
     // Compose state: changing these redraws the parts of the screen that show them.
     private val areas = mutableStateListOf<List<LatLon>>()
-    private var zoom by mutableStateOf(13..16) // the last range used, read in onCreate
+    private var zoom by mutableStateOf(DOWNLOAD_ZOOMS) // the last range used, read in onCreate
     private var tiles by mutableStateOf<Int?>(null)
     private var zoomSheetOpen by mutableStateOf(false)
     private var progress by mutableStateOf<DownloadProgress?>(null)
@@ -105,8 +106,8 @@ class DownloadActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val minZoom = prefs.getInt("downloadMinZoom", 13).coerceIn(0, IGN_MAX_ZOOM)
-        zoom = minZoom..prefs.getInt("downloadMaxZoom", 16).coerceIn(minZoom, IGN_MAX_ZOOM)
+        val minZoom = prefs.getInt("downloadMinZoom", DOWNLOAD_ZOOMS.first).coerceIn(0, IGN_MAX_ZOOM)
+        zoom = minZoom..prefs.getInt("downloadMaxZoom", DOWNLOAD_ZOOMS.last).coerceIn(minZoom, IGN_MAX_ZOOM)
         MapLibre.getInstance(this)
         mapView = MapView(this) // driven by the activity lifecycle, placed on screen by Compose
         mapView.onCreate(savedInstanceState)

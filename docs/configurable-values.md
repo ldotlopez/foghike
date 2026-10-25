@@ -23,10 +23,10 @@ Settings values live in `AppSettings` (`core/Settings.kt`: defaults, closed opti
 | Trail duration | Settings → Advanced; `trailMinutes` | 15, 30, 60, 120 min | 60 min | No | The design doc's `trailMinutes` |
 | Trail color | Settings → Advanced; `trailColor` | Orange `#ff7a1a`, yellow `#ffd400`, pink `#ff40c0`, cyan `#00e5ff` | Orange | No | No red: that is the record button |
 | Trail width | Settings → Advanced; `trailWidth` | 2, 4, 6 px | 4 px | No | — |
-| Download zoom range | Range slider in the download screen's zoom sheet; remembered in `downloadMinZoom` / `downloadMaxZoom` | Between 0 and `IGN_MAX_ZOOM` | Last used (13–16 the first time) | No | — |
+| Download zoom range | Range slider in the download screen's zoom sheet; remembered in `downloadMinZoom` / `downloadMaxZoom` | Between 0 and `IGN_MAX_ZOOM` | Last used (`DOWNLOAD_ZOOMS`, 13–18, the first time) | No | Decision 0019 |
 | Areas to download | Drawn freehand | — | — | — | In `downloaded_area` |
-| Zoom range for explored-area downloads | Sheet from Settings → Offline maps; `exploredDownloadMinZoom` / `exploredDownloadMaxZoom` | Between 0 and `IGN_MAX_ZOOM` | Last used (`CELL_DOWNLOAD_ZOOMS`, 13–17, the first time) | No | Decision 0015 |
-| Zoom range for imported-route downloads | Sheet from the import Snackbar; `trackDownloadMinZoom` / `trackDownloadMaxZoom` | Between 0 and `IGN_MAX_ZOOM` | Last used (13–17 the first time) | No | Decision 0015 |
+| Zoom range for explored-area downloads | Sheet from Settings → Offline maps; `exploredDownloadMinZoom` / `exploredDownloadMaxZoom` | Between 0 and `IGN_MAX_ZOOM` | Last used (`DOWNLOAD_ZOOMS`, 13–18, the first time) | No | Decisions 0015, 0019 |
+| Zoom range for imported-route downloads | Sheet from the import Snackbar; `trackDownloadMinZoom` / `trackDownloadMaxZoom` | Between 0 and `IGN_MAX_ZOOM` | Last used (`DOWNLOAD_ZOOMS`, 13–18, the first time) | No | Decisions 0015, 0019 |
 | Keep areas downloaded by hand | Checkbox in the clean-up dialog (Settings → Offline maps) | On/off | On | No | Not stored: asked each time |
 
 `ui` also stores `askedStartup`, `askedBackground`, `helpSeenDownload` and `cellsStale` (cells not yet rebuilt for the saved cell size and radius): internal flags, not preferences.
@@ -81,7 +81,7 @@ Not exposed, decided on 2026-10-24: the tile limit per download (`MAX_TILES_PER_
 | `MAX_TILES_PER_DOWNLOAD` | `tiles/TileDownloader.kt` | 20,000 | Tile limit per download (new tiles only for downloads from cells) | No (decided 2026-10-24: protects storage and the IGN server) |
 | `TILE_STORE_FILE` | `tiles/TileStore.kt` | `tiles.mbtiles` | The one file holding every downloaded tile (decision 0015) | No |
 | `DEFAULT_TILE_BYTES` | `tiles/TileStore.kt` | 25,000 | Size estimate per tile while the store is empty; then the store's average is used | No |
-| `CELL_DOWNLOAD_ZOOMS` | `core/OfflineMaps.kt` | 13–17 | First zoom range offered for downloads from cells | No (the sheet changes it and remembers it) |
+| `DOWNLOAD_ZOOMS` | `core/OfflineMaps.kt` | 13–18 | First zoom range offered by every kind of download (decision 0019) | No (the sheet changes it and remembers it) |
 | Map sources per max zoom | `mapStyleJson` in `ui/MapStyle.kt` | One raster source per distinct `maxZoom` in `downloaded_area` | Each download overzooms above its own max zoom | No |
 | `AREA_PICK_ZOOM` | `ui/DownloadActivity.kt` | 11 | Zoom when opening the download screen | No |
 | `MIN_STROKE_STEP_PX` | `ui/DownloadActivity.kt` | 12 px | Minimum distance between points when drawing an area | No |

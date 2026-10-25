@@ -79,7 +79,7 @@ A `MapToolbar` (hand-made, decision 0007), like the main screen: the Download fl
 
 A `ModalBottomSheet` opened from `tune`, with one `RangeSlider` (steps of 1, from 0 to `IGN_MAX_ZOOM`) and the two values shown as "Zoom 13 – 16". It replaces the two number fields: a range slider can't hold an invalid value, so the "invalid zoom" error disappears and no keyboard opens over the map. The selection chip updates live while dragging.
 
-Default 13–16; the last range used is remembered (`downloadMinZoom` / `downloadMaxZoom`). The title and slider are `ZoomRangeSlider` (`ui/OfflineMaps.kt`), shared with the offline map sheets of the tracks and settings screens (decision 0015).
+Default 13–18 (`DOWNLOAD_ZOOMS`, shared by every kind of download); the last range used is remembered (`downloadMinZoom` / `downloadMaxZoom`). The title and slider are `ZoomRangeSlider` (`ui/OfflineMaps.kt`), shared with the offline map sheets of the tracks and settings screens (decision 0015).
 
 ### Drawing feedback
 

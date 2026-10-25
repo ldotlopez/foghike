@@ -12,11 +12,10 @@
 
 ## Offline maps
 
-- **Default download zoom range 13–19.** The first-time ranges (13–16 for areas drawn by hand, 13–17 for explored cells and imported routes, `CELL_DOWNLOAD_ZOOMS`) aren't practical: zooming in on a hike past 16–17 only shows blurry overzoomed tiles. Default all three to 13–`IGN_MAX_ZOOM` (19). Each zoom level has 4× the tiles of the previous one, so 13–19 is about 16× the tiles and space of 13–17: check the size estimate and the download limits still make sense. Update `docs/configurable-values.md`.
 - **Auto-download imagery for newly revealed cells (idea).** When there is a network, download the IGN tiles of cells as they are revealed, so explored areas are available offline without opening Settings → Offline maps. Decision 0015 left this open ("possible later on top of `trackTiles`").
   - Reuse what exists: the tiles for cells (`core/OfflineMaps.kt`), the shared tile store and `DownloadWorker`, which already waits for a network (`NetworkType.CONNECTED`); skip tiles already stored.
   - Batch it instead of downloading per GPS point: e.g. enqueue one job when a track ends, or every N new cells, so tracking doesn't spend battery and radio on many small requests.
-  - Setting to turn it on or off, plus "Wi-Fi only" (`NetworkType.UNMETERED`) so it doesn't spend mobile data; zoom range from the explored-area download range (see the 13–19 item above: at zoom 19 a long hike can mean many tiles).
+  - Setting to turn it on or off, plus "Wi-Fi only" (`NetworkType.UNMETERED`) so it doesn't spend mobile data; zoom range from the explored-area download range (13–18 by default, decision 0019; each zoom level roughly doubles a corridor's tiles).
   - Imported routes reveal many cells at once; decide whether they trigger it too or keep the existing download offer.
 
 ## UI

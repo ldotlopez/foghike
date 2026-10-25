@@ -69,7 +69,7 @@ Code: `ui/SettingsActivity.kt` (reads and writes preferences) and `ui/SettingsSc
 | Advanced | Trail duration | Choice: 15 / 30 / 60 / 120 min | `trailMinutes` | 60 min |
 | Advanced | Trail color | Choice with color dots: orange, yellow, pink, cyan | `trailColor` | Orange |
 | Advanced | Trail width | Choice: 2 / 4 / 6 px | `trailWidth` | 4 px |
-| Offline maps | Download maps of explored areas | `ListItem`. Opens `TileOfferSheet` (`ui/OfflineMaps.kt`): zoom range (13–17 the first time, then the last used), tiles under revealed cells not stored yet against the 20,000 limit, estimated size, Download. Enqueues `DownloadWorker.enqueueExplored` | `exploredDownloadMinZoom` / `exploredDownloadMaxZoom` | 13–17 |
+| Offline maps | Download maps of explored areas | `ListItem`. Opens `TileOfferSheet` (`ui/OfflineMaps.kt`): zoom range (13–18 the first time, then the last used), tiles under revealed cells not stored yet against the 20,000 limit, estimated size, Download. Enqueues `DownloadWorker.enqueueExplored` | `exploredDownloadMinZoom` / `exploredDownloadMaxZoom` | 13–18 |
 | Offline maps | Remove maps outside explored areas | `ListItem` whose supporting text is the store's size ("Stored maps: 48 MB"). Opens `CleanupDialog`: explanation, "Keep areas downloaded by hand" checkbox (on), tiles deleted and space freed, Delete / Cancel; a progress bar while deleting, then a Snackbar "Freed 12 MB." While a download runs it only shows "Wait for the current download to finish." | — | — |
 | About | Version | Read-only `ListItem` with `versionName (versionCode)` from `packageManager.getPackageInfo` (`BuildConfig` is off in this project) | — | — |
 

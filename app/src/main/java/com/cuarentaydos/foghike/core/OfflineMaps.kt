@@ -15,8 +15,8 @@ import com.cuarentaydos.foghike.geo.tilesCovering
 // Offline maps from revealed cells (decision 0015): which tiles to download for the explored map or
 // for imported tracks, and which ones a clean-up keeps. The Android side stores and fetches them.
 
-/** Zoom range offered the first time for downloads from cells: enough detail along narrow corridors. */
-val CELL_DOWNLOAD_ZOOMS = 13..17
+/** Zoom range every kind of download offers the first time (decision 0019); each then remembers its own. */
+val DOWNLOAD_ZOOMS = 13..18
 
 /**
  * Tiles under every revealed base cell, at each of [zooms].
