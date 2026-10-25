@@ -65,6 +65,7 @@ Not exposed, decided on 2026-10-24: the tile limit per download (`MAX_TILES_PER_
 | Constant | File | Value | Effect | Setting? |
 | --- | --- | --- | --- | --- |
 | `CAMERA_TRANSITION_MS` | `ui/MainActivity.kt` | 750 ms | Camera animation when the my location button changes mode | No |
+| `RESUME_FOLLOWING_MS` | `ui/MainActivity.kt` | 5 s | After moving the map in Follow or Compass, wait from the last camera stop before following again (decision 0017) | No |
 | `BASE_MAP_MIN_ZOOM` | `ui/MapStyle.kt` | 5 | Minimum zoom; there is no base map below | No |
 | `BASE_MAP_MAX_ZOOM` | `ui/MapStyle.kt` | 9 | Highest zoom of the bundled base map; overzoomed above. Must match `tools/build_spain_mbtiles.py` | No |
 | `SPAIN_BOUNDS` | `ui/MapStyle.kt` | Mainland and Balearic Islands | Framing with no areas or location | No |
