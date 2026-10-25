@@ -12,7 +12,7 @@ import com.cuarentaydos.foghike.geo.rowRange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/** How revealed coarse (LOD) cells are drawn. Alternatives: "Niebla a zoom bajo" in the design doc. */
+/** How revealed coarse (LOD) cells are drawn. Alternatives: "Fog at low zoom" in the design doc. */
 enum class FogMode {
     /** Clear as soon as any revealed base cell lies inside: the trace looks wider when zooming out. */
     ANY_CELL,

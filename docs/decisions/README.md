@@ -2,7 +2,7 @@
 
 One file per implemented decision, so later changes know why the code is the way it is. Numbered in order: `NNNN-short-title.md`. Never renumber or delete one; if a decision is replaced, write a new file and mark the old one `Superseded by NNNN`.
 
-Closed product decisions that are not implemented yet stay in the design document ("Hoja de ruta y decisiones"); a file is added here when the decision lands in code.
+Closed product decisions that are not implemented yet stay in the design document ("Roadmap and decisions"); a file is added here when the decision lands in code.
 
 Template:
 

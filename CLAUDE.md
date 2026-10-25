@@ -4,7 +4,7 @@ Users see the app as **Hike Explorer** (`app_name`). FogHike stays the internal 
 
 Android hiking app: the map starts covered by fog that clears around places the user has walked (strategy-game style). Fog is revealed from live GPS or imported routes (GPX; later the Google Maps Timeline on-device export). Base maps are IGN (Spain) satellite imagery stored offline as MBTiles.
 
-The design document is the source of truth: `FogHike — Documento de diseño.md` (Spanish). Read it before any non-trivial change, and update it when a decision changes. Its "Hoja de ruta y decisiones" section lists closed decisions — don't re-open them without asking.
+The design document is the source of truth: `docs/design.md`. Read it before any non-trivial change, and update it when a decision changes. Its "Roadmap and decisions" section lists closed decisions — don't re-open them without asking.
 
 ## Documentation
 
@@ -14,7 +14,7 @@ The design document is the source of truth: `FogHike — Documento de diseño.md
 - `docs/PLAN.md` — ideas and planned work not yet in the roadmap; move an item out when it is implemented or becomes a decision.
 - `docs/HUMAN_TEST.md` — hands-on checks that need a person and a device (walking, gestures, other phones). Add an item when a change can't be verified with adb or JVM tests.
 - `docs/decisions/` — one numbered file per implemented decision (`NNNN-short-title.md`, template in `docs/decisions/README.md`). Add one whenever a design choice lands in code; never renumber or delete, mark replaced ones as superseded. Also reflect the decision in the design document.
-- The design document stays in Spanish and remains the source of truth for product decisions; `docs/` explains how the code implements them.
+- The design document remains the source of truth for product decisions; the rest of `docs/` explains how the code implements them.
 
 ## Stack
 
@@ -40,13 +40,15 @@ Code lives in `app/src/main/java/com/cuarentaydos/foghike/`:
 
 ## Rules
 
-- All code, comments, identifiers and commit messages in English, even when the conversation is in Spanish.
+- Language, whatever language the conversation is in. The app only covers Spain, so its audience reads Spanish, natively or fluently:
+  - **Spanish:** anything public-facing that users or would-be users read: `README.md`, any future web page, F-Droid repository metadata (name, summary, description) and GitHub release notes.
+  - **English:** code, comments, identifiers, commit messages, filenames, `docs/` (including the design document), project support files (`CLAUDE.md`, scripts, CI workflows, Gradle) and generated artifacts. App UI text is the exception: see the next rule.
 - UI strings in `res/values/strings.xml` (English) with Spanish in `res/values-es/strings.xml`. No hardcoded UI text.
 - Keep complexity at the level of a well-structured Python CLI: no elaborate architecture, DI frameworks or extra layers. The author is new to mobile development — prefer plain, readable code and explain Android-specific concepts briefly when introducing them.
 - KMP-ready `data/`: DAOs use `suspend` and `Flow`; no `LiveData`, `Cursor`, `Context` or `java.*` (timestamps are `Long` epoch millis). Database construction lives in one Android file.
 - Cell IDs encode row, column and cell size; cell geometry depends only on the row's latitude. Don't change the ID scheme without updating reprocessing and the design doc.
 - Fog is computed only for the visible viewport plus margin, at the LOD matching the zoom, off the main thread, on camera idle or data change — never for the whole country, never per frame.
-- Handle permissions per API level (31/33/34+): precise location, background location, battery-optimization exemption, `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE_LOCATION`, Bluetooth/Nearby. See "Compatibilidad con Android 12" in the design doc.
+- Handle permissions per API level (31/33/34+): precise location, background location, battery-optimization exemption, `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE_LOCATION`, Bluetooth/Nearby. See "Android 12 compatibility" in the design doc.
 - Exploring must never lose GPS points: every batch is written as it arrives, and the tracking service is `START_STICKY`. Don't buffer points in memory or make the service non-sticky.
 - Files received from other users (exchange) are untrusted: limit size and validate coordinates before importing.
 - Show the IGN attribution ("PNOA cedido por © Instituto Geográfico Nacional de España") wherever IGN imagery is displayed.
