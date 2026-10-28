@@ -33,3 +33,9 @@
 
 - **Export / import data and settings (idea).** Let the user save the database (tracks, points, revealed cells) and the settings to a file and restore them, e.g. to move to another phone or keep a backup. An imported file is untrusted: limit its size and validate it as for exchange files.
 - **Cycling profile (idea).** A set of settings tuned for riding a bike (e.g. GPS interval, reveal radius, trail), chosen when starting a track (walking or cycling).
+
+## Maintenance
+
+- **Verify the ktlint reformat, then push.** Commits since `2eb9d8b` (Spotless setup, reformat, decision 0021…) were never compiled or tested. Run `./gradlew --no-daemon test verifyRoborazziDebug`, then `git push`; the push also redeploys the F-Droid repo and web page.
+- **Check the database upgrade path (decision 0021).** With the destructive fallback gone, a missing migration crashes on start. Install the APK testers have, record a track, install the current build over it, and check the tracks survive. Later, add `MigrationTestHelper` tests over `app/schemas/`.
+- **Duplicate decision number 0017.** `0017-following-survives-gestures.md` and `0017-soft-fog-edges.md` share it; files are never renumbered, so decide whether to note it in `docs/decisions/README.md`.
