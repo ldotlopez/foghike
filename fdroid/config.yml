@@ -1,4 +1,4 @@
-# fdroidserver config for the Hike Explorer F-Droid repo on GitHub Pages, built by .github/workflows/release.yml.
+# fdroidserver config for the Hike Explorer F-Droid repo on GitHub Pages, built by .github/workflows/fdroid-repo.yml.
 # No secrets here: the workflow decodes the keystore and passes its password in FDROID_KEYSTORE_PASS.
 repo_url: https://ldotlopez.github.io/hike-explorer/repo
 repo_name: Hike Explorer
