@@ -23,7 +23,10 @@ The design document is the source of truth: `docs/design.md`. Read it before any
 - MapLibre Native (Android) for the map; local HTTP server on 127.0.0.1 serves tiles from `.mbtiles` files (cleartext allowed only for that address).
 - Room ≥ 2.7 with KSP; Fused Location Provider (Play Services); coroutines/Flow.
 - `minSdk = 31` (Android 12) — old phones are used as hiking GPS units. `targetSdk`/`compileSdk` = latest stable.
-- Distribution: signed APK installed by hand (< 100 testers). Every release must use the same signing key; never commit it.
+- Distribution: pushing a tag runs `.github/workflows/release.yml` (signed APK as a GitHub release, decision 0003); `fdroid-repo.yml` then rebuilds the F-Droid repo plus the `web/` page on GitHub Pages (decisions 0016, 0020). Pushing changes under `web/` or `fdroid/` to `main` redeploys the live site. Every release must use the same signing key.
+- `secrets/` (gitignored) holds the release, F-Droid and debug keystores and passwords: never commit it, and never read or print its contents.
+- Debug builds install as `com.cuarentaydos.foghike.debug`, alongside the release build.
+- Versions are inline in `build.gradle.kts` / `app/build.gradle.kts` (no `libs.versions.toml`). AGP's built-in Kotlin is used (no Kotlin plugin); the Compose compiler plugin version must match it.
 
 ## Layout
 
@@ -33,8 +36,9 @@ Code lives in `app/src/main/java/com/cuarentaydos/foghike/`:
 - `data/` — Room entities, DAOs, database only. LOD cells share `revealed_cell` (the id encodes the cell size).
 - `core/` — app logic used by screens and services, no Android: `Exploration.kt` (`recordPoints`: the single path from GPS points to stored points and revealed cells, used by tracking and every importer; `importTrack` for whole routes; `deleteTracks` rebuilds the cells from the points left), `FogCells.kt` (fog pieces for an area), `Trail.kt` (recent trail segments), `OfflineMaps.kt` (tiles to download for revealed cells or tracks, and which tiles a clean-up keeps).
 - Root — `FogHikeApp` (builds the database and tile server; the one Android-specific DB file).
-- `tiles/` — local tile server and IGN download to MBTiles. `gpx/` — GPX reader. `tracking/` — foreground tracking service. `ui/` — the screens (main, tracks, download, settings: Activity + `*Screen.kt` Compose layout), `Color.kt` (generated palette and map layer colors), `Theme.kt` (Material 3 theme, shared buttons, help and tooltips), map style JSON, fog and trail layers.
-- `tools/build_spain_mbtiles.py` — generates the bundled `app/src/main/assets/spain.mbtiles` (zoom 5–9).
+- `tiles/` — local tile server and IGN download to MBTiles. `gpx/` — GPX reader. `tracking/` — foreground tracking service. `ui/` — the screens (main, tracks, download, settings: Activity + `*Screen.kt` Compose layout), `Color.kt` (generated palette and map layer colors), `Theme.kt` (Material 3 theme, shared buttons, help and tooltips), `MapStyle.kt` (builds the style JSON), fog and trail layers, `OfflineMaps.kt` (shared download UI; not `core/OfflineMaps.kt`).
+- `tools/build_spain_mbtiles.py` — generates the bundled `app/src/main/assets/spain.mbtiles` (zoom 5–9). `tools/demo_gpx.py` — demo GPX routes for store screenshots (`docs/screenshots.md`).
+- `ISSUES.md` (Spanish) — known problems from device testing.
 
 `geo/`, `data/` and `core/` will move to a KMP `shared` module when iOS is ported. Activities, services and workers are platform glue (permissions, files, MapLibre drawing, showing results); any computation or decision iOS would also need goes in `core/`, `geo/` or `data/`, without Android, MapLibre or `java.*` (see decision 0004 for the two known exceptions). Do not create that module, or repository interfaces, before then.
 
@@ -52,7 +56,7 @@ Code lives in `app/src/main/java/com/cuarentaydos/foghike/`:
 - Exploring must never lose GPS points: every batch is written as it arrives, and the tracking service is `START_STICKY`. Don't buffer points in memory or make the service non-sticky.
 - Files received from other users (exchange) are untrusted: limit size and validate coordinates before importing.
 - Show the IGN attribution ("PNOA cedido por © Instituto Geográfico Nacional de España") wherever IGN imagery is displayed.
-- Room uses destructive migration until the first APK is handed to testers; after that every schema change needs a real migration.
+- APKs are public: every schema change bumps the `AppDatabase` version and needs a real migration; schemas are exported to `app/schemas/`.
 - Git: prefer rebase over merge. Bring a branch into `main` by rebasing it onto `main` and fast-forwarding (`git rebase main`, then on `main` `git merge --ff-only <branch>`), so history stays linear with no merge commits.
 
 ## Build and test
@@ -63,5 +67,15 @@ Ask the user before running any build, test or install command (the Gradle tasks
 - `./gradlew test` — JVM unit tests (grid and fog geometry live here; add tests for new `geo/` logic).
 - `./gradlew recordRoborazziDebug` / `verifyRoborazziDebug` — write / compare the UI reference screenshots in `app/src/test/screenshots/`.
 - `./gradlew installDebug` — install on a connected device.
+- `./gradlew spotlessCheck` / `spotlessApply` — ktlint check / auto-format for Kotlin and Gradle files (rules in `.editorconfig`).
 
-The project has never been built on a device yet; expect to adjust Gradle/Kotlin/library versions on first sync.
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- When graphify-out/graph.json exists, run `graphify query "<question>"` before your first grep, search or source-file read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for lines the graph or an earlier read already located. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
