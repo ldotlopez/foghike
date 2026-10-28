@@ -55,9 +55,8 @@ class FogHikeApp : Application() {
         super.onCreate()
         // The only Android-specific piece of the database; becomes expect/actual when porting to KMP.
         db = Room.databaseBuilder(this, AppDatabase::class.java, "foghike.db")
+            // No destructive fallback: a schema change without a migration crashes instead of wiping testers' data.
             .addMigrations(MIGRATION_2_3)
-            // shortcut: wipes data on a schema change without a migration; drop it before handing out the first APK.
-            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
         mapsDir.mkdirs()
         tileServer = TileServer(mapsDir).also { it.start() }

@@ -21,8 +21,3 @@ Problemas y limitaciones del PoC detectados al escribirlo o al probarlo en un Ga
 
 - **Idiomas sin traducción caen al inglés.** Con el móvil en catalán (`ca-ES`) la app sale en inglés. Pendiente decidir entre añadir `values-ca` o cambiar el idioma por defecto.
 - **Posible línea horizontal en la niebla** a zoom intermedio (vista una vez a zoom ~11). Puede ser un borde de tile del mapa general ampliado o una costura entre rectángulos de niebla; sin confirmar.
-
-## Distribución
-
-- **APK de 65 MB.** Incluye las librerías nativas de MapLibre para cuatro arquitecturas. Limitarlo a `arm64-v8a` y `armeabi-v7a` lo dejaría en unos 35 MB, a costa de no poder usar el emulador x86_64.
-- **Migración destructiva de Room.** Aceptable hasta repartir el primer APK; después cada cambio de esquema necesita su migración (paso 5 de la hoja de ruta).

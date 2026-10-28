@@ -71,7 +71,7 @@ The local database stores four implemented tables; another is designed but does 
 | `AppSettings` | — | `revealRadiusMeters`, `cellSizeMeters`, `trailMinutes`, `userAlias` | User-configurable settings; the alias is sent with shared routes | Replaced: settings are stored in `SharedPreferences` (decision 0011); the alias, when the exchange arrives |
 | `track` | `trackId` | `source`, `createdAt` (start of recording or moment of import), `name` (optional), `startedAt` (time of the first point, optional). With the exchange: `fingerprint` and `senderAlias` (only `nfc_import`) | Describe each route to list and delete it; with the exchange, avoid importing it twice and know who it came from | Implemented (version 3), without the exchange columns |
 
-While nobody but the author uses the app, Room uses destructive migration: if the schema changes, the local data is deleted. From the first version handed out to testers, every schema change carries a real migration, so as not to delete the testers' routes.
+APKs are handed out to testers, so every schema change carries a real migration, so as not to delete the testers' routes. There is no destructive fallback: a schema change without a migration makes the app fail on start instead of deleting the data.
 
 With the NFC exchange, the `source` field of `revealed_cell` will admit a fourth value, `nfc_import`, for cells derived from received routes. The `track` table will grow to store the identifier, the origin, a fingerprint of each route so the same one is not imported twice, and the alias of whoever sent it (see "Area exchange over NFC").
 
@@ -296,7 +296,7 @@ The PoC code was rewritten from scratch on Oct 24, 2026 following this document:
 - Maps are only visible between the minimum and maximum downloaded zoom: below it the area appears empty (the general map is seen) and above it the last level is scaled up.
 - The grid configuration (25 m cell, 30 m radius) is fixed in the code.
 - The tile download is sequential and without retries.
-- Since version 3 of the database, schema changes carry a migration (2→3 creates the `track` table); destructive migration only covers versions without one.
+- Since version 3 of the database, schema changes carry a migration (2→3 creates the `track` table); there is no destructive fallback.
 
 ## Roadmap and decisions
 
@@ -322,7 +322,7 @@ The next logical step is to generate the general map and test the app on a devic
 - Settings: radius and cell from closed lists; reprocessing only once on leaving Settings, with a notice under each changed value (replaces "on save, after confirming").
 - Interface in English with Spanish translation (`values-es`).
 - Tracking with a foreground service within the PoC.
-- Destructive migration only until the first version is handed out; real migrations afterwards.
+- Real Room migrations for every schema change, no destructive fallback.
 - Distribution: directly signed APK, always with the same key, from GitHub Releases and an own F-Droid repository.
 - Layered fog: covers the whole screen; computed only for the visible window with margin and at the level of detail that corresponds to the zoom.
 - Persistence: Room KMP (≥ 2.7) instead of migrating to SQLDelight; `data/` is written compatible from now on.
