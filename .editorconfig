@@ -1,0 +1,10 @@
+root = true
+
+[*.{kt,kts}]
+ktlint_code_style = android_studio
+# Compose functions are named in PascalCase.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+# The code was written to ~120 columns; long comments and strings can't be wrapped automatically.
+max_line_length = 120
+# Files are named after their topic (e.g. Trail.kt), not their single class.
+ktlint_standard_filename = disabled
