@@ -31,14 +31,18 @@ internal fun rad(deg: Double) = deg * PI / 180.0
 data class LatLon(val lat: Double, val lon: Double)
 
 data class Box(val south: Double, val west: Double, val north: Double, val east: Double) {
-    fun contains(other: Box) =
-        other.south >= south && other.north <= north && other.west >= west && other.east <= east
+    fun contains(other: Box) = other.south >= south && other.north <= north && other.west >= west && other.east <= east
 
     /** Grows the box by its own size on every side (3×3 viewports), clamped to the Web Mercator limits. */
     fun expanded(): Box {
         val h = north - south
         val w = east - west
-        return Box(max(south - h, -85.0), max(west - w, -180.0), min(north + h, 85.0), min(east + w, 180.0))
+        return Box(
+            max(south - h, -85.0),
+            max(west - w, -180.0),
+            min(north + h, 85.0),
+            min(east + w, 180.0)
+        )
     }
 }
 
@@ -90,7 +94,9 @@ fun cellsInRadius(p: LatLon, size: Int, radius: Double): List<Cell> {
     val result = mutableListOf<Cell>()
     for (row in center.row - dRows..center.row + dRows) {
         val w = colWidthDeg(size, row)
-        for (col in floor((p.lon - dLonDeg) / w).toInt() - 1..floor((p.lon + dLonDeg) / w).toInt() + 1) {
+        for (col in floor(
+            (p.lon - dLonDeg) / w
+        ).toInt() - 1..floor((p.lon + dLonDeg) / w).toInt() + 1) {
             val cell = Cell(size, row, col)
             if (haversineMeters(p, cell.center()) <= radius) result += cell
         }

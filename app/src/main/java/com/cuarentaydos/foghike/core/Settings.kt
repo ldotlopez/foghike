@@ -35,7 +35,7 @@ data class AppSettings(
     val showTrail: Boolean = true,
     val trailMinutes: Int = 60,
     val trailColor: String = TRAIL_COLORS[0],
-    val trailWidth: Int = 4,
+    val trailWidth: Int = 4
 ) {
     val grid get() = RevealGrid(cellSize, cellSize * radiusFactor)
     val effectiveFogDetail get() = if (slowPhone) 8 else fogDetail

@@ -67,7 +67,9 @@ class ThemeScreenshotTest {
     @Test
     fun helpDialog() {
         compose.setContent {
-            FogHikeTheme { HelpButton("Hike Explorer", "Walk with exploring on and the fog clears around you.", openFirst = true) }
+            FogHikeTheme {
+                HelpButton("Hike Explorer", "Walk with exploring on and the fog clears around you.", openFirst = true)
+            }
         }
         captureScreenRoboImage()
     }

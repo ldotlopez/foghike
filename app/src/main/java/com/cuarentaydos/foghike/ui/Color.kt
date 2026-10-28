@@ -45,7 +45,7 @@ val LightColors = lightColorScheme(
     surfaceContainerHighest = Color(0xFFDFE4DC),
     surfaceContainerLow = Color(0xFFF0F5ED),
     surfaceContainerLowest = Color(0xFFFFFFFF),
-    surfaceDim = Color(0xFFD7DBD4),
+    surfaceDim = Color(0xFFD7DBD4)
 )
 
 val DarkColors = darkColorScheme(
@@ -84,7 +84,7 @@ val DarkColors = darkColorScheme(
     surfaceContainerHighest = Color(0xFF313631),
     surfaceContainerLow = Color(0xFF181D18),
     surfaceContainerLowest = Color(0xFF0A0F0B),
-    surfaceDim = Color(0xFF101510),
+    surfaceDim = Color(0xFF101510)
 )
 
 // Map layer colors: fixed brand colors (not from the theme), as MapLibre CSS strings.

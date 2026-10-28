@@ -51,7 +51,8 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
             enqueue(context, KIND_POLYGON, AREA_PREFIX, polygon.map { "${it.lat},${it.lon}" }, minZoom..maxZoom)
 
         /** Every revealed cell, with the cell size in use when the job runs. */
-        fun enqueueExplored(context: Context, zooms: IntRange) = enqueue(context, KIND_CELLS, CELLS_PREFIX, emptyList(), zooms)
+        fun enqueueExplored(context: Context, zooms: IntRange) =
+            enqueue(context, KIND_CELLS, CELLS_PREFIX, emptyList(), zooms)
 
         /** The cells [trackIds] reveal (e.g. routes just imported). */
         fun enqueueTracks(context: Context, trackIds: List<String>, zooms: IntRange) =
@@ -65,7 +66,14 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
                 writeText(lines.joinToString("\n"))
             }
             val request = OneTimeWorkRequestBuilder<DownloadWorker>()
-                .setInputData(workDataOf("kind" to kind, "name" to name, "minZoom" to zooms.first, "maxZoom" to zooms.last))
+                .setInputData(
+                    workDataOf(
+                        "kind" to kind,
+                        "name" to name,
+                        "minZoom" to zooms.first,
+                        "maxZoom" to zooms.last
+                    )
+                )
                 .setConstraints(Constraints(requiredNetworkType = NetworkType.CONNECTED))
                 .build()
             WorkManager.getInstance(context).enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.APPEND_OR_REPLACE, request)
@@ -103,10 +111,13 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
                 }
             }
             val box = boundsOfTiles(tiles)
-            app.db.areaDao().insert(DownloadedArea(
-                name = name, minLat = box.south, minLon = box.west, maxLat = box.north, maxLon = box.east,
-                minZoom = zooms.first, maxZoom = zooms.last, fileName = TILE_STORE_FILE, downloadedAt = System.currentTimeMillis(),
-            ))
+            app.db.areaDao().insert(
+                DownloadedArea(
+                    name = name, minLat = box.south, minLon = box.west, maxLat = box.north, maxLon = box.east,
+                    minZoom = zooms.first, maxZoom = zooms.last, fileName = TILE_STORE_FILE,
+                    downloadedAt = System.currentTimeMillis()
+                )
+            )
             return Result.success()
         } finally {
             // Runs on success, failure and cancel; not if the process dies, so a retry still finds the job.
@@ -117,7 +128,11 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
     private fun foregroundInfo(done: Int, total: Int): ForegroundInfo {
         val manager = applicationContext.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(
-            NotificationChannel(CHANNEL_ID, applicationContext.getString(R.string.download_channel), NotificationManager.IMPORTANCE_LOW)
+            NotificationChannel(
+                CHANNEL_ID,
+                applicationContext.getString(R.string.download_channel),
+                NotificationManager.IMPORTANCE_LOW
+            )
         )
         val cancel = WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
         val notification = Notification.Builder(applicationContext, CHANNEL_ID)

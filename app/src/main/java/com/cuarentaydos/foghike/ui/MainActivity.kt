@@ -13,14 +13,10 @@ import android.provider.Settings
 import android.view.Gravity
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -29,6 +25,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -87,7 +87,9 @@ class MainActivity : ComponentActivity() {
     private var followingPaused = false
     private var resumeFollowing: Job? = null
     private val cameraTracking = object : OnCameraTrackingChangedListener {
-        override fun onCameraTrackingDismissed() { if (locationMode != LocationMode.FREE) followingPaused = true }
+        override fun onCameraTrackingDismissed() {
+            if (locationMode != LocationMode.FREE) followingPaused = true
+        }
         override fun onCameraTrackingChanged(mode: Int) {}
     }
 
@@ -101,9 +103,12 @@ class MainActivity : ComponentActivity() {
         if (granted[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
             showUserLocation()
             askBackgroundLocation()
-        }
-        else showMessage(getString(R.string.precise_location_required), getString(R.string.action_settings)) {
-            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
+        } else {
+            showMessage(getString(R.string.precise_location_required), getString(R.string.action_settings)) {
+                startActivity(
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null))
+                )
+            }
         }
     }
 
@@ -145,7 +150,9 @@ class MainActivity : ComponentActivity() {
             // MapLibre's compass goes below the status chip: 8 dp padding + 56 dp row + 8 dp, past the system bars.
             m.uiSettings.compassGravity = Gravity.TOP or Gravity.START
             ViewCompat.setOnApplyWindowInsetsListener(mapView) { _, insets ->
-                val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+                val bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+                )
                 val dp = resources.displayMetrics.density
                 m.uiSettings.setCompassMargins(bars.left + (8 * dp).toInt(), bars.top + (72 * dp).toInt(), 0, 0)
                 insets
@@ -158,7 +165,11 @@ class MainActivity : ComponentActivity() {
                 fog?.refresh(m)
                 if (followingPaused) {
                     resumeFollowing?.cancel()
-                    resumeFollowing = lifecycleScope.launch { delay(RESUME_FOLLOWING_MS); setLocationMode(m, locationMode) }
+                    resumeFollowing =
+                        lifecycleScope.launch {
+                            delay(RESUME_FOLLOWING_MS)
+                            setLocationMode(m, locationMode)
+                        }
                 }
             }
             lifecycleScope.launch { reloadMaps() }
@@ -181,7 +192,7 @@ class MainActivity : ComponentActivity() {
                     onTracks = { startActivity(Intent(this, TracksActivity::class.java)) },
                     onSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
                     onLocation = ::nextLocationMode,
-                    onLocationMode = ::chooseLocationMode,
+                    onLocationMode = ::chooseLocationMode
                 )
             }
         }
@@ -206,7 +217,9 @@ class MainActivity : ComponentActivity() {
 
         if (!hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION) && !prefs.getBoolean("askedStartup", false)) {
             prefs.edit().putBoolean("askedStartup", true).apply()
-            startupPermissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+            startupPermissions.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            )
         }
     }
 
@@ -216,7 +229,11 @@ class MainActivity : ComponentActivity() {
 
     /** Transient message over the toolbar, with at most one action. */
     private fun showMessage(text: String, action: String? = null, onAction: () -> Unit = {}) = lifecycleScope.launch {
-        if (snackbar.showSnackbar(text, action, duration = SnackbarDuration.Long) == SnackbarResult.ActionPerformed) onAction()
+        if (snackbar.showSnackbar(text, action, duration = SnackbarDuration.Long) ==
+            SnackbarResult.ActionPerformed
+        ) {
+            onAction()
+        }
     }
 
     /** My location button tap: Free → Follow → Compass → Free. */
@@ -233,7 +250,9 @@ class MainActivity : ComponentActivity() {
         val m = map ?: return
         if (mode != LocationMode.FREE) {
             if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                return startupPermissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                return startupPermissions.launch(
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                )
             }
             val location = m.locationComponent
             if (!location.isLocationComponentActivated || location.lastKnownLocation == null) {
@@ -260,15 +279,29 @@ class MainActivity : ComponentActivity() {
                 location.cameraMode = CameraMode.NONE
                 m.animateCamera(CameraUpdateFactory.bearingTo(0.0), CAMERA_TRANSITION_MS.toInt())
             }
-            LocationMode.FOLLOW -> location.setCameraMode(CameraMode.TRACKING, CAMERA_TRANSITION_MS, null, 0.0, null, null)
-            LocationMode.COMPASS -> location.setCameraMode(CameraMode.TRACKING_COMPASS, CAMERA_TRANSITION_MS, null, null, null, null)
+            LocationMode.FOLLOW -> location.setCameraMode(
+                CameraMode.TRACKING,
+                CAMERA_TRANSITION_MS,
+                null,
+                0.0,
+                null,
+                null
+            )
+            LocationMode.COMPASS -> location.setCameraMode(
+                CameraMode.TRACKING_COMPASS,
+                CAMERA_TRANSITION_MS,
+                null,
+                null,
+                null,
+                null
+            )
         }
     }
 
     private fun requestTracking() {
         val permissions = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
         )
         // Android 13+: without it the service still runs, but its notification is hidden.
         if (android.os.Build.VERSION.SDK_INT >= 33) permissions += Manifest.permission.POST_NOTIFICATIONS
@@ -277,7 +310,9 @@ class MainActivity : ComponentActivity() {
 
     private fun askBackgroundLocation() {
         // Asked once: it means a trip to the system settings, and the user may have a reason to refuse.
-        if (hasPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) || prefs.getBoolean("askedBackground", false)) {
+        if (hasPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) ||
+            prefs.getBoolean("askedBackground", false)
+        ) {
             return askBatteryExemption()
         }
         prefs.edit().putBoolean("askedBackground", true).apply()
@@ -310,9 +345,13 @@ class MainActivity : ComponentActivity() {
             .addOnSuccessListener { startTracking() }
             .addOnFailureListener { e ->
                 // Airplane mode or Google Location Accuracy off fail this check, yet GPS alone is enough.
-                if (getSystemService(LocationManager::class.java).isLocationEnabled) startTracking()
-                else if (e is ResolvableApiException) enableLocation.launch(IntentSenderRequest.Builder(e.resolution).build())
-                else showMessage(getString(R.string.location_required))
+                if (getSystemService(LocationManager::class.java).isLocationEnabled) {
+                    startTracking()
+                } else if (e is ResolvableApiException) {
+                    enableLocation.launch(IntentSenderRequest.Builder(e.resolution).build())
+                } else {
+                    showMessage(getString(R.string.location_required))
+                }
             }
     }
 
@@ -343,8 +382,11 @@ class MainActivity : ComponentActivity() {
             lifecycleScope.launch { refreshTrail() }
             showUserLocation()
             val latest = list.lastOrNull()
-            if (latest != null) frameArea(m, latest)
-            else m.moveCamera(CameraUpdateFactory.newLatLngBounds(SPAIN_BOUNDS.toLatLngBounds(), 40))
+            if (latest != null) {
+                frameArea(m, latest)
+            } else {
+                m.moveCamera(CameraUpdateFactory.newLatLngBounds(SPAIN_BOUNDS.toLatLngBounds(), 40))
+            }
             // On launch the user's position wins, in the mode chosen in Settings; after a download, the new area does.
             if (firstLoad) {
                 centerOnUser(m)
@@ -381,7 +423,10 @@ class MainActivity : ComponentActivity() {
             .build()
         m.locationComponent.apply {
             activateLocationComponent(
-                LocationComponentActivationOptions.builder(this@MainActivity, style).locationComponentOptions(icons).build()
+                LocationComponentActivationOptions.builder(
+                    this@MainActivity,
+                    style
+                ).locationComponentOptions(icons).build()
             )
             isLocationComponentEnabled = true
             // A style reload frames the new area, so it leaves following instead of pausing it.
@@ -409,10 +454,22 @@ class MainActivity : ComponentActivity() {
         fog?.setOpacity(fogOpacity()) // may have changed in Settings
         lifecycleScope.launch { reloadMaps() }
     }
-    override fun onPause() { mapView.onPause(); super.onPause() }
-    override fun onStop() { mapView.onStop(); super.onStop() }
-    override fun onLowMemory() { super.onLowMemory(); mapView.onLowMemory() }
-    override fun onDestroy() { mapView.onDestroy(); super.onDestroy() }
+    override fun onPause() {
+        mapView.onPause()
+        super.onPause()
+    }
+    override fun onStop() {
+        mapView.onStop()
+        super.onStop()
+    }
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapView.onLowMemory()
+    }
+    override fun onDestroy() {
+        mapView.onDestroy()
+        super.onDestroy()
+    }
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         mapView.onSaveInstanceState(outState)

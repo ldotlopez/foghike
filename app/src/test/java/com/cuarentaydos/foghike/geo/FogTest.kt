@@ -50,7 +50,9 @@ class FogTest {
         assertTrue(fogDensity(100, 2) > fogDensity(1_000, 2))
     }
 
-    private fun List<Pair<Box, Float>>.densityAt(p: LatLon) = filter { it.first.has(p) }.map { it.second }
+    private fun List<Pair<Box, Float>>.densityAt(p: LatLon) = filter {
+        it.first.has(p)
+    }.map { it.second }
 
     @Test
     fun softFogWithNothingRevealedIsOneRectangle() {
@@ -71,8 +73,12 @@ class FogTest {
         val edgeIn = Cell(25, c.row, c.col + 2).bounds()
         val edgeOut = Cell(25, c.row, c.col + 3).bounds()
         val y = (edgeIn.south + edgeIn.north) / 2
-        val inside = pieces.densityAt(LatLon(y, edgeIn.east - (edgeIn.east - edgeIn.west) / 6)).single()
-        val outside = pieces.densityAt(LatLon(y, edgeOut.west + (edgeOut.east - edgeOut.west) / 6)).single()
+        val inside = pieces.densityAt(
+            LatLon(y, edgeIn.east - (edgeIn.east - edgeIn.west) / 6)
+        ).single()
+        val outside = pieces.densityAt(
+            LatLon(y, edgeOut.west + (edgeOut.east - edgeOut.west) / 6)
+        ).single()
         assertTrue(inside in 0.3f..0.5f)
         assertTrue(outside in 0.5f..0.7f)
         assertEquals(listOf(1f), pieces.densityAt(LatLon(40.0001, -3.9999)))

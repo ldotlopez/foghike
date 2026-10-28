@@ -11,7 +11,7 @@ import androidx.sqlite.execSQL
     entities = [RevealedCell::class, TrackPoint::class, DownloadedArea::class, Track::class],
     version = 3,
     // 2: revealed_cell.revealedCount; old coarse cells start at 1 and only grow with new hikes.
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    autoMigrations = [AutoMigration(from = 1, to = 2)]
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun cellDao(): CellDao
@@ -33,7 +33,8 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         )
         connection.execSQL(
             "INSERT INTO track (trackId, source, createdAt, name, startedAt) " +
-                "SELECT trackId, MIN(source), CASE WHEN trackId LIKE 'live-%' THEN CAST(SUBSTR(trackId, 6) AS INTEGER) " +
+                "SELECT trackId, MIN(source), " +
+                "CASE WHEN trackId LIKE 'live-%' THEN CAST(SUBSTR(trackId, 6) AS INTEGER) " +
                 "ELSE CAST(strftime('%s', 'now') AS INTEGER) * 1000 END, NULL, MIN(timestamp) " +
                 "FROM track_point GROUP BY trackId"
         )

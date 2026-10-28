@@ -1,8 +1,8 @@
 package com.cuarentaydos.foghike.ui
 
 import com.cuarentaydos.foghike.core.AppSettings
-import com.cuarentaydos.foghike.data.TrackPoint
 import com.cuarentaydos.foghike.core.trailSegments
+import com.cuarentaydos.foghike.data.TrackPoint
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression.get
 import org.maplibre.android.style.layers.LineLayer
@@ -24,7 +24,10 @@ import org.maplibre.geojson.Point
  */
 class TrailLayer(style: Style, settings: AppSettings) {
     private val source = GeoJsonSource("trail")
-    private val layer = LineLayer("trail", "trail").withProperties(lineOpacity(get("opacity")), lineCap(Property.LINE_CAP_ROUND))
+    private val layer = LineLayer(
+        "trail",
+        "trail"
+    ).withProperties(lineOpacity(get("opacity")), lineCap(Property.LINE_CAP_ROUND))
 
     init {
         style.addSource(source)
@@ -33,15 +36,26 @@ class TrailLayer(style: Style, settings: AppSettings) {
     }
 
     fun apply(s: AppSettings) = layer.setProperties(
-        lineColor(s.trailColor), lineWidth(s.trailWidth.toFloat()), visibility(if (s.showTrail) Property.VISIBLE else Property.NONE),
+        lineColor(s.trailColor),
+        lineWidth(s.trailWidth.toFloat()),
+        visibility(if (s.showTrail) Property.VISIBLE else Property.NONE)
     )
 
     fun show(points: List<TrackPoint>, now: Long, settings: AppSettings) {
-        val features = trailSegments(points, now, settings.trailDurationMs, settings.grid.radius).map { s ->
-            Feature.fromGeometry(LineString.fromLngLats(listOf(
-                Point.fromLngLat(s.fromLon, s.fromLat),
-                Point.fromLngLat(s.toLon, s.toLat),
-            ))).apply { addNumberProperty("opacity", s.opacity) }
+        val features = trailSegments(
+            points,
+            now,
+            settings.trailDurationMs,
+            settings.grid.radius
+        ).map { s ->
+            Feature.fromGeometry(
+                LineString.fromLngLats(
+                    listOf(
+                        Point.fromLngLat(s.fromLon, s.fromLat),
+                        Point.fromLngLat(s.toLon, s.toLat)
+                    )
+                )
+            ).apply { addNumberProperty("opacity", s.opacity) }
         }
         source.setGeoJson(FeatureCollection.fromFeatures(features))
     }

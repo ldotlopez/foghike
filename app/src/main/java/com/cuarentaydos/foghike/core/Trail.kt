@@ -2,7 +2,13 @@ package com.cuarentaydos.foghike.core
 
 import com.cuarentaydos.foghike.data.TrackPoint
 
-data class TrailSegment(val fromLat: Double, val fromLon: Double, val toLat: Double, val toLon: Double, val opacity: Float)
+data class TrailSegment(
+    val fromLat: Double,
+    val fromLon: Double,
+    val toLat: Double,
+    val toLon: Double,
+    val opacity: Float
+)
 
 /**
  * Segments between consecutive accurate points of the same track (points sorted by track and

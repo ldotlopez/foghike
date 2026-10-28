@@ -26,16 +26,33 @@ data class GpsPoint(val lat: Double, val lon: Double, val time: Long?, val accur
  * Inaccurate points are stored but never reveal anything: they would clear fog where the user wasn't.
  */
 suspend fun recordPoints(
-    db: AppDatabase, grid: RevealGrid, trackId: String, firstIndex: Int, points: List<GpsPoint>, source: String,
-    name: String? = null,
+    db: AppDatabase,
+    grid: RevealGrid,
+    trackId: String,
+    firstIndex: Int,
+    points: List<GpsPoint>,
+    source: String,
+    name: String? = null
 ) {
     // shortcut: System.currentTimeMillis and withTransaction are JVM/Android-only; at the iOS port use
     // kotlin.time.Clock and db.useWriterConnection { it.immediateTransaction { ... } }.
     val now = System.currentTimeMillis()
     db.withTransaction {
-        db.trackDao().insertIgnoringExisting(Track(trackId, source, now, name, points.firstNotNullOfOrNull { it.time }))
+        db.trackDao().insertIgnoringExisting(
+            Track(
+                trackId,
+                source,
+                now,
+                name,
+                points.firstNotNullOfOrNull {
+                    it.time
+                }
+            )
+        )
         db.trackPointDao().insert(
-            points.mapIndexed { i, p -> TrackPoint(trackId, firstIndex + i, p.lat, p.lon, p.time, p.accuracy, source) }
+            points.mapIndexed { i, p ->
+                TrackPoint(trackId, firstIndex + i, p.lat, p.lon, p.time, p.accuracy, source)
+            }
         )
         revealCells(db, grid, points, source, now)
     }
@@ -54,10 +71,20 @@ fun cellsRevealedBy(points: List<GpsPoint>, grid: RevealGrid): Set<Cell> {
 private suspend fun revealCells(db: AppDatabase, grid: RevealGrid, points: List<GpsPoint>, source: String, now: Long) {
     val cells = cellsRevealedBy(points, grid)
     val cellDao = db.cellDao()
-    val ids = cellDao.insertIgnoringExisting(cells.map { RevealedCell(it.id, it.size, it.row, it.col, now, source) })
+    val ids = cellDao.insertIgnoringExisting(
+        cells.map {
+            RevealedCell(it.id, it.size, it.row, it.col, now, source)
+        }
+    )
     // Only base cells revealed for the first time add to their coarse cells' counts.
-    val coarse = cells.filterIndexed { i, _ -> ids[i] != -1L }.flatMap(::coarseCells).groupingBy { it }.eachCount()
-    cellDao.insertIgnoringExisting(coarse.keys.map { RevealedCell(it.id, it.size, it.row, it.col, now, source, 0) })
+    val coarse = cells.filterIndexed { i, _ ->
+        ids[i] != -1L
+    }.flatMap(::coarseCells).groupingBy { it }.eachCount()
+    cellDao.insertIgnoringExisting(
+        coarse.keys.map {
+            RevealedCell(it.id, it.size, it.row, it.col, now, source, 0)
+        }
+    )
     coarse.forEach { (cell, n) -> cellDao.addToCount(cell.id, n) }
 }
 
@@ -67,7 +94,12 @@ private suspend fun revealCells(db: AppDatabase, grid: RevealGrid, points: List<
  * if it was already imported.
  */
 suspend fun importTrack(
-    db: AppDatabase, grid: RevealGrid, idPrefix: String, points: List<GpsPoint>, source: String, name: String? = null,
+    db: AppDatabase,
+    grid: RevealGrid,
+    idPrefix: String,
+    points: List<GpsPoint>,
+    source: String,
+    name: String? = null
 ): String? {
     val trackId = idPrefix + trackFingerprint(points.map { LatLon(it.lat, it.lon) })
     if (db.trackPointDao().exists(trackId)) return null
@@ -96,7 +128,9 @@ suspend fun rebuildCells(db: AppDatabase, grid: RevealGrid) {
     db.withTransaction {
         db.cellDao().deleteAll()
         for (track in db.trackDao().ownFirst()) {
-            val points = db.trackPointDao().ofTrack(track.trackId).map { GpsPoint(it.lat, it.lon, it.timestamp, it.accuracy) }
+            val points = db.trackPointDao().ofTrack(track.trackId).map {
+                GpsPoint(it.lat, it.lon, it.timestamp, it.accuracy)
+            }
             revealCells(db, grid, points, track.source, now)
         }
     }

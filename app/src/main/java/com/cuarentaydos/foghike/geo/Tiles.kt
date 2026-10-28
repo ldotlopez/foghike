@@ -45,5 +45,6 @@ fun tilesCovering(cells: Iterable<Cell>, z: Int): Set<Tile> {
 }
 
 fun tileCount(box: Box, minZoom: Int, maxZoom: Int): Long = (minZoom..maxZoom).sumOf { z ->
-    (tileX(box.east, z) - tileX(box.west, z) + 1).toLong() * (tileY(box.south, z) - tileY(box.north, z) + 1)
+    (tileX(box.east, z) - tileX(box.west, z) + 1).toLong() *
+        (tileY(box.south, z) - tileY(box.north, z) + 1)
 }

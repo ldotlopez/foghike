@@ -95,7 +95,7 @@ fun SettingsScreen(
     snackbar: SnackbarHostState,
     onDownloadExplored: () -> Unit,
     onCleanup: () -> Unit,
-    onBack: () -> Unit,
+    onBack: () -> Unit
 ) {
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -105,11 +105,16 @@ fun SettingsScreen(
                 navigationIcon = {
                     val back = stringResource(R.string.action_back)
                     WithTooltip(back) {
-                        IconButton(onBack, enabled = !busy) { Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = back) }
+                        IconButton(onBack, enabled = !busy) {
+                            Icon(
+                                painterResource(R.drawable.ic_arrow_back),
+                                contentDescription = back
+                            )
+                        }
                     }
-                },
+                }
             )
-        },
+        }
     ) { padding ->
         if (busy) {
             Column(Modifier.padding(padding).padding(16.dp).fillMaxWidth()) {
@@ -122,10 +127,16 @@ fun SettingsScreen(
         val recalculate = stringResource(R.string.recalculate_on_close)
         Column(Modifier.padding(padding).verticalScroll(rememberScrollState())) {
             SectionHeader(R.string.section_map)
-            ChoiceItem(stringResource(R.string.start_mode), s.startMode, LocationMode.entries, { stringResource(locationModeName(it)) }) {
+            ChoiceItem(stringResource(R.string.start_mode), s.startMode, LocationMode.entries, {
+                stringResource(locationModeName(it))
+            }) {
                 onSettings(s.copy(startMode = it))
             }
-            SwitchItem(stringResource(R.string.battery_saver), stringResource(R.string.battery_saver_detail), s.batterySaver) {
+            SwitchItem(
+                stringResource(R.string.battery_saver),
+                stringResource(R.string.battery_saver_detail),
+                s.batterySaver
+            ) {
                 onSettings(s.copy(batterySaver = it))
             }
 
@@ -145,53 +156,117 @@ fun SettingsScreen(
                             value = fogOpacity / 100f,
                             onValueChange = { onFogOpacity((it * 20).roundToInt() * 5) },
                             steps = 19, // 5 % steps: 0, 5, … 100
-                            modifier = Modifier.semantics { contentDescription = opacityLabel },
+                            modifier = Modifier.semantics { contentDescription = opacityLabel }
                         )
                         FogPreview(fogOpacity)
                         IgnAttribution()
                     }
-                },
+                }
             )
             ChoiceItem(
-                stringResource(R.string.cell_size), s.cellSize, CELL_SIZES, { stringResource(R.string.meters, it) },
-                note = recalculate.takeIf { s.cellSize != cellsBuiltWith.cellSize },
+                stringResource(R.string.cell_size),
+                s.cellSize,
+                CELL_SIZES,
+                {
+                    stringResource(R.string.meters, it)
+                },
+                note = recalculate.takeIf { s.cellSize != cellsBuiltWith.cellSize }
             ) { onSettings(s.copy(cellSize = it)) }
             ChoiceItem(
-                stringResource(R.string.reveal_radius), s.radiusFactor, RADIUS_FACTORS,
+                stringResource(R.string.reveal_radius),
+                s.radiusFactor,
+                RADIUS_FACTORS,
                 { stringResource(R.string.radius_option, it, (s.cellSize * it).roundToInt()) },
-                note = recalculate.takeIf { s.radiusFactor != cellsBuiltWith.radiusFactor },
+                note = recalculate.takeIf { s.radiusFactor != cellsBuiltWith.radiusFactor }
             ) { onSettings(s.copy(radiusFactor = it)) }
             ChoiceItem(stringResource(R.string.fog_mode), s.fogMode, FogMode.entries, {
-                stringResource(if (it == FogMode.DENSITY) R.string.fog_mode_density else R.string.fog_mode_any_cell)
+                stringResource(
+                    if (it ==
+                        FogMode.DENSITY
+                    ) {
+                        R.string.fog_mode_density
+                    } else {
+                        R.string.fog_mode_any_cell
+                    }
+                )
             }) { onSettings(s.copy(fogMode = it)) }
-            SwitchItem(stringResource(R.string.slow_phone), stringResource(R.string.slow_phone_detail), s.slowPhone) {
+            SwitchItem(
+                stringResource(R.string.slow_phone),
+                stringResource(R.string.slow_phone_detail),
+                s.slowPhone
+            ) {
                 onSettings(s.copy(slowPhone = it))
             }
             // While a preset is on, the rows it sets show its value, disabled; turning it off brings back the user's own.
-            ChoiceItem(stringResource(R.string.fog_detail), s.effectiveFogDetail, FOG_DETAILS, {
-                stringResource(when (it) { 2 -> R.string.detail_high; 4 -> R.string.detail_medium; else -> R.string.detail_low })
-            }, setByPreset = R.string.slow_phone.takeIf { s.slowPhone }) { onSettings(s.copy(fogDetail = it)) }
-            ChoiceItem(stringResource(R.string.fog_edge), s.effectiveFogEdge, FOG_EDGES, {
-                stringResource(when (it) { 0 -> R.string.fog_edge_off; 3 -> R.string.fog_edge_low; else -> R.string.fog_edge_high })
-            }, setByPreset = R.string.slow_phone.takeIf { s.slowPhone }) { onSettings(s.copy(fogEdge = it)) }
             ChoiceItem(
-                stringResource(R.string.gps_interval), s.effectiveGpsIntervalSeconds, GPS_INTERVALS, { stringResource(R.string.seconds, it) },
-                setByPreset = R.string.battery_saver.takeIf { s.batterySaver },
+                stringResource(R.string.fog_detail),
+                s.effectiveFogDetail,
+                FOG_DETAILS,
+                {
+                    stringResource(
+                        when (it) {
+                            2 -> R.string.detail_high
+                            4 -> R.string.detail_medium
+                            else -> R.string.detail_low
+                        }
+                    )
+                },
+                setByPreset = R.string.slow_phone.takeIf {
+                    s.slowPhone
+                }
+            ) { onSettings(s.copy(fogDetail = it)) }
+            ChoiceItem(
+                stringResource(R.string.fog_edge),
+                s.effectiveFogEdge,
+                FOG_EDGES,
+                {
+                    stringResource(
+                        when (it) {
+                            0 -> R.string.fog_edge_off
+                            3 -> R.string.fog_edge_low
+                            else -> R.string.fog_edge_high
+                        }
+                    )
+                },
+                setByPreset = R.string.slow_phone.takeIf {
+                    s.slowPhone
+                }
+            ) { onSettings(s.copy(fogEdge = it)) }
+            ChoiceItem(
+                stringResource(R.string.gps_interval),
+                s.effectiveGpsIntervalSeconds,
+                GPS_INTERVALS,
+                {
+                    stringResource(R.string.seconds, it)
+                },
+                setByPreset = R.string.battery_saver.takeIf { s.batterySaver }
             ) { onSettings(s.copy(gpsIntervalSeconds = it)) }
-            ChoiceItem(stringResource(R.string.user_zoom), s.userZoom, USER_ZOOMS, { "$it" }) { onSettings(s.copy(userZoom = it)) }
-            SwitchItem(stringResource(R.string.show_trail), stringResource(R.string.show_trail_detail), s.showTrail) {
+            ChoiceItem(stringResource(R.string.user_zoom), s.userZoom, USER_ZOOMS, {
+                "$it"
+            }) { onSettings(s.copy(userZoom = it)) }
+            SwitchItem(
+                stringResource(R.string.show_trail),
+                stringResource(R.string.show_trail_detail),
+                s.showTrail
+            ) {
                 onSettings(s.copy(showTrail = it))
             }
             if (s.showTrail) {
-                ChoiceItem(stringResource(R.string.trail_duration), s.trailMinutes, TRAIL_MINUTES, { stringResource(R.string.minutes, it) }) {
+                ChoiceItem(stringResource(R.string.trail_duration), s.trailMinutes, TRAIL_MINUTES, {
+                    stringResource(R.string.minutes, it)
+                }) {
                     onSettings(s.copy(trailMinutes = it))
                 }
                 ChoiceItem(
-                    stringResource(R.string.trail_color), s.trailColor, TRAIL_COLORS,
+                    stringResource(R.string.trail_color),
+                    s.trailColor,
+                    TRAIL_COLORS,
                     { stringResource(TRAIL_COLOR_NAMES[TRAIL_COLORS.indexOf(it)]) },
-                    swatch = { Color(it.toColorInt()) },
+                    swatch = { Color(it.toColorInt()) }
                 ) { onSettings(s.copy(trailColor = it)) }
-                ChoiceItem(stringResource(R.string.trail_width), s.trailWidth, TRAIL_WIDTHS, { stringResource(R.string.pixels, it) }) {
+                ChoiceItem(stringResource(R.string.trail_width), s.trailWidth, TRAIL_WIDTHS, {
+                    stringResource(R.string.pixels, it)
+                }) {
                     onSettings(s.copy(trailWidth = it))
                 }
             }
@@ -201,21 +276,26 @@ fun SettingsScreen(
             ListItem(
                 headlineContent = { Text(stringResource(R.string.download_explored)) },
                 supportingContent = { Text(stringResource(R.string.download_explored_detail)) },
-                modifier = Modifier.clickable(onClick = onDownloadExplored),
+                modifier = Modifier.clickable(onClick = onDownloadExplored)
             )
             ListItem(
                 headlineContent = { Text(stringResource(R.string.cleanup_maps)) },
-                supportingContent = { Text(stringResource(R.string.maps_storage, fileSize(mapsBytes))) },
-                modifier = Modifier.clickable(onClick = onCleanup),
+                supportingContent = {
+                    Text(stringResource(R.string.maps_storage, fileSize(mapsBytes)))
+                },
+                modifier = Modifier.clickable(onClick = onCleanup)
             )
 
             SectionHeader(R.string.section_about)
-            ListItem(headlineContent = { Text(stringResource(R.string.version)) }, trailingContent = { Text(version) })
+            ListItem(headlineContent = {
+                Text(stringResource(R.string.version))
+            }, trailingContent = { Text(version) })
         }
     }
 }
 
-private val TRAIL_COLOR_NAMES = listOf(R.string.color_orange, R.string.color_yellow, R.string.color_pink, R.string.color_cyan)
+private val TRAIL_COLOR_NAMES =
+    listOf(R.string.color_orange, R.string.color_yellow, R.string.color_pink, R.string.color_cyan)
 
 /**
  * A setting picked from a closed list: the row shows the current value (and [note], smaller, if
@@ -231,22 +311,31 @@ private fun <T> ChoiceItem(
     note: String? = null,
     swatch: ((T) -> Color)? = null,
     setByPreset: Int? = null,
-    onSelect: (T) -> Unit,
+    onSelect: (T) -> Unit
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
     val enabled = setByPreset == null
-    val shownNote = setByPreset?.let { stringResource(R.string.set_by_preset, stringResource(it)) } ?: note
+    val shownNote =
+        setByPreset?.let { stringResource(R.string.set_by_preset, stringResource(it)) } ?: note
     ListItem(
         headlineContent = { Text(label) },
         supportingContent = {
             Column {
                 Text(name(value))
-                if (shownNote != null) Text(shownNote, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+                if (shownNote !=
+                    null
+                ) {
+                    Text(
+                        shownNote,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
             }
         },
         leadingContent = swatch?.let { { Swatch(it(value)) } },
         // Material's disabled look: 38 % opacity.
-        modifier = Modifier.clickable(enabled) { open = true }.alpha(if (enabled) 1f else 0.38f),
+        modifier = Modifier.clickable(enabled) { open = true }.alpha(if (enabled) 1f else 0.38f)
     )
     if (!open || !enabled) return
     AlertDialog(
@@ -258,8 +347,11 @@ private fun <T> ChoiceItem(
                 for (option in options) {
                     Row(
                         Modifier.fillMaxWidth().height(MIN_TOUCH_TARGET)
-                            .selectable(option == value, role = Role.RadioButton) { open = false; onSelect(option) },
-                        verticalAlignment = Alignment.CenterVertically,
+                            .selectable(option == value, role = Role.RadioButton) {
+                                open = false
+                                onSelect(option)
+                            },
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(option == value, onClick = null)
                         Spacer(Modifier.size(16.dp))
@@ -271,7 +363,7 @@ private fun <T> ChoiceItem(
                     }
                 }
             }
-        },
+        }
     )
 }
 
@@ -284,7 +376,7 @@ private fun SwitchItem(label: String, detail: String, checked: Boolean, onChange
     headlineContent = { Text(label) },
     supportingContent = { Text(detail) },
     trailingContent = { Switch(checked, onCheckedChange = null) },
-    modifier = Modifier.toggleable(checked, role = Role.Switch, onValueChange = onChange),
+    modifier = Modifier.toggleable(checked, role = Role.Switch, onValueChange = onChange)
 )
 
 @Composable
@@ -292,7 +384,7 @@ private fun SectionHeader(text: Int) = Text(
     stringResource(text),
     style = MaterialTheme.typography.labelLarge,
     color = MaterialTheme.colorScheme.primary,
-    modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 4.dp),
+    modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 4.dp)
 )
 
 /**
@@ -303,13 +395,23 @@ private fun SectionHeader(text: Int) = Text(
 private fun FogPreview(opacity: Int) {
     val fog = remember {
         val size = FOG_TEXTURE_SIZE
-        val bitmap = Bitmap.createBitmap(fogTexture(size), size, size, Bitmap.Config.ARGB_8888).asImageBitmap()
+        val bitmap = Bitmap.createBitmap(
+            fogTexture(size),
+            size,
+            size,
+            Bitmap.Config.ARGB_8888
+        ).asImageBitmap()
         // Repeated at its pixel size, as MapLibre repeats it as a fill pattern.
         ShaderBrush(ImageShader(bitmap, TileMode.Repeated, TileMode.Repeated))
     }
     Card(Modifier.fillMaxWidth().padding(vertical = 8.dp).height(120.dp)) {
         Box {
-            Image(painterResource(R.drawable.fog_preview_sample), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            Image(
+                painterResource(R.drawable.fog_preview_sample),
+                null,
+                Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
             Box(Modifier.fillMaxSize().background(fog, alpha = opacity / 100f))
         }
     }
@@ -318,18 +420,50 @@ private fun FogPreview(opacity: Int) {
 // Previews: one per state in docs/ui/screens/settings.md. ui/SettingsScreenScreenshotTest.kt renders them.
 
 @Composable
-internal fun SettingsPreview(opacity: Int = 70, initial: AppSettings = AppSettings(), busy: Boolean = false) = FogHikeTheme {
-    var value by remember { mutableIntStateOf(opacity) }
-    var settings by remember { mutableStateOf(initial) }
-    SettingsScreen(value, { value = it }, settings, AppSettings(), { settings = it }, busy, "0.1 (1)", 48_300_000L, remember { SnackbarHostState() }, {}, {}, {})
-}
+internal fun SettingsPreview(opacity: Int = 70, initial: AppSettings = AppSettings(), busy: Boolean = false) =
+    FogHikeTheme {
+        var value by remember { mutableIntStateOf(opacity) }
+        var settings by remember { mutableStateOf(initial) }
+        SettingsScreen(value, {
+            value = it
+        }, settings, AppSettings(), {
+            settings = it
+        }, busy, "0.1 (1)", 48_300_000L, remember { SnackbarHostState() }, {}, {}, {})
+    }
 
-@Preview(showSystemUi = true) @Composable internal fun SettingsDefault() = SettingsPreview()
-@Preview(showSystemUi = true) @Composable internal fun SettingsOpacityMin() = SettingsPreview(0)
-@Preview(showSystemUi = true) @Composable internal fun SettingsOpacityMax() = SettingsPreview(100)
-@Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES) @Composable internal fun SettingsDark() = SettingsPreview()
+@Preview(showSystemUi = true)
+@Composable
+internal fun SettingsDefault() = SettingsPreview()
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun SettingsOpacityMin() = SettingsPreview(0)
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun SettingsOpacityMax() = SettingsPreview(100)
+
+@Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+internal fun SettingsDark() = SettingsPreview()
+
 // Tall, to show every row: the default values, then pending recalculation with the grouping switches on.
-@Preview(heightDp = 1800) @Composable internal fun SettingsAll() = SettingsPreview()
-@Preview(heightDp = 1500) @Composable internal fun SettingsPending() =
-    SettingsPreview(initial = AppSettings(cellSize = 50, radiusFactor = 2.0, slowPhone = true, batterySaver = true, showTrail = false))
-@Preview(showSystemUi = true) @Composable internal fun SettingsRecalculating() = SettingsPreview(busy = true)
+@Preview(heightDp = 1800)
+@Composable
+internal fun SettingsAll() = SettingsPreview()
+
+@Preview(heightDp = 1500)
+@Composable
+internal fun SettingsPending() = SettingsPreview(
+    initial = AppSettings(
+        cellSize = 50,
+        radiusFactor = 2.0,
+        slowPhone = true,
+        batterySaver = true,
+        showTrail = false
+    )
+)
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun SettingsRecalculating() = SettingsPreview(busy = true)

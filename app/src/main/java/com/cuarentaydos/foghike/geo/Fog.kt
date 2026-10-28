@@ -71,7 +71,10 @@ fun softFogRects(box: Box, size: Int, revealed: Collection<Cell>, steps: Int): L
     val edge = HashSet<Cell>() // cells on either side of an edge
     for (c in clear) {
         val fog = neighbours(c).filter { it !in clear }
-        if (fog.isNotEmpty()) { edge += c; edge += fog }
+        if (fog.isNotEmpty()) {
+            edge += c
+            edge += fog
+        }
     }
     val pieces = fogRects(box, size, clear + edge).mapTo(mutableListOf()) { it to 1f }
 
@@ -84,7 +87,15 @@ fun softFogRects(box: Box, size: Int, revealed: Collection<Cell>, steps: Int): L
         fun density(i: Int, j: Int): Float {
             val y = c.row + (i + 0.5) / steps
             val x = c.col + (j + 0.5) / steps
-            val d = others.minOf { o -> hypot(max(0.0, abs(x - o.col - 0.5) - 0.5), max(0.0, abs(y - o.row - 0.5) - 0.5)) }
+            val d = others.minOf { o ->
+                hypot(
+                    max(0.0, abs(x - o.col - 0.5) - 0.5),
+                    max(
+                        0.0,
+                        abs(y - o.row - 0.5) - 0.5
+                    )
+                )
+            }
             val ramp = if (inside) (1 - d) / 2 else (1 + d) / 2
             // Rounded to 1/(2·steps) so neighbouring pieces with almost the same density merge.
             return (ramp.coerceIn(0.0, 1.0) * 2 * steps).roundToInt() / (2f * steps)
@@ -95,7 +106,12 @@ fun softFogRects(box: Box, size: Int, revealed: Collection<Cell>, steps: Int): L
                 val dens = density(i, j)
                 var k = j + 1
                 while (k < steps && density(i, k) == dens) k++
-                val piece = Box(b.south + i * h, b.west + j * w, b.south + (i + 1) * h, b.west + k * w).clippedTo(box)
+                val piece = Box(
+                    b.south + i * h,
+                    b.west + j * w,
+                    b.south + (i + 1) * h,
+                    b.west + k * w
+                ).clippedTo(box)
                 if (dens > 0f && piece != null) pieces += piece to dens
                 j = k
             }
@@ -105,6 +121,12 @@ fun softFogRects(box: Box, size: Int, revealed: Collection<Cell>, steps: Int): L
 }
 
 private fun Box.clippedTo(other: Box): Box? {
-    val b = Box(max(south, other.south), max(west, other.west), min(north, other.north), min(east, other.east))
+    val b =
+        Box(
+            max(south, other.south),
+            max(west, other.west),
+            min(north, other.north),
+            min(east, other.east)
+        )
     return b.takeIf { it.south < it.north && it.west < it.east }
 }

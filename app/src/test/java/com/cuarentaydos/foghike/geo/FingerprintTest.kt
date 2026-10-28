@@ -9,7 +9,14 @@ class FingerprintTest {
 
     @Test
     fun sameCoordinatesSameFingerprint() {
-        assertEquals(trackFingerprint(route), trackFingerprint(route.map { LatLon(it.lat + 1e-9, it.lon) }))
+        assertEquals(
+            trackFingerprint(route),
+            trackFingerprint(
+                route.map {
+                    LatLon(it.lat + 1e-9, it.lon)
+                }
+            )
+        )
     }
 
     @Test

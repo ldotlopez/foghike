@@ -36,11 +36,14 @@ class MainScreenScreenshotTest {
     }
 
     @Test fun s3ExploringCollapsed() = capture { MainExploringCollapsed() }
+
     @Test fun s4NoMaps() = capture { MainNoMaps() }
+
     @Test fun s5Snackbar() = capture { MainSnackbar() }
 
     @OptIn(ExperimentalRoborazziApi::class) // the dialog is its own window
-    @Test fun s6Help() {
+    @Test
+    fun s6Help() {
         compose.setContent { MainDefault() }
         compose.onNodeWithContentDescription("Help").performClick()
         compose.waitForIdle() // screen captures don't wait for Compose by themselves
@@ -48,9 +51,12 @@ class MainScreenScreenshotTest {
     }
 
     @Config(qualifiers = "+night")
-    @Test fun s7Dark() = capture { MainDark() }
+    @Test
+    fun s7Dark() = capture { MainDark() }
 
     @Test fun s8Following() = capture { MainFollowing() }
+
     @Test fun s9Compass() = capture { MainCompass() }
+
     @Test fun s10Loading() = capture { MainLoading() }
 }

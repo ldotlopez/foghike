@@ -45,7 +45,10 @@ class GridTest {
         // π·30² / 25² ≈ 4.5 cells on average
         assertTrue(cells.size in 2..9)
         // Nothing just outside the candidate window was missed: a wider search finds the same set.
-        val wider = cellsInRadius(madrid, 25, 60.0).filter { haversineMeters(madrid, it.center()) <= 30.0 }
+        val wider = cellsInRadius(madrid, 25, 60.0).filter {
+            haversineMeters(madrid, it.center()) <=
+                30.0
+        }
         assertEquals(wider.toSet(), cells.toSet())
     }
 

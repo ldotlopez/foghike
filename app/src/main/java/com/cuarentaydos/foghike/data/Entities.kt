@@ -25,7 +25,7 @@ data class RevealedCell(
     val gridCol: Int,
     val firstRevealedAt: Long,
     val source: String,
-    @ColumnInfo(defaultValue = "1") val revealedCount: Int = 1,
+    @ColumnInfo(defaultValue = "1") val revealedCount: Int = 1
 )
 
 /**
@@ -40,7 +40,7 @@ data class TrackPoint(
     val lon: Double,
     val timestamp: Long?,
     val accuracy: Float?,
-    val source: String,
+    val source: String
 )
 
 /**
@@ -55,7 +55,7 @@ data class Track(
     val source: String,
     val createdAt: Long,
     val name: String? = null,
-    val startedAt: Long? = null,
+    val startedAt: Long? = null
 )
 
 /**
@@ -77,7 +77,7 @@ data class DownloadedArea(
     val maxZoom: Int,
     /** File name of the .mbtiles inside the maps directory. */
     val fileName: String,
-    val downloadedAt: Long,
+    val downloadedAt: Long
 ) {
     /** Drawn by hand on the download screen (shown as a box there, kept on request when cleaning up). */
     val isManual get() = !name.startsWith(CELLS_PREFIX)

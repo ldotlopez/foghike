@@ -17,7 +17,10 @@ class TilesTest {
     fun aCellInsideATileCoversOnlyThatTile() {
         val cell = cellAt(LatLon(40.4168, -3.7038), 25)
         val c = cell.center()
-        assertEquals(setOf(Tile(10, tileX(c.lon, 10), tileY(c.lat, 10))), tilesCovering(listOf(cell), 10))
+        assertEquals(
+            setOf(Tile(10, tileX(c.lon, 10), tileY(c.lat, 10))),
+            tilesCovering(listOf(cell), 10)
+        )
     }
 
     @Test
@@ -32,9 +35,29 @@ class TilesTest {
     @Test
     fun aCorridorNeedsFewerTilesThanItsBox() {
         // 2 km walk north, three cells wide: at zoom 17 its tiles are a subset of the bounding box's.
-        val cells = (0..80).flatMap { i -> (-1..1).map { j -> cellAt(LatLon(40.0 + i * 0.000225, -3.7 + j * 0.0003), 25) } }
+        val cells = (0..80).flatMap { i ->
+            (-1..1).map { j ->
+                cellAt(
+                    LatLon(
+                        40.0 + i * 0.000225,
+                        -3.7 + j * 0.0003
+                    ),
+                    25
+                )
+            }
+        }
         val covering = tilesCovering(cells, 17)
-        val box = Box(cells.minOf { it.bounds().south }, cells.minOf { it.bounds().west }, cells.maxOf { it.bounds().north }, cells.maxOf { it.bounds().east })
+        val box =
+            Box(
+                cells.minOf {
+                    it.bounds().south
+                },
+                cells.minOf {
+                    it.bounds().west
+                },
+                cells.maxOf { it.bounds().north },
+                cells.maxOf { it.bounds().east }
+            )
         val boxTiles = tilesFor(box, 17, 17).toSet()
         assert(boxTiles.containsAll(covering))
         assert(covering.isNotEmpty() && covering.size <= boxTiles.size)

@@ -1,10 +1,10 @@
 package com.cuarentaydos.foghike.gpx
 
 import com.cuarentaydos.foghike.core.GpsPoint
+import java.io.StringReader
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.kxml2.io.KXmlParser
-import java.io.StringReader
 
 class GpxParserTest {
     private val gpx = """
@@ -30,9 +30,9 @@ class GpxParserTest {
             listOf(
                 GpsPoint(40.1, -3.5, 1714557600000),
                 GpsPoint(40.2, -3.6, 1714557605000),
-                GpsPoint(40.3, -3.7, null),
+                GpsPoint(40.3, -3.7, null)
             ),
-            parseGpx(parser).points,
+            parseGpx(parser).points
         )
     }
 
@@ -40,10 +40,14 @@ class GpxParserTest {
 
     @Test
     fun readsTheRouteName() {
-        val author = "<metadata><author><name>Author</name></author></metadata><wpt lat=\"1\" lon=\"1\"><name>Spring</name></wpt>"
+        val author = "<metadata><author><name>Author</name></author></metadata>" +
+            "<wpt lat=\"1\" lon=\"1\"><name>Spring</name></wpt>"
         assertEquals(null, nameOf("<gpx>$author<trk><trkseg/></trk></gpx>"))
         assertEquals("Meta", nameOf("<gpx><metadata><name>Meta</name></metadata>$author<trk><trkseg/></trk></gpx>"))
-        assertEquals("Castellón", nameOf("<gpx><metadata><name>Meta</name></metadata><trk><name> Castellón </name></trk></gpx>"))
+        assertEquals(
+            "Castellón",
+            nameOf("<gpx><metadata><name>Meta</name></metadata><trk><name> Castellón </name></trk></gpx>")
+        )
         assertEquals("x".repeat(MAX_GPX_NAME), nameOf("<gpx><trk><name>${"x".repeat(500)}</name></trk></gpx>"))
     }
 }

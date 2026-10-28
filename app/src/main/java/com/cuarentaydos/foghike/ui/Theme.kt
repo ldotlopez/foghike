@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.AlertDialog
@@ -47,7 +47,10 @@ val MIN_TOUCH_TARGET = 56.dp
 /** Material 3 theme with the fixed brand palette from [Color.kt], following the phone's light/dark setting. */
 @Composable
 fun FogHikeTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors, content = content)
+    MaterialTheme(
+        colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors,
+        content = content
+    )
 }
 
 /** Shows [label] in a tooltip when [content] is long-pressed, so an icon's meaning can always be checked. */
@@ -58,13 +61,19 @@ fun WithTooltip(label: String, content: @Composable () -> Unit) {
         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
         tooltip = { PlainTooltip { Text(label) } },
         state = rememberTooltipState(),
-        content = content,
+        content = content
     )
 }
 
 /** Icon-only button for toolbars: [label] is both the screen-reader description and the tooltip. */
 @Composable
-fun MapIconButton(icon: Int, label: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun MapIconButton(
+    icon: Int,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
     WithTooltip(label) {
         IconButton(onClick, modifier.size(MIN_TOUCH_TARGET), enabled = enabled) {
             Icon(painterResource(icon), contentDescription = label)
@@ -78,10 +87,19 @@ fun MapIconButton(icon: Int, label: String, onClick: () -> Unit, modifier: Modif
  * Tonal so it stays visible over map imagery.
  */
 @Composable
-fun HelpButton(title: String, text: String, modifier: Modifier = Modifier, openFirst: Boolean = false, onClosed: () -> Unit = {}) {
+fun HelpButton(
+    title: String,
+    text: String,
+    modifier: Modifier = Modifier,
+    openFirst: Boolean = false,
+    onClosed: () -> Unit = {}
+) {
     // rememberSaveable keeps the dialog open when the phone rotates or the activity is recreated.
     var open by rememberSaveable { mutableStateOf(openFirst) }
-    val close = { open = false; onClosed() }
+    val close = {
+        open = false
+        onClosed()
+    }
     val label = stringResource(R.string.action_help)
     WithTooltip(label) {
         FilledTonalIconButton({ open = true }, modifier.size(MIN_TOUCH_TARGET)) {
@@ -93,7 +111,7 @@ fun HelpButton(title: String, text: String, modifier: Modifier = Modifier, openF
             onDismissRequest = close,
             confirmButton = { TextButton(close) { Text(stringResource(R.string.close)) } },
             title = { Text(title) },
-            text = { Text(text) },
+            text = { Text(text) }
         )
     }
 }
@@ -113,25 +131,52 @@ fun MapToolbar(
     modifier: Modifier = Modifier,
     onExpandedChange: ((Boolean) -> Unit)? = null,
     pinned: @Composable RowScope.() -> Unit = {},
-    content: @Composable RowScope.() -> Unit,
+    content: @Composable RowScope.() -> Unit
 ) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(
+        modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
         // Tight spacing: FAB + handle + 4 icons at 56 dp must fit a 360 dp phone.
         fab()
-        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainer, shadowElevation = 3.dp) {
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            shadowElevation = 3.dp
+        ) {
             Row {
                 pinned()
                 // Unfolds out of the handle, which stays at the right end in both states.
                 AnimatedVisibility(
                     expanded,
                     enter = expandHorizontally(expandFrom = Alignment.End) + fadeIn(),
-                    exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut(),
+                    exit = shrinkHorizontally(shrinkTowards = Alignment.End) + fadeOut()
                 ) {
                     Row(content = content)
                 }
                 if (onExpandedChange != null) {
-                    if (expanded) MapIconButton(R.drawable.ic_close, stringResource(R.string.action_hide_toolbar), { onExpandedChange(false) })
-                    else MapIconButton(R.drawable.ic_more_horiz, stringResource(R.string.action_show_toolbar), { onExpandedChange(true) })
+                    if (expanded) {
+                        MapIconButton(
+                            R.drawable.ic_close,
+                            stringResource(
+                                R.string.action_hide_toolbar
+                            ),
+                            {
+                                onExpandedChange(false)
+                            }
+                        )
+                    } else {
+                        MapIconButton(
+                            R.drawable.ic_more_horiz,
+                            stringResource(
+                                R.string.action_show_toolbar
+                            ),
+                            {
+                                onExpandedChange(true)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -141,7 +186,10 @@ fun MapToolbar(
 /** [IgnAttribution] over the map, on a tight translucent background that keeps it readable over bright imagery. */
 @Composable
 fun MapAttribution() {
-    Surface(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f), shape = MaterialTheme.shapes.extraSmall) {
+    Surface(
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+        shape = MaterialTheme.shapes.extraSmall
+    ) {
         Box(Modifier.padding(horizontal = 4.dp)) { IgnAttribution() }
     }
 }
@@ -152,7 +200,12 @@ fun IgnAttribution() {
     BasicText(
         stringResource(R.string.ign_attribution),
         maxLines = 1,
-        autoSize = TextAutoSize.StepBased(minFontSize = 7.sp, maxFontSize = MaterialTheme.typography.labelSmall.fontSize),
-        style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+        autoSize = TextAutoSize.StepBased(
+            minFontSize = 7.sp,
+            maxFontSize = MaterialTheme.typography.labelSmall.fontSize
+        ),
+        style = MaterialTheme.typography.labelSmall.copy(
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     )
 }

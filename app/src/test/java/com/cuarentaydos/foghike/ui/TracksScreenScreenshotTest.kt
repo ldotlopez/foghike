@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performTouchInput
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
+import java.util.TimeZone
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -18,7 +19,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import java.util.TimeZone
 
 /** One screenshot per state in docs/ui/screens/tracks.md (numbers match the spec's States table). */
 @RunWith(RobolectricTestRunner::class)
@@ -36,7 +36,9 @@ class TracksScreenScreenshotTest {
     }
 
     @Test fun s1Default() = capture { TracksDefault() }
+
     @Test fun s2Empty() = capture { TracksEmpty() }
+
     @Test fun s3Recording() = capture { TracksRecording() }
 
     @Test fun s4Selecting() {
@@ -46,7 +48,8 @@ class TracksScreenScreenshotTest {
     }
 
     @OptIn(ExperimentalRoborazziApi::class) // the dialog is its own window
-    @Test fun s5Confirm() {
+    @Test
+    fun s5Confirm() {
         compose.setContent { TracksDefault() }
         compose.onAllNodesWithContentDescription("Delete track")[1].performClick()
         compose.waitForIdle() // screen captures don't wait for Compose by themselves
@@ -56,5 +59,6 @@ class TracksScreenScreenshotTest {
     @Test fun s6Busy() = capture { TracksBusy() }
 
     @Config(qualifiers = "+night")
-    @Test fun s7Dark() = capture { TracksDark() }
+    @Test
+    fun s7Dark() = capture { TracksDark() }
 }

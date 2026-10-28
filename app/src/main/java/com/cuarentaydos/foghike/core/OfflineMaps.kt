@@ -30,7 +30,12 @@ suspend fun exploredTiles(db: AppDatabase, cellSize: Int, zooms: Iterable<Int>):
 /** Tiles under the cells [trackIds] reveal with [grid], at each of [zooms]. */
 suspend fun trackTiles(db: AppDatabase, grid: RevealGrid, trackIds: List<String>, zooms: Iterable<Int>): Set<Tile> {
     val cells = trackIds.flatMapTo(HashSet()) { id ->
-        cellsRevealedBy(db.trackPointDao().ofTrack(id).map { GpsPoint(it.lat, it.lon, it.timestamp, it.accuracy) }, grid)
+        cellsRevealedBy(
+            db.trackPointDao().ofTrack(id).map {
+                GpsPoint(it.lat, it.lon, it.timestamp, it.accuracy)
+            },
+            grid
+        )
     }
     return zooms.flatMapTo(HashSet()) { tilesCovering(cells, it) }
 }
@@ -38,7 +43,14 @@ suspend fun trackTiles(db: AppDatabase, grid: RevealGrid, trackIds: List<String>
 /** Bounding box of [tiles], for the download's record. */
 fun boundsOfTiles(tiles: Collection<Tile>): Box {
     val boxes = tiles.map(::tileBounds)
-    return Box(boxes.minOf { it.south }, boxes.minOf { it.west }, boxes.maxOf { it.north }, boxes.maxOf { it.east })
+    return Box(
+        boxes.minOf {
+            it.south
+        },
+        boxes.minOf { it.west },
+        boxes.maxOf { it.north },
+        boxes.maxOf { it.east }
+    )
 }
 
 /**
@@ -63,6 +75,6 @@ fun replacementFor(areas: List<DownloadedArea>, name: String, now: Long): Downlo
         minLat = areas.minOf { it.minLat }, minLon = areas.minOf { it.minLon },
         maxLat = areas.maxOf { it.maxLat }, maxLon = areas.maxOf { it.maxLon },
         minZoom = areas.minOf { it.minZoom }, maxZoom = areas.maxOf { it.maxZoom },
-        fileName = areas.first().fileName, downloadedAt = now,
+        fileName = areas.first().fileName, downloadedAt = now
     )
 }

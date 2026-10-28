@@ -67,14 +67,16 @@ fun DownloadScreen(
     onUndo: () -> Unit,
     onClear: () -> Unit,
     onDownload: () -> Unit,
-    onRecenter: () -> Unit,
+    onRecenter: () -> Unit
 ) {
     Box(Modifier.fillMaxSize().background(MAP_BACKGROUND_COLOR)) {
         map()
 
         Row(
-            Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)).padding(8.dp),
-            verticalAlignment = Alignment.Top,
+            Modifier.fillMaxWidth().windowInsetsPadding(
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+            ).padding(8.dp),
+            verticalAlignment = Alignment.Top
         ) {
             // Takes only the room the help button leaves, so a long translation wraps instead of overlapping it.
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -82,14 +84,23 @@ fun DownloadScreen(
                 if (progress != null) ProgressChip(progress)
             }
             Spacer(Modifier.width(8.dp))
-            HelpButton(stringResource(R.string.help_download_title), stringResource(R.string.help_download), openFirst = helpFirst, onClosed = onHelpClosed)
+            HelpButton(
+                stringResource(R.string.help_download_title),
+                stringResource(R.string.help_download),
+                openFirst = helpFirst,
+                onClosed = onHelpClosed
+            )
         }
 
         Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal
+                    )
+                )
                 .padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SnackbarHost(snackbar)
             // Never collapses: nobody explores from here, and these are the controls used while drawing.
@@ -98,23 +109,53 @@ fun DownloadScreen(
                 fab = {
                     val label = stringResource(R.string.action_download)
                     WithTooltip(label) {
-                        FloatingActionButton(onDownload) { Icon(painterResource(R.drawable.ic_download), contentDescription = label) }
+                        FloatingActionButton(onDownload) {
+                            Icon(
+                                painterResource(R.drawable.ic_download),
+                                contentDescription = label
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                pinned = { MapIconButton(R.drawable.ic_my_location, stringResource(R.string.action_recenter), onRecenter) },
+                pinned = {
+                    MapIconButton(
+                        R.drawable.ic_my_location,
+                        stringResource(R.string.action_recenter),
+                        onRecenter
+                    )
+                }
             ) {
-                MapIconButton(R.drawable.ic_undo, stringResource(R.string.action_undo_area), onUndo, enabled = areaCount > 0)
-                MapIconButton(R.drawable.ic_delete, stringResource(R.string.action_clear_areas), onClear, enabled = areaCount > 0)
-                MapIconButton(R.drawable.ic_tune, stringResource(R.string.action_zoom_range), { onZoomSheet(true) })
+                MapIconButton(
+                    R.drawable.ic_undo,
+                    stringResource(R.string.action_undo_area),
+                    onUndo,
+                    enabled =
+                    areaCount > 0
+                )
+                MapIconButton(
+                    R.drawable.ic_delete,
+                    stringResource(R.string.action_clear_areas),
+                    onClear,
+                    enabled =
+                    areaCount > 0
+                )
+                MapIconButton(R.drawable.ic_tune, stringResource(R.string.action_zoom_range), {
+                    onZoomSheet(true)
+                })
             }
             MapAttribution()
         }
     }
 
     if (zoomSheetOpen) {
-        ModalBottomSheet(onDismissRequest = { onZoomSheet(false) }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-            Column(Modifier.padding(horizontal = 24.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ModalBottomSheet(onDismissRequest = {
+            onZoomSheet(false)
+        }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+            Column(
+                Modifier.padding(horizontal = 24.dp).padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 ZoomRangeSlider(zoom, onZoom)
                 if (areaCount > 0) TilesChip(tiles)
             }
@@ -125,23 +166,49 @@ fun DownloadScreen(
 /** Areas left and the running area's percentage, or a waiting notice without a connection. */
 @Composable
 private fun ProgressChip(progress: DownloadProgress) {
-    val text = if (progress.percent != null) pluralStringResource(R.plurals.chip_progress, progress.areasLeft, progress.areasLeft, progress.percent)
-    else pluralStringResource(R.plurals.chip_waiting, progress.areasLeft, progress.areasLeft)
+    val text = if (progress.percent !=
+        null
+    ) {
+        pluralStringResource(
+            R.plurals.chip_progress,
+            progress.areasLeft,
+            progress.areasLeft,
+            progress.percent
+        )
+    } else {
+        pluralStringResource(R.plurals.chip_waiting, progress.areasLeft, progress.areasLeft)
+    }
     Box {
         AssistChip(
             onClick = {},
             label = { Text(text) },
             leadingIcon = {
-                Icon(painterResource(if (progress.percent != null) R.drawable.ic_download else R.drawable.ic_cloud_off), null, Modifier.size(18.dp))
+                Icon(
+                    painterResource(
+                        if (progress.percent !=
+                            null
+                        ) {
+                            R.drawable.ic_download
+                        } else {
+                            R.drawable.ic_cloud_off
+                        }
+                    ),
+                    null,
+                    Modifier.size(18.dp)
+                )
             },
-            colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            colors = AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            )
         )
         if (progress.percent != null) {
             // Sized to the chip (matchParentSize), in the gap between the chip and the bottom of its 48 dp touch area.
             Box(Modifier.matchParentSize()) {
                 LinearProgressIndicator(
                     progress = { progress.percent / 100f },
-                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 2.dp),
+                    modifier = Modifier.align(
+                        Alignment.BottomCenter
+                    ).fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 2.dp)
                 )
             }
         }
@@ -162,19 +229,52 @@ internal fun DownloadPreview(
     progress: DownloadProgress? = null,
     snackbarText: String? = null,
     snackbarAction: String? = null,
-    helpFirst: Boolean = false,
+    helpFirst: Boolean = false
 ) = FogHikeTheme {
     val snackbar = remember { SnackbarHostState() }
-    if (snackbarText != null) LaunchedEffect(Unit) { snackbar.showSnackbar(snackbarText, snackbarAction) }
-    DownloadScreen({ MapPlaceholder() }, areaCount, tiles, 13..16, zoomSheetOpen, progress, snackbar, helpFirst, {}, {}, {}, {}, {}, {}, {})
+    if (snackbarText !=
+        null
+    ) {
+        LaunchedEffect(Unit) { snackbar.showSnackbar(snackbarText, snackbarAction) }
+    }
+    DownloadScreen({
+        MapPlaceholder()
+    }, areaCount, tiles, 13..16, zoomSheetOpen, progress, snackbar, helpFirst, {
+    }, {}, {}, {}, {}, {}, {})
 }
 
-@Preview(showSystemUi = true) @Composable internal fun DownloadEmpty() = DownloadPreview()
-@Preview(showSystemUi = true) @Composable internal fun DownloadAreas() = DownloadPreview(areaCount = 2, tiles = 4210)
-@Preview(showSystemUi = true) @Composable internal fun DownloadTooMany() = DownloadPreview(areaCount = 3, tiles = 25310)
-@Preview(showSystemUi = true) @Composable internal fun DownloadZoomSheet() = DownloadPreview(areaCount = 2, tiles = 4210, zoomSheetOpen = true)
-@Preview(showSystemUi = true) @Composable internal fun DownloadRunning() = DownloadPreview(progress = DownloadProgress(2, 37))
-@Preview(showSystemUi = true) @Composable internal fun DownloadWaiting() = DownloadPreview(progress = DownloadProgress(2, null))
-@Preview(showSystemUi = true) @Composable internal fun DownloadFinished() = DownloadPreview(snackbarText = "Download finished.", snackbarAction = "View")
-@Preview(showSystemUi = true) @Composable internal fun DownloadHelp() = DownloadPreview(helpFirst = true)
-@Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES) @Composable internal fun DownloadDark() = DownloadPreview(areaCount = 2, tiles = 4210)
+@Preview(showSystemUi = true)
+@Composable
+internal fun DownloadEmpty() = DownloadPreview()
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun DownloadAreas() = DownloadPreview(areaCount = 2, tiles = 4210)
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun DownloadTooMany() = DownloadPreview(areaCount = 3, tiles = 25310)
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun DownloadZoomSheet() = DownloadPreview(areaCount = 2, tiles = 4210, zoomSheetOpen = true)
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun DownloadRunning() = DownloadPreview(progress = DownloadProgress(2, 37))
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun DownloadWaiting() = DownloadPreview(progress = DownloadProgress(2, null))
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun DownloadFinished() = DownloadPreview(snackbarText = "Download finished.", snackbarAction = "View")
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun DownloadHelp() = DownloadPreview(helpFirst = true)
+
+@Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+internal fun DownloadDark() = DownloadPreview(areaCount = 2, tiles = 4210)

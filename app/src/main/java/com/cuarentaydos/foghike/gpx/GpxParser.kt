@@ -2,9 +2,9 @@ package com.cuarentaydos.foghike.gpx
 
 import android.util.Xml
 import com.cuarentaydos.foghike.core.GpsPoint
-import org.xmlpull.v1.XmlPullParser
 import java.io.InputStream
 import java.time.OffsetDateTime
+import org.xmlpull.v1.XmlPullParser
 
 /** Longest name kept from a file: GPX files come from anywhere. */
 const val MAX_GPX_NAME = 100
@@ -12,8 +12,7 @@ const val MAX_GPX_NAME = 100
 /** [name] is the track's `<name>`, else the file's `<metadata><name>`; null when neither exists. */
 data class GpxFile(val name: String?, val points: List<GpsPoint>)
 
-fun parseGpx(input: InputStream): GpxFile =
-    parseGpx(Xml.newPullParser().apply { setInput(input, null) })
+fun parseGpx(input: InputStream): GpxFile = parseGpx(Xml.newPullParser().apply { setInput(input, null) })
 
 /**
  * Reads track points (lat, lon, optional time) and the route name. Routes, waypoints and extensions
@@ -48,7 +47,12 @@ fun parseGpx(parser: XmlPullParser): GpxFile {
                 open.addLast(parser.name)
             }
             XmlPullParser.TEXT -> {
-                if (inTime) time = runCatching { OffsetDateTime.parse(parser.text.trim()).toInstant().toEpochMilli() }.getOrNull()
+                if (inTime) {
+                    time =
+                        runCatching {
+                            OffsetDateTime.parse(parser.text.trim()).toInstant().toEpochMilli()
+                        }.getOrNull()
+                }
                 val text = parser.text.trim().take(MAX_GPX_NAME).ifEmpty { null }
                 when (nameOf) {
                     "trk" -> if (trackName == null) trackName = text

@@ -43,6 +43,7 @@ class FogHikeApp : Application() {
     lateinit var db: AppDatabase
     lateinit var tileServer: TileServer
     val mapsDir: File get() = File(filesDir, "maps")
+
     // The "ui" preferences file: the user's settings plus a few internal flags.
     val prefs: SharedPreferences by lazy { getSharedPreferences("ui", MODE_PRIVATE) }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -106,7 +107,9 @@ class FogHikeApp : Application() {
         if (target.exists()) return
         val tmp = File(mapsDir, "$BASE_MAP_NAME.tmp")
         try {
-            assets.open("$BASE_MAP_NAME.mbtiles").use { input -> tmp.outputStream().use { input.copyTo(it) } }
+            assets.open("$BASE_MAP_NAME.mbtiles").use { input ->
+                tmp.outputStream().use { input.copyTo(it) }
+            }
             tmp.renameTo(target)
         } catch (e: FileNotFoundException) {
             Log.w("FogHike", "Base map asset missing; run tools/build_spain_mbtiles.py", e)
@@ -119,12 +122,18 @@ private fun SharedPreferences.readSettings(): AppSettings {
     val d = AppSettings()
     fun int(key: String, options: List<Int>, default: Int) = getInt(key, default).takeIf { it in options } ?: default
     return AppSettings(
-        startMode = LocationMode.entries.firstOrNull { it.name == getString("startMode", null) } ?: d.startMode,
+        startMode =
+        LocationMode.entries.firstOrNull { it.name == getString("startMode", null) }
+            ?: d.startMode,
         batterySaver = getBoolean("batterySaver", d.batterySaver),
         cellSize = int("cellSize", CELL_SIZES, d.cellSize),
         // A string, so 1.2 reads back exactly (a Float would not match the list).
-        radiusFactor = RADIUS_FACTORS.firstOrNull { it.toString() == getString("radiusFactor", null) } ?: d.radiusFactor,
-        fogMode = FogMode.entries.firstOrNull { it.name == getString("fogMode", null) } ?: d.fogMode,
+        radiusFactor =
+        RADIUS_FACTORS.firstOrNull { it.toString() == getString("radiusFactor", null) }
+            ?: d.radiusFactor,
+        fogMode = FogMode.entries.firstOrNull {
+            it.name == getString("fogMode", null)
+        } ?: d.fogMode,
         slowPhone = getBoolean("slowPhone", d.slowPhone),
         fogDetail = int("fogDetail", FOG_DETAILS, d.fogDetail),
         fogEdge = int("fogEdge", FOG_EDGES, d.fogEdge),
@@ -133,7 +142,7 @@ private fun SharedPreferences.readSettings(): AppSettings {
         showTrail = getBoolean("showTrail", d.showTrail),
         trailMinutes = int("trailMinutes", TRAIL_MINUTES, d.trailMinutes),
         trailColor = getString("trailColor", null)?.takeIf { it in TRAIL_COLORS } ?: d.trailColor,
-        trailWidth = int("trailWidth", TRAIL_WIDTHS, d.trailWidth),
+        trailWidth = int("trailWidth", TRAIL_WIDTHS, d.trailWidth)
     )
 }
 

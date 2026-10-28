@@ -17,8 +17,9 @@ import kotlinx.coroutines.withContext
 enum class FogMode {
     /** Clear as soon as any revealed base cell lies inside: the trace looks wider when zooming out. */
     ANY_CELL,
+
     /** Partly fogged, thinner the more of the cell has been explored ([fogDensity]). */
-    DENSITY,
+    DENSITY
 }
 
 /** One fog rectangle; [density] 1 is full fog, less is a partly explored coarse cell. */
@@ -42,11 +43,26 @@ suspend fun fogPieces(cells: CellDao, area: Box, level: Int, settings: AppSettin
         val softSteps = if (soft && lvl == 0) settings.effectiveFogEdge else 0
         val pieces = withContext(Dispatchers.Default) {
             val revealedCells = revealed.map { Cell(size, it.gridRow, it.gridCol) }
-            val rects = if (softSteps > 0) softFogRects(area, size, revealedCells, softSteps)
-                else fogRects(area, size, revealedCells).map { it to 1f }
-            val partial = if (settings.fogMode != FogMode.DENSITY) emptyList() else revealed.mapNotNull {
-                val density = fogDensity(it.revealedCount, fogLevel)
-                if (density > 0f) FogPiece(Cell(size, it.gridRow, it.gridCol).bounds(), density) else null
+            val rects = if (softSteps > 0) {
+                softFogRects(area, size, revealedCells, softSteps)
+            } else {
+                fogRects(area, size, revealedCells).map { it to 1f }
+            }
+            val partial = if (settings.fogMode !=
+                FogMode.DENSITY
+            ) {
+                emptyList()
+            } else {
+                revealed.mapNotNull {
+                    val density = fogDensity(it.revealedCount, fogLevel)
+                    if (density >
+                        0f
+                    ) {
+                        FogPiece(Cell(size, it.gridRow, it.gridCol).bounds(), density)
+                    } else {
+                        null
+                    }
+                }
             }
             rects.map { FogPiece(it.first, it.second) } + partial
         }

@@ -43,9 +43,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -71,7 +71,7 @@ fun MainScreen(
     onTracks: () -> Unit,
     onSettings: () -> Unit,
     onLocation: () -> Unit,
-    onLocationMode: (LocationMode) -> Unit,
+    onLocationMode: (LocationMode) -> Unit
 ) {
     // Collapsed while exploring, so the map is as free as possible; reset whenever exploring starts or stops.
     var expanded by rememberSaveable(tracking) { mutableStateOf(!tracking) }
@@ -80,8 +80,10 @@ fun MainScreen(
         map()
 
         Row(
-            Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)).padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            Modifier.fillMaxWidth().windowInsetsPadding(
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+            ).padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             if (mapCount != null) StatusChip(cellCount, mapCount, onMaps)
             Spacer(Modifier.weight(1f))
@@ -90,9 +92,13 @@ fun MainScreen(
 
         Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal
+                    )
+                )
                 .padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SnackbarHost(snackbar)
             MapToolbar(
@@ -101,11 +107,15 @@ fun MainScreen(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 onExpandedChange = if (tracking) ({ expanded = it }) else null,
                 // Stays when collapsed: re-centering is what a walker needs after dragging the map.
-                pinned = { LocationButton(locationMode, onLocation, onLocationMode) },
+                pinned = { LocationButton(locationMode, onLocation, onLocationMode) }
             ) {
                 MapIconButton(R.drawable.ic_map, stringResource(R.string.action_maps), onMaps)
                 MapIconButton(R.drawable.ic_route, stringResource(R.string.action_tracks), onTracks)
-                MapIconButton(R.drawable.ic_settings, stringResource(R.string.action_settings), onSettings)
+                MapIconButton(
+                    R.drawable.ic_settings,
+                    stringResource(R.string.action_settings),
+                    onSettings
+                )
             }
             MapAttribution()
         }
@@ -116,8 +126,16 @@ fun MainScreen(
 @Composable
 private fun StatusChip(cellCount: Int, mapCount: Int, onMaps: () -> Unit) {
     val cells = "%,d".format(cellCount)
-    val description = if (mapCount == 0) "${stringResource(R.string.chip_cells, cells)}, ${stringResource(R.string.chip_no_maps)}"
-    else stringResource(R.string.chip_status, cells, mapCount)
+    val description = if (mapCount ==
+        0
+    ) {
+        "${stringResource(
+            R.string.chip_cells,
+            cells
+        )}, ${stringResource(R.string.chip_no_maps)}"
+    } else {
+        stringResource(R.string.chip_status, cells, mapCount)
+    }
     AssistChip(
         onClick = { if (mapCount == 0) onMaps() },
         label = {
@@ -134,18 +152,30 @@ private fun StatusChip(cellCount: Int, mapCount: Int, onMaps: () -> Unit) {
                 }
             }
         },
-        colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        colors = AssistChipDefaults.assistChipColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
         // Read as one sentence; only tappable for screen readers when it does something.
         modifier = Modifier.clearAndSetSemantics {
             contentDescription = description
-            if (mapCount == 0) onClick { onMaps(); true }
-        },
+            if (mapCount == 0) {
+                onClick {
+                    onMaps()
+                    true
+                }
+            }
+        }
     )
 }
 
 @Composable
 private fun ChipIcon(icon: Int, tint: Color = MaterialTheme.colorScheme.onSurfaceVariant) {
-    Icon(painterResource(icon), contentDescription = null, tint = tint, modifier = Modifier.size(18.dp))
+    Icon(
+        painterResource(icon),
+        contentDescription = null,
+        tint = tint,
+        modifier = Modifier.size(18.dp)
+    )
     Spacer(Modifier.width(4.dp))
 }
 
@@ -158,9 +188,14 @@ private fun ExploreButton(tracking: Boolean, onTrack: () -> Unit) {
         FloatingActionButton(
             onTrack,
             containerColor = if (tracking) colors.errorContainer else colors.primaryContainer,
-            contentColor = if (tracking) colors.onErrorContainer else colors.error,
+            contentColor = if (tracking) colors.onErrorContainer else colors.error
         ) {
-            Icon(painterResource(if (tracking) R.drawable.ic_stop else R.drawable.ic_fiber_manual_record), contentDescription = label)
+            Icon(
+                painterResource(
+                    if (tracking) R.drawable.ic_stop else R.drawable.ic_fiber_manual_record
+                ),
+                contentDescription = label
+            )
         }
     }
 }
@@ -185,9 +220,9 @@ private fun LocationButton(mode: LocationMode, onClick: () -> Unit, onMode: (Loc
                 role = Role.Button,
                 onLongClickLabel = stringResource(R.string.action_location_mode),
                 onLongClick = { menu = true },
-                onClick = onClick,
+                onClick = onClick
             ),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Center
         ) {
             Icon(painterResource(locationModeIcon(mode)), contentDescription = label)
         }
@@ -195,9 +230,14 @@ private fun LocationButton(mode: LocationMode, onClick: () -> Unit, onMode: (Loc
             for (m in LocationMode.entries) {
                 DropdownMenuItem(
                     text = { Text(stringResource(locationModeName(m))) },
-                    onClick = { menu = false; onMode(m) },
-                    leadingIcon = { Icon(painterResource(locationModeIcon(m)), contentDescription = null) },
-                    trailingIcon = { RadioButton(selected = m == mode, onClick = null) },
+                    onClick = {
+                        menu = false
+                        onMode(m)
+                    },
+                    leadingIcon = {
+                        Icon(painterResource(locationModeIcon(m)), contentDescription = null)
+                    },
+                    trailingIcon = { RadioButton(selected = m == mode, onClick = null) }
                 )
             }
         }
@@ -226,18 +266,43 @@ internal fun MainPreview(
     tracking: Boolean = false,
     mapCount: Int? = 3,
     locationMode: LocationMode = LocationMode.FREE,
-    snackbarText: String? = null,
+    snackbarText: String? = null
 ) = FogHikeTheme {
     val snackbar = remember { SnackbarHostState() }
     if (snackbarText != null) LaunchedEffect(Unit) { snackbar.showSnackbar(snackbarText) }
-    MainScreen({ MapPlaceholder() }, 1234, mapCount, tracking, locationMode, snackbar, {}, {}, {}, {}, {}, {})
+    MainScreen({
+        MapPlaceholder()
+    }, 1234, mapCount, tracking, locationMode, snackbar, {}, {}, {}, {}, {}, {})
 }
 
-@Preview(showSystemUi = true) @Composable internal fun MainDefault() = MainPreview()
-@Preview(showSystemUi = true) @Composable internal fun MainExploringCollapsed() = MainPreview(tracking = true)
-@Preview(showSystemUi = true) @Composable internal fun MainNoMaps() = MainPreview(mapCount = 0)
-@Preview(showSystemUi = true) @Composable internal fun MainLoading() = MainPreview(mapCount = null)
-@Preview(showSystemUi = true) @Composable internal fun MainSnackbar() = MainPreview(snackbarText = "Waiting for your location…")
-@Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES) @Composable internal fun MainDark() = MainPreview()
-@Preview(showSystemUi = true) @Composable internal fun MainFollowing() = MainPreview(locationMode = LocationMode.FOLLOW)
-@Preview(showSystemUi = true) @Composable internal fun MainCompass() = MainPreview(locationMode = LocationMode.COMPASS)
+@Preview(showSystemUi = true)
+@Composable
+internal fun MainDefault() = MainPreview()
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun MainExploringCollapsed() = MainPreview(tracking = true)
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun MainNoMaps() = MainPreview(mapCount = 0)
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun MainLoading() = MainPreview(mapCount = null)
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun MainSnackbar() = MainPreview(snackbarText = "Waiting for your location…")
+
+@Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+internal fun MainDark() = MainPreview()
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun MainFollowing() = MainPreview(locationMode = LocationMode.FOLLOW)
+
+@Preview(showSystemUi = true)
+@Composable
+internal fun MainCompass() = MainPreview(locationMode = LocationMode.COMPASS)

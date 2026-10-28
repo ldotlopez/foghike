@@ -37,14 +37,22 @@ class DownloadScreenScreenshotTest {
     }
 
     @Test fun s1Empty() = capture { DownloadEmpty() }
+
     @Test fun s3Areas() = capture { DownloadAreas() }
+
     @Test fun s4TooMany() = capture { DownloadTooMany() }
+
     @Test fun s5ZoomSheet() = captureScreen { DownloadZoomSheet() }
+
     @Test fun s6Downloading() = capture { DownloadRunning() }
+
     @Test fun s7Waiting() = capture { DownloadWaiting() }
+
     @Test fun s8Finished() = capture { DownloadFinished() }
+
     @Test fun s9Help() = captureScreen { DownloadHelp() }
 
     @Config(qualifiers = "+night")
-    @Test fun s10Dark() = capture { DownloadDark() }
+    @Test
+    fun s10Dark() = capture { DownloadDark() }
 }

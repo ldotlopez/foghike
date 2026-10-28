@@ -50,7 +50,7 @@ class OfflineMapsTest {
         val explored = setOf(Tile(15, 100, 200))
         val area = DownloadedArea(
             name = AREA_PREFIX + "x", minLat = 40.0, minLon = -3.8, maxLat = 40.1, maxLon = -3.7,
-            minZoom = 13, maxZoom = 16, fileName = "tiles.mbtiles", downloadedAt = 0,
+            minZoom = 13, maxZoom = 16, fileName = "tiles.mbtiles", downloadedAt = 0
         )
         val inArea = Tile(14, tileX(-3.75, 14), tileY(40.05, 14))
         assertTrue(keepsTile(Tile(15, 100, 200), explored, emptyList()))
@@ -63,7 +63,7 @@ class OfflineMapsTest {
     fun replacementKeepsTheZoomRangeOfRemovedAreas() {
         fun area(min: Int, max: Int, lat: Double) = DownloadedArea(
             name = AREA_PREFIX + lat, minLat = lat, minLon = -3.8, maxLat = lat + 0.1, maxLon = -3.7,
-            minZoom = min, maxZoom = max, fileName = "tiles.mbtiles", downloadedAt = 0,
+            minZoom = min, maxZoom = max, fileName = "tiles.mbtiles", downloadedAt = 0
         )
         val r = replacementFor(listOf(area(13, 16, 40.0), area(12, 18, 41.0)), "kept", 5)!!
         assertEquals(12..18, r.minZoom..r.maxZoom)

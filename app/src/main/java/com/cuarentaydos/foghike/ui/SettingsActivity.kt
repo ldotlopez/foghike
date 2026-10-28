@@ -27,14 +27,14 @@ import com.cuarentaydos.foghike.tiles.averageTileBytes
 import com.cuarentaydos.foghike.tiles.deleteTiles
 import com.cuarentaydos.foghike.tiles.openTileStore
 import com.cuarentaydos.foghike.tiles.storedTiles
+import java.io.File
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.util.UUID
 
 /**
  * Settings. Values are saved as they change, except the cell size and reveal radius: those wait
@@ -56,7 +56,9 @@ class SettingsActivity : ComponentActivity() {
 
     // Stored cells still use cellsBuiltWith until the user leaves; app.settings keeps that size meanwhile.
     private val exploredMaps by lazy {
-        TileOfferState(app, lifecycleScope, prefs, "exploredDownload", { exploredTiles(app.db, app.settings.cellSize, it) }) { zooms ->
+        TileOfferState(app, lifecycleScope, prefs, "exploredDownload", {
+            exploredTiles(app.db, app.settings.cellSize, it)
+        }) { zooms ->
             DownloadWorker.enqueueExplored(this, zooms)
             showMessage(getString(R.string.download_queued))
         }
@@ -78,12 +80,24 @@ class SettingsActivity : ComponentActivity() {
             FogHikeTheme {
                 SettingsScreen(
                     fogOpacity, ::changeFogOpacity, settings, cellsBuiltWith, ::changeSettings, busy, version,
-                    mapsBytes, snackbar, onDownloadExplored = exploredMaps::open, onCleanup = ::openCleanup, onBack = ::leave,
+                    mapsBytes, snackbar,
+                    onDownloadExplored = exploredMaps::open, onCleanup = ::openCleanup, onBack = ::leave
                 )
                 exploredMaps.offer?.let {
-                    TileOfferSheet(stringResource(R.string.download_explored), it, exploredMaps::setZoom, exploredMaps::download, exploredMaps::dismiss)
+                    TileOfferSheet(
+                        stringResource(R.string.download_explored),
+                        it,
+                        exploredMaps::setZoom,
+                        exploredMaps::download,
+                        exploredMaps::dismiss
+                    )
                 }
-                cleanup?.let { CleanupDialog(it, ::setKeepManual, ::runCleanup) { cleanupJob?.cancel(); cleanup = null } }
+                cleanup?.let {
+                    CleanupDialog(it, ::setKeepManual, ::runCleanup) {
+                        cleanupJob?.cancel()
+                        cleanup = null
+                    }
+                }
             }
         }
     }
@@ -102,14 +116,21 @@ class SettingsActivity : ComponentActivity() {
 
     private fun changeSettings(s: AppSettings) {
         settings = s
-        lifecycleScope.launch { app.saveSettings(s.copy(cellSize = cellsBuiltWith.cellSize, radiusFactor = cellsBuiltWith.radiusFactor)) }
+        lifecycleScope.launch {
+            app.saveSettings(s.copy(cellSize = cellsBuiltWith.cellSize, radiusFactor = cellsBuiltWith.radiusFactor))
+        }
     }
 
     /** Opens the clean-up dialog, unless a download is writing to the tile store right now. */
     private fun openCleanup() = lifecycleScope.launch {
-        val works = WorkManager.getInstance(this@SettingsActivity).getWorkInfosForUniqueWorkFlow(DownloadWorker.WORK_NAME).first()
-        if (works.any { !it.state.isFinished }) showMessage(getString(R.string.cleanup_wait_download))
-        else setKeepManual(true)
+        val works = WorkManager.getInstance(
+            this@SettingsActivity
+        ).getWorkInfosForUniqueWorkFlow(DownloadWorker.WORK_NAME).first()
+        if (works.any { !it.state.isFinished }) {
+            showMessage(getString(R.string.cleanup_wait_download))
+        } else {
+            setKeepManual(true)
+        }
     }
 
     private fun setKeepManual(keep: Boolean) {
@@ -147,13 +168,23 @@ class SettingsActivity : ComponentActivity() {
                 openTileStore(app.mapsDir).use { it.deleteTiles(delete) }
                 if (!keepManual) {
                     val manual = app.db.areaDao().all().filter { it.isManual }
-                    replacementFor(manual, "kept-${UUID.randomUUID()}", System.currentTimeMillis())?.let { app.db.areaDao().insert(it) }
+                    replacementFor(manual, "kept-${UUID.randomUUID()}", System.currentTimeMillis())?.let {
+                        app.db.areaDao().insert(it)
+                    }
                     app.db.areaDao().delete(manual.map { it.id })
                 }
             }
             mapsBytes = File(app.mapsDir, TILE_STORE_FILE).length()
             cleanup = null
-            showMessage(getString(R.string.cleanup_done, android.text.format.Formatter.formatShortFileSize(this@SettingsActivity, before - mapsBytes)))
+            showMessage(
+                getString(
+                    R.string.cleanup_done,
+                    android.text.format.Formatter.formatShortFileSize(
+                        this@SettingsActivity,
+                        before - mapsBytes
+                    )
+                )
+            )
         }
     }
 

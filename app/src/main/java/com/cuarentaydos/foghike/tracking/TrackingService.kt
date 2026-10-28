@@ -18,10 +18,10 @@ import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import com.cuarentaydos.foghike.FogHikeApp
-import com.cuarentaydos.foghike.core.GpsPoint
 import com.cuarentaydos.foghike.R
-import com.cuarentaydos.foghike.data.Source
+import com.cuarentaydos.foghike.core.GpsPoint
 import com.cuarentaydos.foghike.core.recordPoints
+import com.cuarentaydos.foghike.data.Source
 import com.cuarentaydos.foghike.ui.MainActivity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -44,6 +44,7 @@ class TrackingService : Service() {
     companion object {
         private val _running = MutableStateFlow(false)
         val running: StateFlow<Boolean> = _running
+
         // The track being recorded, so the tracks screen doesn't offer to delete it.
         private val _activeTrackId = MutableStateFlow<String?>(null)
         val activeTrackId: StateFlow<String?> = _activeTrackId
@@ -65,7 +66,9 @@ class TrackingService : Service() {
 
     private val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
-            val points = result.locations.map { GpsPoint(it.latitude, it.longitude, it.time, if (it.hasAccuracy()) it.accuracy else null) }
+            val points = result.locations.map {
+                GpsPoint(it.latitude, it.longitude, it.time, if (it.hasAccuracy()) it.accuracy else null)
+            }
             val first = nextIndex
             nextIndex += points.size
             val app = application as FogHikeApp
@@ -108,12 +111,17 @@ class TrackingService : Service() {
 
     private fun notification(): Notification {
         val openApp = PendingIntent.getActivity(
-            this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE
+            this,
+            0,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE
         )
         val locationOn = getSystemService(LocationManager::class.java).isLocationEnabled
         return Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_mylocation)
-            .setContentTitle(getString(if (locationOn) R.string.tracking_notification else R.string.tracking_location_off))
+            .setContentTitle(
+                getString(if (locationOn) R.string.tracking_notification else R.string.tracking_location_off)
+            )
             .setContentIntent(openApp)
             .setOngoing(true)
             .build()

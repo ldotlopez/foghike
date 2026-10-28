@@ -1,20 +1,20 @@
 package com.cuarentaydos.foghike.ui
 
+import android.graphics.Bitmap
 import com.cuarentaydos.foghike.core.AppSettings
 import com.cuarentaydos.foghike.core.fogPieces
 import com.cuarentaydos.foghike.data.CellDao
 import com.cuarentaydos.foghike.geo.Box
 import com.cuarentaydos.foghike.geo.lodLevelFor
-import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression.get
 import org.maplibre.android.style.expressions.Expression.literal
 import org.maplibre.android.style.expressions.Expression.product
 import org.maplibre.android.style.expressions.Expression.toNumber
-import org.maplibre.android.maps.Style
 import org.maplibre.android.style.layers.FillLayer
 import org.maplibre.android.style.layers.PropertyFactory.fillAntialias
 import org.maplibre.android.style.layers.PropertyFactory.fillOpacity
@@ -35,7 +35,13 @@ private const val DENSITY = "density"
  * the camera stops outside the computed region or the cells change — never per frame. [settings]
  * may change on return from Settings; the caller then forces a [refresh].
  */
-class FogLayer(style: Style, private val cells: CellDao, private val scope: CoroutineScope, opacity: Float, var settings: AppSettings) {
+class FogLayer(
+    style: Style,
+    private val cells: CellDao,
+    private val scope: CoroutineScope,
+    opacity: Float,
+    var settings: AppSettings
+) {
     private val source = GeoJsonSource("fog")
     private val layer = FillLayer("fog", "fog")
         .withProperties(fillPattern(FOG_TEXTURE), fogOpacity(opacity), fillAntialias(false))
@@ -45,7 +51,10 @@ class FogLayer(style: Style, private val cells: CellDao, private val scope: Coro
 
     init {
         val pixels = fogTexture(FOG_TEXTURE_SIZE)
-        style.addImage(FOG_TEXTURE, Bitmap.createBitmap(pixels, FOG_TEXTURE_SIZE, FOG_TEXTURE_SIZE, Bitmap.Config.ARGB_8888))
+        style.addImage(
+            FOG_TEXTURE,
+            Bitmap.createBitmap(pixels, FOG_TEXTURE_SIZE, FOG_TEXTURE_SIZE, Bitmap.Config.ARGB_8888)
+        )
         style.addSource(source)
         style.addLayer(layer)
     }
@@ -59,7 +68,8 @@ class FogLayer(style: Style, private val cells: CellDao, private val scope: Coro
         val b = map.projection.visibleRegion.latLngBounds
         val visible = Box(b.latitudeSouth, b.longitudeWest, b.latitudeNorth, b.longitudeEast)
         val s = settings
-        val level = lodLevelFor(s.cellSize, map.cameraPosition.zoom, b.center.latitude, s.minCellPixels)
+        val level =
+            lodLevelFor(s.cellSize, map.cameraPosition.zoom, b.center.latitude, s.minCellPixels)
         if (!force && level == computedLevel && computed?.contains(visible) == true) return
 
         val area = visible.expanded()
@@ -74,13 +84,17 @@ class FogLayer(style: Style, private val cells: CellDao, private val scope: Coro
 }
 
 private fun Box.toFeature(density: Float): Feature = Feature.fromGeometry(
-    Polygon.fromLngLats(listOf(listOf(
-        Point.fromLngLat(west, south),
-        Point.fromLngLat(east, south),
-        Point.fromLngLat(east, north),
-        Point.fromLngLat(west, north),
-        Point.fromLngLat(west, south),
-    )))
+    Polygon.fromLngLats(
+        listOf(
+            listOf(
+                Point.fromLngLat(west, south),
+                Point.fromLngLat(east, south),
+                Point.fromLngLat(east, north),
+                Point.fromLngLat(west, north),
+                Point.fromLngLat(west, south)
+            )
+        )
+    )
 ).apply { addNumberProperty(DENSITY, density) }
 
 /**
@@ -103,10 +117,13 @@ fun fogTexture(size: Int, seed: Int = 7): IntArray {
             val lat = lattices[o]
             val fx = x.toFloat() * p / size
             val fy = y.toFloat() * p / size
-            val x0 = fx.toInt(); val y0 = fy.toInt()
+            val x0 = fx.toInt()
+            val y0 = fy.toInt()
             // Wrap lattice indices so the texture tiles without seams.
-            val x1 = (x0 + 1) % p; val y1 = (y0 + 1) % p
-            val tx = smooth(fx - x0); val ty = smooth(fy - y0)
+            val x1 = (x0 + 1) % p
+            val y1 = (y0 + 1) % p
+            val tx = smooth(fx - x0)
+            val ty = smooth(fy - y0)
             val top = lat[y0 * p + x0] * (1 - tx) + lat[y0 * p + x1] * tx
             val bottom = lat[y1 * p + x0] * (1 - tx) + lat[y1 * p + x1] * tx
             n += amp * (top * (1 - ty) + bottom * ty)

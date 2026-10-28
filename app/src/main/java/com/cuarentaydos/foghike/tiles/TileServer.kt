@@ -47,7 +47,9 @@ class TileServer(private val dir: File) {
             if (tile == null) {
                 out.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".toByteArray())
             } else {
-                out.write("HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: ${tile.size}\r\nConnection: close\r\n\r\n".toByteArray())
+                val header = "HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\n" +
+                    "Content-Length: ${tile.size}\r\nConnection: close\r\n\r\n"
+                out.write(header.toByteArray())
                 out.write(tile)
             }
             out.flush()
@@ -66,7 +68,7 @@ class TileServer(private val dir: File) {
         val tmsY = (1 shl z) - 1 - y // MBTiles stores rows bottom-up (TMS)
         return db.rawQuery(
             "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?",
-            arrayOf(z.toString(), x.toString(), tmsY.toString()),
+            arrayOf(z.toString(), x.toString(), tmsY.toString())
         ).use { c -> if (c.moveToFirst()) c.getBlob(0) else null }
     }
 

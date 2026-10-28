@@ -1,17 +1,20 @@
 package com.cuarentaydos.foghike.tiles
 
 import com.cuarentaydos.foghike.geo.Tile
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import java.io.File
 
 /** On Robolectric's real SQLite: the store is a plain MBTiles file. */
 @RunWith(RobolectricTestRunner::class)
 class TileStoreTest {
-    private val dir = File(RuntimeEnvironment.getApplication().filesDir, "maps").apply { deleteRecursively(); mkdirs() }
+    private val dir = File(RuntimeEnvironment.getApplication().filesDir, "maps").apply {
+        deleteRecursively()
+        mkdirs()
+    }
 
     @Test
     fun storesXyzTilesAndDeletesThem() {
@@ -34,7 +37,9 @@ class TileStoreTest {
     }
 
     @Test
-    fun emptyStoreEstimatesTheDefaultSize() = openTileStore(dir).use { assertEquals(DEFAULT_TILE_BYTES, it.averageTileBytes()) }
+    fun emptyStoreEstimatesTheDefaultSize() = openTileStore(dir).use {
+        assertEquals(DEFAULT_TILE_BYTES, it.averageTileBytes())
+    }
 
     @Test
     fun mergesAnOldAreaFileKeepingExistingTiles() {
