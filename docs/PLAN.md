@@ -9,6 +9,7 @@
 
 - **Name a track when it ends.** When the user stops a recording, ask for a name (stored in `track.name`, decision 0010; today recordings show "Exploration HH:MM"). Prefill it with the town where the track started, when known; otherwise leave it empty or use the date.
   - Assume no network: the town must come from an offline source. The IGN maps are raster satellite imagery with no place names, so bundle a small gazetteer instead, e.g. Spain's ~8,100 municipalities with their coordinates (IGN Nomenclátor / INE), and take the nearest one to the first point. Generate it with a script in `tools/` like `spain.mbtiles`.
+- **Refine a recorded track (idea).** Clean up a recording after it ends: drop GPS jitter and outliers (jumps, points while standing still), and optionally simplify the line. Recalculate the revealed cells from the refined points (as `deleteTracks` does) and list the trigger in `docs/recalculations.md`.
 
 ## Offline maps
 
